@@ -8,12 +8,12 @@ import {
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
 
 import Patients from './Sections/Patients.jsx';
-import Appointments from './sections/Appointments.jsx';
-import Staff from './sections/Staff.jsx';
-import Pharmacy from './sections/Pharmacy.jsx';
-import RecordsSection from './sections/RecordsSection.jsx';
-import DashSettings from './sections/Settings.jsx';
-import DashboardHome from './sections/DashboardHome.jsx';
+import Appointments from './Sections/Appointments.jsx';
+import Staff from './Sections/Staff.jsx';
+import Pharmacy from './Sections/Pharmacy.jsx';
+import RecordsSection from './Sections/RecordsSection.jsx';
+import DashSettings from './Sections/Settings.jsx';
+import DashboardHome from './Sections/DashboardHome.jsx';
 
 const NAV_ITEMS = [
   { id: 'dashboard', icon: Home, label: 'Dashboard' },
