@@ -192,40 +192,42 @@ function MyAppointments({ t, patient }) {
       } catch (e) { setError(e.message); }
       finally { setLoading(false); }
     })();
+  }, [patient?.id]); // ← useEffect closes HERE
 
-    return (
-      <div>
-        <SectionHeader title="My Appointments" sub={`${items.length} total`} t={t} />
-        {loading ? <Spinner t={t} /> : error ? <Err msg={error} /> : items.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {items.map(a => (
-              <div key={a.id} style={{ background: t.surface, borderRadius: 18, padding: '18px 20px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: t.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Calendar size={20} color={BLUE} strokeWidth={1.8} />
+  // ← return is OUTSIDE useEffect
+  return (
+    <div>
+      <SectionHeader title="My Appointments" sub={`${items.length} total`} t={t} />
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} /> : items.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {items.map(a => (
+            <div key={a.id} style={{ background: t.surface, borderRadius: 18, padding: '18px 20px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: t.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Calendar size={20} color={BLUE} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                  <p style={{ fontWeight: 700, fontSize: 15, color: t.text }}>{a.reason || 'Appointment'}</p>
+                  <Badge status={a.status} />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-                    <p style={{ fontWeight: 700, fontSize: 15, color: t.text }}>{a.reason || 'Appointment'}</p>
-                    <Badge status={a.status} />
-                  </div>
-                  <p style={{ fontSize: 13, color: t.textSub, marginBottom: 8 }}>
-                    Dr. {a.doctor?.fullName || '—'}
-                    {(a.doctor?.specialty || a.doctor?.department) && ` · ${a.doctor?.specialty || a.doctor?.department}`}
-                  </p>
-                  <div style={{ display: 'flex', gap: 14 }}>
-                    <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Clock size={11} />{new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                    {a.appointmentTime && <span style={{ fontSize: 12, color: t.textMuted }}>{a.appointmentTime}</span>}
-                  </div>
+                <p style={{ fontSize: 13, color: t.textSub, marginBottom: 8 }}>
+                  Dr. {a.doctor?.fullName || '—'}
+                  {(a.doctor?.specialty || a.doctor?.department) && ` · ${a.doctor?.specialty || a.doctor?.department}`}
+                </p>
+                <div style={{ display: 'flex', gap: 14 }}>
+                  <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Clock size={11} />{new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                  {a.appointmentTime && <span style={{ fontSize: 12, color: t.textMuted }}>{a.appointmentTime}</span>}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Medical Records ──────────────────────────────────────────────────────────
 function MyRecords({ t, patient }) {
