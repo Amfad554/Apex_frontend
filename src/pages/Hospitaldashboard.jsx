@@ -13,7 +13,7 @@ import Staff from './Sections/Staff.jsx';
 import Pharmacy from './Sections/Pharmacy.jsx';
 import RecordsSection from './Sections/Recordssection.jsx';
 import DashSettings from './Sections/Settings.jsx';
-import DashboardHome from './Sections/DashboardHome.jsx';
+import DashboardHome from './Sections/Dashboardhome.jsx';
 
 const NAV_ITEMS = [
   { id: 'dashboard', icon: Home, label: 'Dashboard' },
