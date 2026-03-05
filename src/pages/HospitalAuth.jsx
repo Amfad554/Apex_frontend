@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Building2, Mail, Lock, Phone, MapPin, FileText, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import Toast from '../Components/Toast';
 import { ButtonSpinner } from '../Components/LoadingSpinner';
-import { authAPI } from '../services/api';
+import { authAPI } from '../Services/api';
 
 export default function HospitalAuth() {
   const navigate = useNavigate();
