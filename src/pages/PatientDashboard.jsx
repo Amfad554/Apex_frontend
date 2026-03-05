@@ -59,10 +59,10 @@ const T = {
 
 const STATUS_MAP = {
   scheduled: { bg: 'rgba(217,119,6,0.12)', text: AMBER, dot: AMBER, label: 'Scheduled' },
-  completed:  { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Completed' },
-  cancelled:  { bg: 'rgba(225,29,72,0.12)', text: ROSE, dot: ROSE, label: 'Cancelled' },
-  active:     { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Active' },
-  pending:    { bg: 'rgba(217,119,6,0.12)', text: AMBER, dot: AMBER, label: 'Pending' },
+  completed: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Completed' },
+  cancelled: { bg: 'rgba(225,29,72,0.12)', text: ROSE, dot: ROSE, label: 'Cancelled' },
+  active: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Active' },
+  pending: { bg: 'rgba(217,119,6,0.12)', text: AMBER, dot: AMBER, label: 'Pending' },
 };
 
 function initials(name) {
@@ -364,10 +364,10 @@ function MyAppointments({ t, patient }) {
 
 /* ─── Medical Records ─────────────────────────────────────────────────────────── */
 const RECORD_TYPES = {
-  lab_results:  { label: 'Lab', color: '#06b6d4' },
+  lab_results: { label: 'Lab', color: '#06b6d4' },
   consultation: { label: 'Consult', color: TEAL },
-  imaging:      { label: 'Imaging', color: INDIGO },
-  other:        { label: 'Other', color: '#6b7280' },
+  imaging: { label: 'Imaging', color: INDIGO },
+  other: { label: 'Other', color: '#6b7280' },
 };
 
 function MyRecords({ t, patient }) {
@@ -502,8 +502,8 @@ function MyPrescriptions({ t, patient }) {
     })();
   }, [patient?.id]);
 
-  const activeRx  = items.filter(r => r.status?.toLowerCase() === 'active' || !r.status);
-  const otherRx   = items.filter(r => r.status?.toLowerCase() !== 'active' && r.status);
+  const activeRx = items.filter(r => r.status?.toLowerCase() === 'active' || !r.status);
+  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active' && r.status);
 
   const RxCard = ({ rx, i }) => (
     <div key={rx.id} style={{
@@ -650,19 +650,19 @@ function MyProfile({ t, patient, isDark }) {
 
 /* ─── Navigation ─────────────────────────────────────────────────────────────── */
 const NAV = [
-  { id: 'overview',      label: 'Home',          icon: Home },
-  { id: 'appointments',  label: 'Appointments',  icon: Calendar },
-  { id: 'records',       label: 'Records',       icon: FileText },
+  { id: 'overview', label: 'Home', icon: Home },
+  { id: 'appointments', label: 'Appointments', icon: Calendar },
+  { id: 'records', label: 'Records', icon: FileText },
   { id: 'prescriptions', label: 'Prescriptions', icon: Pill },
-  { id: 'profile',       label: 'Profile',       icon: User },
+  { id: 'profile', label: 'Profile', icon: User },
 ];
 
 /* ─── Main Export ────────────────────────────────────────────────────────────── */
 export default function PatientDashboard() {
   const navigate = useNavigate();
-  const [isDark, setIsDark]     = useState(() => localStorage.getItem('patientTheme') === 'dark');
-  const [patient, setPatient]   = useState(null);
-  const [section, setSection]   = useState('overview');
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('patientTheme') === 'dark');
+  const [patient, setPatient] = useState(null);
+  const [section, setSection] = useState('overview');
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
@@ -675,14 +675,21 @@ export default function PatientDashboard() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  // useEffect(() => {
+  //   try {
+  //     const raw = localStorage.getItem('user');
+  //     if (!raw) return navigate('/patientlogin');
+  //     const user = JSON.parse(raw);
+  //     if (user.role !== 'patient') return navigate('/patientlogin');
+  //     setPatient(user);
+  //   } catch { navigate('/patientlogin'); }
+  // }, []);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
-      if (!raw) return navigate('/patientlogin');
-      const user = JSON.parse(raw);
-      if (user.role !== 'patient') return navigate('/patientlogin');
-      setPatient(user);
-    } catch { navigate('/patientlogin'); }
+      if (raw) setPatient(JSON.parse(raw));
+    } catch { }
   }, []);
 
   const toggleTheme = () => {
@@ -698,19 +705,19 @@ export default function PatientDashboard() {
 
   const goTo = (id) => { setSection(id); setMobileMenu(false); };
 
-  const av    = initials(patient?.fullName);
+  const av = initials(patient?.fullName);
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   const sectionProps = { t, patient, isDark };
 
   const renderSection = () => {
     switch (section) {
-      case 'overview':      return <Overview      {...sectionProps} onNavigate={goTo} />;
-      case 'appointments':  return <MyAppointments {...sectionProps} />;
-      case 'records':       return <MyRecords      {...sectionProps} />;
+      case 'overview': return <Overview      {...sectionProps} onNavigate={goTo} />;
+      case 'appointments': return <MyAppointments {...sectionProps} />;
+      case 'records': return <MyRecords      {...sectionProps} />;
       case 'prescriptions': return <MyPrescriptions {...sectionProps} />;
-      case 'profile':       return <MyProfile      {...sectionProps} />;
-      default:              return <Overview       {...sectionProps} onNavigate={goTo} />;
+      case 'profile': return <MyProfile      {...sectionProps} />;
+      default: return <Overview       {...sectionProps} onNavigate={goTo} />;
     }
   };
 
