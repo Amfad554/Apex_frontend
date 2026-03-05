@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Search, X, Eye, Trash2, Phone, Mail, MapPin, Droplets, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
-import { patientsAPI } from '../../services/api.js';
+import { patientsAPI } from '../../Services/api.js';
 import { DEPARTMENTS, BLOOD_GROUPS } from '../MockData.js';
 
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#7c3aed', '#059669'];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, X, Pill, CheckCircle2, Clock, Trash2, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
-import { prescriptionsAPI, staffAPI, patientsAPI } from '../../services/api.js';
+import { prescriptionsAPI, staffAPI, patientsAPI } from '../../Services/api.js';
 
 const STATUS_COLORS = {
   active:    { bg: 'rgba(16,185,129,0.15)',  text: '#34d399' },

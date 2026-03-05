@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Search, X, Mail, Phone, Trash2, Eye, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
-import { staffAPI } from '../../services/api.js';
+import { staffAPI } from '../../Services/api.js';
 import { DEPARTMENTS, STAFF_ROLES } from '../MockData.js';
 
 const ROLE_COLORS = {

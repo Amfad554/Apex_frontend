@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, X, Trash2, Eye, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
-import { recordsAPI, staffAPI, patientsAPI } from '../../services/api.js';
+import { recordsAPI, staffAPI, patientsAPI } from '../../Services/api.js';
 
 const TYPE_COLORS = {
   lab_results:  { bg: 'rgba(6,182,212,0.15)',   text: '#22d3ee',  label: 'Lab Results' },

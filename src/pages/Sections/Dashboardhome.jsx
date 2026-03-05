@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Users, DollarSign, Zap, UserPlus, Pill, FileText, ArrowUpRight, Loader } from 'lucide-react';
 import { ACCENT, GRADIENTS } from '../theme.js';
-import { hospitalsAPI, patientsAPI, appointmentsAPI } from '../../services/api.js';
+import { hospitalsAPI, patientsAPI, appointmentsAPI } from '../../Services/api.js';
 
 function Sparkline({ data, color, width = 80, height = 30 }) {
     const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;

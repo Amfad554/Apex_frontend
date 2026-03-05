@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Building2, Phone, Mail, MapPin, Lock, Eye, EyeOff, CheckCircle2, Loader, X } from 'lucide-react';
 import { BLUE, BLUE2, ACCENT } from '../theme.js';
-import { hospitalsAPI, authAPI } from '../../services/api.js';
+import { hospitalsAPI, authAPI } from '../../Services/api.js';
 
 const HOSPITAL_TYPES = ['general', 'specialty', 'private', 'clinic', 'medical_center'];
 
