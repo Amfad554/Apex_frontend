@@ -11,7 +11,7 @@ import Patients from './Sections/Patients.jsx';
 import Appointments from './Sections/Appointments.jsx';
 import Staff from './Sections/Staff.jsx';
 import Pharmacy from './Sections/Pharmacy.jsx';
-import RecordsSection from './Sections/RecordsSection.jsx';
+import RecordsSection from './Sections/Recordssection.jsx';
 import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/DashboardHome.jsx';
 
