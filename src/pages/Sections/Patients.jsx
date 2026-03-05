@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Search, X, Eye, Trash2, Phone, Mail, MapPin, Droplets, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { patientsAPI } from '../../Services/api.js';
-import { DEPARTMENTS, BLOOD_GROUPS } from '../MockData.js';
 
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#7c3aed', '#059669'];
 
@@ -192,7 +191,7 @@ export default function Patients({ isDark, t, hospital }) {
                                 <div><label style={labelStyle}>Email</label><input type="email" style={inputStyle} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="patient@email.com" /></div>
                                 <div><label style={labelStyle}>Blood Group</label>
                                     <select style={inputStyle} value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}>
-                                        {BLOOD_GROUPS.map(b => <option key={b}>{b}</option>)}
+                                        
                                     </select>
                                 </div>
                                 <div><label style={labelStyle}>Medical Conditions</label><input style={inputStyle} value={form.medicalConditions} onChange={e => setForm({ ...form, medicalConditions: e.target.value })} placeholder="e.g. Hypertension, Diabetes" /></div>
