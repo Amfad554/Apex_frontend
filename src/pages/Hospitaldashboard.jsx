@@ -6,13 +6,14 @@ import {
   Menu, ChevronDown, X
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
-import DashboardHome from './sections/DashboardHome.jsx';
+
 import Patients from './sections/Patients.jsx';
 import Appointments from './sections/Appointments.jsx';
 import Staff from './sections/Staff.jsx';
 import Pharmacy from './sections/Pharmacy.jsx';
 import RecordsSection from './sections/RecordsSection.jsx';
 import DashSettings from './sections/Settings.jsx';
+import DashboardHome from './sections/DashboardHome.jsx';
 
 const NAV_ITEMS = [
   { id: 'dashboard', icon: Home, label: 'Dashboard' },
