@@ -11,7 +11,6 @@ const STATUS_COLORS = {
 };
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 
-// ── Inline Toast ──────────────────────────────────────────────────────────────
 function Toast({ message, type = 'success', onClose }) {
   useEffect(() => {
     const id = setTimeout(onClose, 4000);
@@ -19,15 +18,15 @@ function Toast({ message, type = 'success', onClose }) {
   }, []);
   const colors = {
     success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
-    error:   { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
-    info:    { bg: '#eff6ff', border: '#93c5fd', text: '#1e40af' },
+    error: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+    info: { bg: '#eff6ff', border: '#93c5fd', text: '#1e40af' },
   };
   const c = colors[type] || colors.info;
   return (
     <div style={{
       position: 'fixed', top: 20, right: 20, zIndex: 99999,
       background: c.bg, border: `1px solid ${c.border}`, color: c.text,
-      borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 420,
+      borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 'calc(100vw - 40px)',
       boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
       display: 'flex', alignItems: 'flex-start', gap: 10,
       animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards',
@@ -41,31 +40,7 @@ function Toast({ message, type = 'success', onClose }) {
   );
 }
 
-// ── Modal wrapper — scrollable, starts near top ───────────────────────────────
-function Modal({ onClose, children, maxWidth = 520 }) {
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-  return (
-    <div
-      onClick={e => e.target === e.currentTarget && onClose()}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
-        overflowY: 'auto', padding: '40px 20px 40px',
-      }}
-    >
-      <div style={{
-        background: 'inherit', borderRadius: 20, width: '100%',
-        maxWidth, margin: '0 auto', position: 'relative',
-      }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function Appointments({ isDark, t, hospital }) {
+export function Appointments({ isDark, t, hospital, isMobile }) {
   const [appointments, setAppts] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
@@ -80,7 +55,6 @@ export function Appointments({ isDark, t, hospital }) {
   const [form, setForm] = useState({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
 
   const hospitalId = hospital?.id;
-
   const showToast = (message, type = 'success') => setToast({ message, type });
 
   const load = async () => {
@@ -135,44 +109,51 @@ export function Appointments({ isDark, t, hospital }) {
   const counts = { scheduled: 0, completed: 0, cancelled: 0 };
   appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
-  const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit' };
+  const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' };
   const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
   return (
     <div>
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Appointments</h1>
-          <p style={{ color: t.textSub, fontSize: 14 }}>{appointments.length} total</p>
+          <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Appointments</h1>
+          <p style={{ color: t.textSub, fontSize: 13 }}>{appointments.length} total</p>
         </div>
-        <button onClick={() => setShowBook(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)' }}>
-          <Plus size={17} /> Book Appointment
+        <button onClick={() => setShowBook(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '9px 14px' : '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)', flexShrink: 0 }}>
+          <Plus size={16} /> {isMobile ? 'Book' : 'Book Appointment'}
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 24 }}>
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
         {[
           { label: 'Scheduled', count: counts.scheduled, icon: AlertCircle, color: ACCENT.orange },
           { label: 'Completed', count: counts.completed, icon: CheckCircle2, color: ACCENT.green },
           { label: 'Cancelled', count: counts.cancelled, icon: XCircle, color: ACCENT.red },
         ].map(({ label, count, icon: Icon, color }) => (
-          <div key={label} style={{ background: t.card, borderRadius: 14, padding: '18px 20px', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={20} color={color} /></div>
-            <div><p style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{count}</p><p style={{ fontSize: 12, color: t.textSub, marginTop: 3 }}>{label}</p></div>
+          <div key={label} style={{ background: t.card, borderRadius: 14, padding: isMobile ? '14px 12px' : '18px 20px', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 14 }}>
+            <div style={{ width: isMobile ? 34 : 42, height: isMobile ? 34 : 42, borderRadius: 12, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon size={isMobile ? 16 : 20} color={color} />
+            </div>
+            <div>
+              <p style={{ fontSize: isMobile ? 20 : 26, fontWeight: 800, lineHeight: 1 }}>{count}</p>
+              <p style={{ fontSize: isMobile ? 10 : 12, color: t.textSub, marginTop: 3 }}>{label}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.card, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
+      {/* Search + Filters */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexDirection: isMobile ? 'column' : 'row' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.card, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1 }}>
           <Search size={15} color={t.textMuted} />
           <input placeholder="Search by patient or doctor..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: isMobile ? 2 : 0 }}>
           {['All', 'Scheduled', 'Completed', 'Cancelled'].map(s => (
-            <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 16px', borderRadius: 10, border: `1px solid ${filter === s ? BLUE : t.border}`, background: filter === s ? 'rgba(59,91,219,0.15)' : t.card, color: filter === s ? '#60a5fa' : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>{s}</button>
+            <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${filter === s ? BLUE : t.border}`, background: filter === s ? 'rgba(59,91,219,0.15)' : t.card, color: filter === s ? '#60a5fa' : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', flexShrink: 0 }}>{s}</button>
           ))}
         </div>
       </div>
@@ -182,7 +163,7 @@ export function Appointments({ isDark, t, hospital }) {
           <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Loading...
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px,1fr))', gap: 16 }}>
           {filtered.length === 0 ? (
             <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.card, borderRadius: 18, border: `1px solid ${t.border}` }}>No appointments found</div>
           ) : filtered.map((a, i) => {
@@ -190,13 +171,13 @@ export function Appointments({ isDark, t, hospital }) {
             const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
             const avatar = a.patient?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             return (
-              <div key={a.id} style={{ background: t.card, borderRadius: 16, padding: 20, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
+              <div key={a.id} style={{ background: t.card, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '22', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>
                     <div><p style={{ fontWeight: 700, fontSize: 14 }}>{a.patient?.fullName}</p><p style={{ fontSize: 11, color: t.textMuted }}>{a.patient?.patientNumber}</p></div>
                   </div>
-                  <span style={{ background: sc.bg, color: sc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, textTransform: 'capitalize' }}>{a.status}</span>
+                  <span style={{ background: sc.bg, color: sc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, textTransform: 'capitalize', flexShrink: 0 }}>{a.status}</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                   {[
@@ -213,8 +194,8 @@ export function Appointments({ isDark, t, hospital }) {
                 </div>
                 {a.status === 'scheduled' && (
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '6px', background: 'rgba(16,185,129,0.15)', border: 'none', borderRadius: 8, color: ACCENT.green, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
-                    <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '6px', background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, color: ACCENT.red, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+                    <button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '7px', background: 'rgba(16,185,129,0.15)', border: 'none', borderRadius: 8, color: ACCENT.green, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
+                    <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '7px', background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, color: ACCENT.red, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
                   </div>
                 )}
               </div>
@@ -227,16 +208,20 @@ export function Appointments({ isDark, t, hospital }) {
       {showBook && (
         <div
           onClick={e => e.target === e.currentTarget && setShowBook(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300, overflowY: 'auto', padding: '20px' }}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
+            overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+          }}
         >
-          <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 520, margin: '0 auto', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontWeight: 700, fontSize: 17 }}>Book Appointment</h2>
-              <button onClick={() => setShowBook(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
+          <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontWeight: 700, fontSize: 16 }}>Book Appointment</h2>
+              <button onClick={() => setShowBook(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>
             </div>
-            <form onSubmit={handleBook} style={{ padding: '24px' }}>
+            <form onSubmit={handleBook} style={{ padding: '20px' }}>
               {formError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label style={labelStyle}>Patient *</label>
                   <select required style={inputStyle} value={form.patientId} onChange={e => setForm({ ...form, patientId: e.target.value })}>
@@ -268,7 +253,7 @@ export function Appointments({ isDark, t, hospital }) {
                   <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Additional notes..." />
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                 <button type="button" onClick={() => setShowBook(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
                 <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>
                   {submitting ? 'Booking...' : 'Book Appointment'}
