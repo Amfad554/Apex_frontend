@@ -5,7 +5,7 @@ import {
     Activity, ArrowLeft, BadgeCheck, Search, AlertCircle,
     Building2, X,
 } from 'lucide-react';
-import { authAPI, hospitalsAPI } from '../services/api.js';
+import { authAPI, hospitalsAPI } from '../Services/api.js';
 
 const themes = {
     dark: {
