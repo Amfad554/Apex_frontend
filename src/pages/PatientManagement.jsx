@@ -51,7 +51,8 @@ export default function PatientManagement() {
                 return;
             }
 
-            const response = await fetch(`http://localhost:5000/api/patients/hospital/${user.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}
+                /api/patients/hospital/${user.id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -110,7 +111,7 @@ export default function PatientManagement() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/patients/${patientId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -137,7 +138,7 @@ export default function PatientManagement() {
 
             if (modalMode === 'add') {
                 // Create new patient
-                const response = await fetch(`http://localhost:5000/api/patients/hospital/${user.id}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -156,7 +157,7 @@ export default function PatientManagement() {
                 }
             } else {
                 // Update existing patient
-                const response = await fetch(`http://localhost:5000/api/patients/${selectedPatient.id}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,

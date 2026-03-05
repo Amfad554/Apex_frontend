@@ -20,6 +20,8 @@ const handle = async (res) => {
 
 // ─── AUTH ────────────────────────────────────────────────────────────────────
 export const authAPI = {
+    hospitalLogin: (body) => fetch(`${BASE_URL}/api/auth/hospital/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(handle),
+    hospitalRegister: (body) => fetch(`${BASE_URL}/api/auth/hospital/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(handle),
     staffLogin: (body) => fetch(`${BASE_URL}/api/auth/staff/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(handle),
     patientLogin: (body) => fetch(`${BASE_URL}/api/auth/patient/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(handle),
     changePassword: (body) => fetch(`${BASE_URL}/api/auth/change-password`, { method: 'POST', headers: headers(), body: JSON.stringify(body) }).then(handle),

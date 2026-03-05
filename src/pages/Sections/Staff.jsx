@@ -11,6 +11,8 @@ const ROLE_COLORS = {
     lab_staff:    { bg: 'rgba(245,158,11,0.15)',  text: '#fbbf24' },
     receptionist: { bg: 'rgba(139,92,246,0.15)',  text: '#a78bfa' },
 };
+// Add this near the top of Staff.jsx
+const DEPARTMENTS = ['Cardiology','Emergency','General','ICU','Laboratory','Maternity','Neurology','Oncology','Orthopedics','Pediatrics','Pharmacy','Radiology','Surgery'];
 const STATUS_COLORS = {
     active:   { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
     inactive: { bg: 'rgba(239,68,68,0.15)',  text: '#f87171' },

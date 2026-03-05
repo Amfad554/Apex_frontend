@@ -47,7 +47,7 @@ export default function SuperAdminDashboard() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/admin/hospitals', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -84,7 +84,7 @@ export default function SuperAdminDashboard() {
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/admin/hospitals/${id}/approve`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -112,7 +112,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/admin/hospitals/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -140,7 +140,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/admin/hospitals/${id}/suspend`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/suspend`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -164,7 +164,7 @@ export default function SuperAdminDashboard() {
   const handleReactivate = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/admin/hospitals/${id}/reactivate`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/reactivate`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

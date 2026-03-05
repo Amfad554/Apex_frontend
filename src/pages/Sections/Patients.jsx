@@ -7,19 +7,19 @@ const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#
 
 // ── Inline Toast ──────────────────────────────────────────────────────────────
 function Toast({ message, type = 'success', onClose }) {
-  useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
-  const colors = {
-    success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
-    error:   { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
-  };
-  const c = colors[type] || colors.success;
-  return (
-    <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 420, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
-      <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
-      <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
-    </div>
-  );
+    useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
+    const colors = {
+        success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
+        error: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+    };
+    const c = colors[type] || colors.success;
+    return (
+        <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 420, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
+            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
+        </div>
+    );
 }
 
 export default function Patients({ isDark, t, hospital }) {
@@ -191,7 +191,7 @@ export default function Patients({ isDark, t, hospital }) {
                                 <div><label style={labelStyle}>Email</label><input type="email" style={inputStyle} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="patient@email.com" /></div>
                                 <div><label style={labelStyle}>Blood Group</label>
                                     <select style={inputStyle} value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}>
-                                        
+                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => <option key={b}>{b}</option>)}
                                     </select>
                                 </div>
                                 <div><label style={labelStyle}>Medical Conditions</label><input style={inputStyle} value={form.medicalConditions} onChange={e => setForm({ ...form, medicalConditions: e.target.value })} placeholder="e.g. Hypertension, Diabetes" /></div>

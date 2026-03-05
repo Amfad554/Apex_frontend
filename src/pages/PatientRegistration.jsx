@@ -31,7 +31,7 @@ export default function PatientRegister() {
     setMessage({ type: "", text: "" });
 
     try {
-      await axios.post("http://localhost:5000/api/patients/register", formData);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/register`, formData);
       setMessage({ type: "success", text: "Registration successful! Redirecting to login..." });
       setTimeout(() => navigate("/patient-login"), 2000);
     } catch (err) {

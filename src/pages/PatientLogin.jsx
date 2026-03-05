@@ -21,6 +21,7 @@ const themes = {
     divider: 'rgba(255,255,255,0.07)',
     shadow: '0 24px 60px rgba(0,0,0,0.6)',
     hover: 'rgba(255,255,255,0.04)',
+
   },
   light: {
     bg: '#f0f4fb',
@@ -71,7 +72,7 @@ export default function PatientLogin() {
     setMessage({ type: "", text: "" });
 
     try {
-      const res = await axios.post("http://localhost:5000/api/patients/login", formData);
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/login`, formData);
       const data = res.data;
 
       localStorage.setItem("token", data.token || "no-token");
