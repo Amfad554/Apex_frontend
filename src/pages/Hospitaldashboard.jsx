@@ -294,7 +294,7 @@ export default function HospitalDashboard() {
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: t.bg, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", color: t.text, transition: 'background 0.3s' }}>
+    <div style={{ display: 'flex', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: t.bg, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", color: t.text, transition: 'background 0.3s' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -312,7 +312,7 @@ export default function HospitalDashboard() {
       {!isMobile && (
         <aside style={{
           width: sidebarOpen ? 240 : 66,
-          minHeight: '100vh',
+          height: '100dvh',
           background: t.sidebar,
           borderRight: `1px solid ${t.border}`,
           transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
@@ -349,7 +349,7 @@ export default function HospitalDashboard() {
       {/* ── Search Overlay (mobile) ───────────────────────────────────────── */}
       {isMobile && searchOpen && <SearchOverlay />}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
 
         {/* ── Top Bar ──────────────────────────────────────────────────────── */}
         <header style={{
@@ -448,9 +448,9 @@ export default function HospitalDashboard() {
 
         {/* ── Main Content ─────────────────────────────────────────────────── */}
         <main style={{
-          flex: 1, overflowY: 'auto',
+          flex: 1, overflowY: 'auto', overflowX: 'hidden',
           padding: isMobile ? '14px 12px 80px' : '24px',
-          // Extra bottom padding on mobile accounts for the bottom nav
+          height: 0, // forces flex child to respect parent height and scroll internally
         }}>
           {renderSection()}
         </main>
