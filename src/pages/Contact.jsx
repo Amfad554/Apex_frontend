@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from 'lucide-react';
-import Toast from '../components/Toast';
+import Toast from '../Components/Toast';
+
 
 
 export default function Contact() {
