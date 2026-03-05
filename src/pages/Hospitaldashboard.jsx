@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
 
-import Patients from './sections/Patients.jsx';
+import Patients from './Sections/Patients.jsx';
 import Appointments from './sections/Appointments.jsx';
 import Staff from './sections/Staff.jsx';
 import Pharmacy from './sections/Pharmacy.jsx';
