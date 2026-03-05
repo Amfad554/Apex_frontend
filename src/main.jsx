@@ -59,11 +59,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, 
+    element: <App />,
     children: [
       {
         path: "/",
-        element: <Layout />, 
+        element: <Layout />,
         children: [
           { index: true, element: <Home /> },
 
@@ -78,7 +78,8 @@ const router = createBrowserRouter([
           { path: "security", element: <Security /> },
           { path: "pricing", element: <Pricing /> },
           { path: "stafflogin", element: <StaffLogin /> },
-          { path: "unauthorized", element: (
+          {
+            path: "unauthorized", element: (
               <div className="flex items-center justify-center min-h-[60vh] text-white">
                 <div className="text-center p-10 bg-red-900/20 rounded-lg border border-red-500 backdrop-blur-sm">
                   <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
@@ -88,32 +89,26 @@ const router = createBrowserRouter([
             )
           },
 
-          // ==========================================
-          // PROTECTED HOSPITAL ADMIN ROUTES (NEW SECTION)
-          // ==========================================
+          // Hospital Admin - no protection
           {
-            element: <ProtectedRoute allowedRoles={['hospital_admin']} />,
+            element: <Outlet />,
             children: [
               { path: "hospitaldashboard", element: <HospitalDashboard /> },
               { path: "patientmanagement", element: <PatientManagement /> },
             ],
           },
 
-          // ==========================================
-          // PROTECTED SUPER ADMIN ROUTES
-          // ==========================================
+          // Super Admin - no protection
           {
-            element: <ProtectedRoute allowedRoles={['super_admin']} />,
+            element: <Outlet />,
             children: [
               { path: "superadmindashboard", element: <SuperAdminDashboard /> },
             ],
           },
 
-          // ==========================================
-          // PROTECTED PATIENT ROUTES
-          // ==========================================
+          // Patient - no protection
           {
-            element: <ProtectedRoute allowedRoles={['patient']} />,
+            element: <Outlet />,
             children: [
               {
                 path: "patientdashboard",
