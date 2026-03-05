@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { ButtonSpinner } from '../components/LoadingSpinner';
+import { ButtonSpinner } from '../Components/LoadingSpinner';
 
 
 
