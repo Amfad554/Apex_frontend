@@ -1,20 +1,19 @@
-// ─── Staff.jsx ───────────────────────────────────────────────────────────────
 import { useState, useEffect } from 'react';
 import { UserPlus, Search, X, Mail, Phone, Trash2, Eye, Loader, AlertCircle } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { staffAPI } from '../../Services/api.js';
 
 const ROLE_COLORS = {
-    doctor:       { bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa' },
-    nurse:        { bg: 'rgba(16,185,129,0.15)',  text: '#34d399' },
-    pharmacist:   { bg: 'rgba(236,72,153,0.15)',  text: '#f472b6' },
-    lab_staff:    { bg: 'rgba(245,158,11,0.15)',  text: '#fbbf24' },
-    receptionist: { bg: 'rgba(139,92,246,0.15)',  text: '#a78bfa' },
+    doctor: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa' },
+    nurse: { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
+    pharmacist: { bg: 'rgba(236,72,153,0.15)', text: '#f472b6' },
+    lab_staff: { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24' },
+    receptionist: { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa' },
 };
-const DEPARTMENTS = ['Cardiology','Emergency','General','ICU','Laboratory','Maternity','Neurology','Oncology','Orthopedics','Pediatrics','Pharmacy','Radiology','Surgery'];
+const DEPARTMENTS = ['Cardiology', 'Emergency', 'General', 'ICU', 'Laboratory', 'Maternity', 'Neurology', 'Oncology', 'Orthopedics', 'Pediatrics', 'Pharmacy', 'Radiology', 'Surgery'];
 const STATUS_COLORS = {
-    active:   { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
-    inactive: { bg: 'rgba(239,68,68,0.15)',  text: '#f87171' },
+    active: { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
+    inactive: { bg: 'rgba(239,68,68,0.15)', text: '#f87171' },
 };
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 
@@ -22,7 +21,7 @@ function Toast({ message, type = 'success', onClose }) {
     useEffect(() => { const id = setTimeout(onClose, 5000); return () => clearTimeout(id); }, []);
     const colors = {
         success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
-        error:   { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+        error: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
     };
     const c = colors[type] || colors.success;
     return (
@@ -55,6 +54,11 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
         overflowY: 'auto', padding: isMobile ? '12px' : '40px 20px',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
     };
+    const modalBox = (maxW = 520) => ({
+        background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
+        border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+        flexShrink: 0, marginTop: isMobile ? 16 : 40,
+    });
 
     const loadStaff = async () => {
         if (!hospitalId) return;
@@ -173,7 +177,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
             {/* Add Staff Modal */}
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={modalOverlay}>
-                    <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+                    <div style={modalBox(520)}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Staff Member</h2>
@@ -216,7 +220,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
             {/* View Staff Modal */}
             {viewStaff && (
                 <div onClick={e => e.target === e.currentTarget && setViewStaff(null)} style={modalOverlay}>
-                    <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 420, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+                    <div style={modalBox(420)}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>{viewStaff.fullName}</h2>
                             <button onClick={() => setViewStaff(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>

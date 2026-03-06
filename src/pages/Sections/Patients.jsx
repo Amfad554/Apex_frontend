@@ -82,7 +82,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
     const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' };
     const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
-    // Modal overlay style — consistent across all modals
     const modalOverlay = {
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
         overflowY: 'auto', padding: isMobile ? '12px' : '40px 20px',
@@ -91,7 +90,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
     const modalBox = (maxW = 560) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
         border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-        flexShrink: 0,
+        flexShrink: 0, marginTop: isMobile ? 16 : 40,
     });
 
     return (
@@ -115,7 +114,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={14} /></button>}
             </div>
 
-            {/* Mobile: card list; Desktop: table */}
             {isMobile ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {loading ? (

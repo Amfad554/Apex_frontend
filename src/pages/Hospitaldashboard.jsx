@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Home, Users, Calendar, Stethoscope, Pill, FileText,
@@ -25,27 +25,52 @@ const NAV_ITEMS = [
   { id: 'settings',     icon: Settings,    label: 'Settings' },
 ];
 
-// Bottom nav shows first 4 items + "More" drawer
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
 const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
 
+/* ─── Animated nav item indicator ─────────────────────────────────────────── */
+function ActivePill({ isDark }) {
+  return (
+    <span style={{
+      display: 'inline-block',
+      width: 6, height: 6,
+      borderRadius: '50%',
+      background: BLUE,
+      flexShrink: 0,
+      animation: 'pulsePip 2s ease-in-out infinite',
+    }} />
+  );
+}
+
 export default function HospitalDashboard() {
-  const navigate = useNavigate();
-  const [isDark, setIsDark]           = useState(() => localStorage.getItem('theme') === 'dark');
-  const [activeSection, setActive]    = useState('dashboard');
-  const [sidebarOpen, setSidebar]     = useState(true);
-  const [mobileSidebar, setMobile]    = useState(false);
-  const [moreDrawer, setMoreDrawer]   = useState(false);
-  const [hospital, setHospital]       = useState(null);
-  const [searchQuery, setSearch]      = useState('');
-  const [searchOpen, setSearchOpen]   = useState(false);
-  const [notifications]               = useState(3);
-  const [isMobile, setIsMobile]       = useState(false);
-  const [isTablet, setIsTablet]       = useState(false);
+  const navigate    = useNavigate();
+  const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeSection, setActive]  = useState('dashboard');
+  const [prevSection, setPrev]      = useState(null);
+  const [transitioning, setTrans]   = useState(false);
+  const [sidebarOpen, setSidebar]   = useState(true);
+  const [mobileSidebar, setMobile]  = useState(false);
+  const [moreDrawer, setMoreDrawer] = useState(false);
+  const [hospital, setHospital]     = useState(null);
+  const [searchQuery, setSearch]    = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notifications]             = useState(3);
+  const [isMobile, setIsMobile]     = useState(false);
+  const [isTablet, setIsTablet]     = useState(false);
+  const [headerIn, setHeaderIn]     = useState(false);
+  const [navMounted, setNavMounted] = useState(false);
 
   const t = isDark ? themes.dark : themes.light;
 
-  // ── Responsive breakpoints ──────────────────────────────────────────────────
+  // ── Mount entrance ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => setHeaderIn(true), 50);
+      setTimeout(() => setNavMounted(true), 150);
+    });
+  }, []);
+
+  // ── Responsive breakpoints ───────────────────────────────────────────────────
   useEffect(() => {
     const check = () => {
       const w = window.innerWidth;
@@ -54,7 +79,7 @@ export default function HospitalDashboard() {
       setIsMobile(mobile);
       setIsTablet(tablet);
       if (mobile) setSidebar(false);
-      else if (tablet) setSidebar(false); // collapsed icon-only sidebar on tablet
+      else if (tablet) setSidebar(false);
     };
     check();
     window.addEventListener('resize', check);
@@ -68,9 +93,15 @@ export default function HospitalDashboard() {
     setHospital(user);
   }, []);
 
-  // ── Close drawers on section change ─────────────────────────────────────────
+  // ── Animated section navigation ─────────────────────────────────────────────
   const navigate_to = (id) => {
-    setActive(id);
+    if (id === activeSection) return;
+    setTrans(true);
+    setPrev(activeSection);
+    setTimeout(() => {
+      setActive(id);
+      setTrans(false);
+    }, 180);
     setMobile(false);
     setMoreDrawer(false);
   };
@@ -105,24 +136,28 @@ export default function HospitalDashboard() {
     }
   };
 
-  // ── Sidebar (shared between desktop collapsed/expanded + mobile overlay) ────
+  // ── Sidebar content ──────────────────────────────────────────────────────────
   const SidebarContent = ({ forceFull = false }) => {
     const showLabels = forceFull || sidebarOpen;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* Logo row */}
+        {/* Logo */}
         <div style={{
           padding: '18px 14px',
           display: 'flex', alignItems: 'center',
           justifyContent: showLabels ? 'space-between' : 'center',
           borderBottom: `1px solid ${t.border}`,
           gap: 10, flexShrink: 0,
+          opacity: headerIn ? 1 : 0,
+          transform: headerIn ? 'translateY(0)' : 'translateY(-8px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10, flexShrink: 0,
               background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              animation: 'logoSpin 0.6s cubic-bezier(0.34,1.56,0.64,1) both 0.2s',
             }}>
               <Activity size={18} color="#fff" />
             </div>
@@ -133,15 +168,18 @@ export default function HospitalDashboard() {
             )}
           </div>
           {forceFull && (
-            <button onClick={() => setMobile(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8 }}>
+            <button onClick={() => setMobile(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8, transition: 'transform 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'rotate(90deg)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg)'}
+            >
               <X size={18} />
             </button>
           )}
         </div>
 
-        {/* Nav items */}
+        {/* Nav items — staggered entrance */}
         <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-          {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+          {NAV_ITEMS.map(({ id, icon: Icon, label }, idx) => {
             const isActive = activeSection === id;
             return (
               <button
@@ -158,26 +196,45 @@ export default function HospitalDashboard() {
                     ? (isDark ? 'rgba(59,91,219,0.22)' : 'rgba(59,91,219,0.11)')
                     : 'transparent',
                   color: isActive ? '#60a5fa' : t.textSub,
-                  transition: 'all 0.15s',
                   fontWeight: isActive ? 600 : 400, fontSize: 14,
                   width: '100%', textAlign: 'left', fontFamily: 'inherit',
                   minHeight: 44,
+                  // staggered slide-in
+                  opacity: navMounted ? 1 : 0,
+                  transform: navMounted ? 'translateX(0)' : 'translateX(-14px)',
+                  transition: `opacity 0.35s ease ${idx * 0.045}s, transform 0.35s cubic-bezier(0.34,1.2,0.64,1) ${idx * 0.045}s, background 0.15s, color 0.15s`,
                 }}
-                onMouseEnter={e => !isActive && (e.currentTarget.style.background = t.hover)}
-                onMouseLeave={e => !isActive && (e.currentTarget.style.background = 'transparent')}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = t.hover;
+                    e.currentTarget.style.paddingLeft = showLabels ? '16px' : undefined;
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.paddingLeft = showLabels ? '12px' : undefined;
+                  }
+                }}
               >
-                <Icon size={18} style={{ flexShrink: 0 }} />
+                <Icon size={18} style={{
+                  flexShrink: 0,
+                  transition: 'transform 0.2s ease',
+                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                }} />
                 {showLabels && <span style={{ flex: 1 }}>{label}</span>}
-                {showLabels && isActive && (
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: BLUE, flexShrink: 0 }} />
-                )}
+                {showLabels && isActive && <ActivePill isDark={isDark} />}
               </button>
             );
           })}
         </nav>
 
         {/* Logout */}
-        <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0 }}>
+        <div style={{
+          padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0,
+          opacity: navMounted ? 1 : 0,
+          transition: 'opacity 0.4s ease 0.4s',
+        }}>
           <button
             onClick={handleLogout}
             title={!showLabels ? 'Logout' : undefined}
@@ -189,9 +246,10 @@ export default function HospitalDashboard() {
               borderRadius: 10, cursor: 'pointer', color: ACCENT.red,
               fontSize: 14, fontWeight: 500, background: 'none',
               border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44,
+              transition: 'background 0.15s, transform 0.15s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.transform = 'translateX(3px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'translateX(0)'; }}
           >
             <LogOut size={18} style={{ flexShrink: 0 }} />
             {showLabels && <span>Logout</span>}
@@ -201,13 +259,10 @@ export default function HospitalDashboard() {
     );
   };
 
-  // ── "More" bottom-sheet (mobile) ─────────────────────────────────────────────
+  // ── More bottom-sheet ────────────────────────────────────────────────────────
   const MoreDrawer = () => (
     <>
-      <div
-        onClick={() => setMoreDrawer(false)}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300, backdropFilter: 'blur(2px)' }}
-      />
+      <div onClick={() => setMoreDrawer(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300, backdropFilter: 'blur(2px)', animation: 'fadeIn 0.2s ease' }} />
       <div style={{
         position: 'fixed', left: 0, right: 0, bottom: 0,
         background: t.sidebar, zIndex: 301,
@@ -216,44 +271,40 @@ export default function HospitalDashboard() {
         boxShadow: '0 -8px 40px rgba(0,0,0,0.25)',
         animation: 'slideUp 0.22s ease',
       }}>
-        {/* Handle */}
         <div style={{ width: 40, height: 4, borderRadius: 2, background: t.border, margin: '8px auto 16px' }} />
         <p style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>More</p>
-        {MORE_NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+        {MORE_NAV_ITEMS.map(({ id, icon: Icon, label }, idx) => {
           const isActive = activeSection === id;
           return (
-            <button
-              key={id}
-              onClick={() => navigate_to(id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '13px 12px', borderRadius: 12,
-                border: 'none', cursor: 'pointer', width: '100%',
-                background: isActive ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
-                color: isActive ? '#60a5fa' : t.text,
-                fontFamily: 'inherit', fontSize: 15, fontWeight: isActive ? 600 : 400,
-                textAlign: 'left', minHeight: 52,
-              }}
-            >
-              <Icon size={20} />
-              <span>{label}</span>
-              {isActive && <div style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: BLUE }} />}
-            </button>
-          );
-        })}
-
-        {/* Logout in more drawer */}
-        <div style={{ marginTop: 8, borderTop: `1px solid ${t.border}`, paddingTop: 8 }}>
-          <button
-            onClick={handleLogout}
-            style={{
+            <button key={id} onClick={() => navigate_to(id)} style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '13px 12px', borderRadius: 12,
               border: 'none', cursor: 'pointer', width: '100%',
-              background: 'transparent', color: ACCENT.red,
-              fontFamily: 'inherit', fontSize: 15, fontWeight: 500,
+              background: isActive ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
+              color: isActive ? '#60a5fa' : t.text,
+              fontFamily: 'inherit', fontSize: 15, fontWeight: isActive ? 600 : 400,
               textAlign: 'left', minHeight: 52,
-            }}
+              opacity: 0,
+              animation: `slideInRow 0.25s ease forwards ${idx * 0.06}s`,
+            }}>
+              <Icon size={20} />
+              <span>{label}</span>
+              {isActive && <div style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: BLUE, animation: 'pulsePip 2s ease-in-out infinite' }} />}
+            </button>
+          );
+        })}
+        <div style={{ marginTop: 8, borderTop: `1px solid ${t.border}`, paddingTop: 8 }}>
+          <button onClick={handleLogout} style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '13px 12px', borderRadius: 12,
+            border: 'none', cursor: 'pointer', width: '100%',
+            background: 'transparent', color: ACCENT.red,
+            fontFamily: 'inherit', fontSize: 15, fontWeight: 500,
+            textAlign: 'left', minHeight: 52,
+            transition: 'background 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <LogOut size={20} />
             <span>Logout</span>
@@ -301,14 +352,50 @@ export default function HospitalDashboard() {
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.25); border-radius: 10px; }
+
         @keyframes slideUp   { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
-        /* iOS safe-area for bottom nav */
+        @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes slideInRow { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* logo spin on mount */
+        @keyframes logoSpin {
+          from { transform: rotate(-180deg) scale(0.5); opacity: 0; }
+          to   { transform: rotate(0deg) scale(1); opacity: 1; }
+        }
+        /* active pip pulse */
+        @keyframes pulsePip {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(59,91,219,0.5); transform: scale(1); }
+          50%       { box-shadow: 0 0 0 4px rgba(59,91,219,0); transform: scale(1.3); }
+        }
+        /* section transitions */
+        @keyframes sectionIn  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes sectionOut { from { opacity: 1; transform: translateY(0);    } to { opacity: 0; transform: translateY(-6px); } }
+
+        /* bottom nav tap ripple */
+        @keyframes tapScale {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(0.88); }
+          100% { transform: scale(1); }
+        }
+
+        /* header slide down */
+        @keyframes headerSlide {
+          from { opacity: 0; transform: translateY(-100%); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
         .bottom-nav { padding-bottom: max(12px, env(safe-area-inset-bottom)) !important; }
+
+        /* notification badge pulse */
+        @keyframes badgePulse {
+          0%, 100% { transform: scale(1); }
+          50%       { transform: scale(1.4); }
+        }
       `}</style>
 
-      {/* ── Desktop Sidebar ───────────────────────────────────────────────── */}
+      {/* ── Desktop Sidebar ─────────────────────────────────────────────────── */}
       {!isMobile && (
         <aside style={{
           width: sidebarOpen ? 240 : 66,
@@ -326,7 +413,7 @@ export default function HospitalDashboard() {
         </aside>
       )}
 
-      {/* ── Mobile Sidebar Overlay ────────────────────────────────────────── */}
+      {/* ── Mobile Sidebar Overlay ───────────────────────────────────────────── */}
       {isMobile && mobileSidebar && (
         <>
           <div onClick={() => setMobile(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, backdropFilter: 'blur(3px)', animation: 'fadeIn 0.2s ease' }} />
@@ -337,21 +424,20 @@ export default function HospitalDashboard() {
             boxShadow: '6px 0 32px rgba(0,0,0,0.3)',
             animation: 'slideRight 0.24s ease',
           }}>
-            <style>{`@keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }`}</style>
             <SidebarContent forceFull />
           </aside>
         </>
       )}
 
-      {/* ── More Drawer (mobile) ──────────────────────────────────────────── */}
+      {/* ── More Drawer ─────────────────────────────────────────────────────── */}
       {isMobile && moreDrawer && <MoreDrawer />}
 
-      {/* ── Search Overlay (mobile) ───────────────────────────────────────── */}
+      {/* ── Search Overlay ──────────────────────────────────────────────────── */}
       {isMobile && searchOpen && <SearchOverlay />}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
 
-        {/* ── Top Bar ──────────────────────────────────────────────────────── */}
+        {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
         <header style={{
           height: isMobile ? 56 : 64,
           display: 'flex', alignItems: 'center',
@@ -361,27 +447,36 @@ export default function HospitalDashboard() {
           borderBottom: `1px solid ${t.border}`,
           position: 'sticky', top: 0, zIndex: 50,
           gap: 8, flexShrink: 0,
+          animation: 'headerSlide 0.35s cubic-bezier(0.34,1.2,0.64,1) both 0.05s',
         }}>
-          {/* Left side */}
+          {/* Left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 10, minWidth: 0 }}>
             <button
               onClick={() => isMobile ? setMobile(true) : setSidebar(!sidebarOpen)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, flexShrink: 0, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', color: t.textSub,
+                display: 'flex', padding: 6, borderRadius: 8, flexShrink: 0,
+                minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.15s, transform 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = t.hover; e.currentTarget.style.transform = 'scale(1.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.transform = 'scale(1)'; }}
               aria-label="Toggle menu"
             >
               <Menu size={20} />
             </button>
 
-            {/* Mobile: show brand */}
             {isMobile && (
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, whiteSpace: 'nowrap' }}>
                 HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
               </span>
             )}
 
-            {/* Desktop: inline search */}
             {!isMobile && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, transition: 'border-color 0.2s, box-shadow 0.2s' }}
+                onFocusCapture={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,91,219,0.15)`; }}
+                onBlurCapture={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = 'none'; }}
+              >
                 <Search size={14} color={t.textMuted} />
                 <input
                   placeholder="Search patients, staff..."
@@ -393,44 +488,59 @@ export default function HospitalDashboard() {
             )}
           </div>
 
-          {/* Right side */}
+          {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
-            {/* Mobile search icon */}
             {isMobile && (
-              <button
-                onClick={() => setSearchOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}
+              <button onClick={() => setSearchOpen(true)} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 aria-label="Search"
               >
                 <Search size={16} />
               </button>
             )}
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}
+            <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.3s, background 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'rotate(20deg) scale(1.08)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg) scale(1)'}
               aria-label="Toggle theme"
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            {/* Notifications */}
             <div style={{ position: 'relative' }}>
-              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>
+              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
                 <Bell size={16} />
               </button>
               {notifications > 0 && (
-                <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: ACCENT.red, border: `2px solid ${t.sidebar}` }} />
+                <div style={{
+                  position: 'absolute', top: 6, right: 6,
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: ACCENT.red, border: `2px solid ${t.sidebar}`,
+                  animation: 'badgePulse 2s ease-in-out infinite',
+                }} />
               )}
             </div>
 
-            {/* Avatar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 4px', borderRadius: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg, ${BLUE}, #8b5cf6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 13, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 4px', borderRadius: 10, transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = t.hover}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{
+                width: 32, height: 32, borderRadius: 9,
+                background: `linear-gradient(135deg, ${BLUE}, #8b5cf6)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, color: '#fff', fontSize: 13, flexShrink: 0,
+                transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+              }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.12) rotate(-6deg)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
+              >
                 {hospital?.name?.charAt(0)?.toUpperCase() || 'H'}
               </div>
-              {/* Show name only on desktop */}
               {!isMobile && (
                 <>
                   <div style={{ minWidth: 0 }}>
@@ -446,16 +556,20 @@ export default function HospitalDashboard() {
           </div>
         </header>
 
-        {/* ── Main Content ─────────────────────────────────────────────────── */}
+        {/* ── Main Content ───────────────────────────────────────────────────── */}
         <main style={{
           flex: 1, overflowY: 'auto', overflowX: 'hidden',
           padding: isMobile ? '14px 12px 80px' : '24px',
-          height: 0, // forces flex child to respect parent height and scroll internally
+          height: 0,
         }}>
-          {renderSection()}
+          <div style={{
+            animation: transitioning ? 'sectionOut 0.18s ease forwards' : 'sectionIn 0.3s ease both',
+          }}>
+            {renderSection()}
+          </div>
         </main>
 
-        {/* ── Mobile Bottom Navigation ──────────────────────────────────────── */}
+        {/* ── Mobile Bottom Navigation ───────────────────────────────────────── */}
         {isMobile && (
           <nav
             className="bottom-nav"
@@ -465,9 +579,9 @@ export default function HospitalDashboard() {
               borderTop: `1px solid ${t.border}`,
               display: 'flex', alignItems: 'center',
               justifyContent: 'space-around',
-              paddingTop: 8,
-              zIndex: 100,
+              paddingTop: 8, zIndex: 100,
               boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+              animation: 'slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both 0.2s',
             }}
           >
             {BOTTOM_NAV_ITEMS.map(({ id, icon: Icon, label }) => {
@@ -483,15 +597,16 @@ export default function HospitalDashboard() {
                     background: isActive ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
                     color: isActive ? '#60a5fa' : t.textMuted,
                     fontFamily: 'inherit', minWidth: 56, flex: 1,
-                    transition: 'all 0.15s',
+                    transition: 'color 0.2s, background 0.2s',
                   }}
+                  onMouseDown={e => { e.currentTarget.style.animation = 'tapScale 0.25s ease'; }}
+                  onAnimationEnd={e => { e.currentTarget.style.animation = ''; }}
                 >
-                  <Icon size={21} />
+                  <Icon size={21} style={{ transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)', transform: isActive ? 'scale(1.2)' : 'scale(1)' }} />
                   <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400, letterSpacing: '0.01em' }}>{label}</span>
                 </button>
               );
             })}
-            {/* "More" button opens bottom sheet */}
             <button
               onClick={() => setMoreDrawer(true)}
               style={{
@@ -503,7 +618,10 @@ export default function HospitalDashboard() {
                   : 'transparent',
                 color: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? '#60a5fa' : t.textMuted,
                 fontFamily: 'inherit', minWidth: 56, flex: 1,
+                transition: 'color 0.2s',
               }}
+              onMouseDown={e => { e.currentTarget.style.animation = 'tapScale 0.25s ease'; }}
+              onAnimationEnd={e => { e.currentTarget.style.animation = ''; }}
             >
               <MoreHorizontal size={21} />
               <span style={{ fontSize: 10, fontWeight: 400 }}>More</span>

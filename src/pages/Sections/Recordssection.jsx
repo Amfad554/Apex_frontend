@@ -53,6 +53,11 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
     overflowY: 'auto', padding: isMobile ? '12px' : '40px 20px',
     display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
   };
+  const modalBox = (maxW = 500) => ({
+    background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
+    border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+    flexShrink: 0, marginTop: isMobile ? 16 : 40,
+  });
 
   const load = async () => {
     if (!hospitalId) return;
@@ -185,7 +190,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
       {/* Add Record Modal */}
       {showAdd && (
         <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={modalOverlay}>
-          <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+          <div style={modalBox(500)}>
             <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Medical Record</h2>
@@ -247,7 +252,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
       {/* View Record Modal */}
       {viewRec && (
         <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={modalOverlay}>
-          <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+          <div style={modalBox(440)}>
             <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontWeight: 700, fontSize: 15 }}>{viewRec.title}</h2>
               <button onClick={() => setViewRec(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>

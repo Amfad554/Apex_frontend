@@ -278,7 +278,11 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
       {/* Add Prescription Modal */}
       {showAdd && (
         <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={modalOverlay}>
-          <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+          <div style={{
+            background: t.card, borderRadius: 20, width: '100%', maxWidth: 500,
+            border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+            flexShrink: 0, marginTop: isMobile ? 16 : 40,
+          }}>
             <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Prescription</h2>
