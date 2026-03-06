@@ -23,19 +23,6 @@ const API = {
 /* ─────────────────────────────────────────────────────────────────────────────
    AUTH CHECK — returns true if the stored JWT belongs to a valid hospital
 ───────────────────────────────────────────────────────────────────────────── */
-async function isHospitalLoggedIn() {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-    try {
-        const res = await fetch(API.me, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return res.ok;
-    } catch {
-        return false;
-    }
-}
-
 /* Fallback stats shown when API is unavailable */
 const FALLBACK_STATS = {
     patients: 50000,
@@ -106,11 +93,6 @@ export default function Home() {
     const navigate = useNavigate();
 
     /* ── Auth redirect: if already logged in, go straight to dashboard ── */
-    useEffect(() => {
-        isHospitalLoggedIn().then(loggedIn => {
-            if (loggedIn) navigate('/hospital/dashboard', { replace: true });
-        });
-    }, []);
 
     /* ── Stats ── */
     const [statTarget, setStatTarget] = useState(FALLBACK_STATS);
