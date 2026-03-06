@@ -20,7 +20,8 @@ function Toast({ message, type = 'success', onClose }) {
   const c = colors[type] || colors.success;
   return (
     <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 'calc(100vw - 40px)', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
-      <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+      <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes btnPress { 0% { transform: scale(1); } 50% { transform: scale(0.94); } 100% { transform: scale(1); } }`}</style>
       <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
       <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
     </div>
@@ -120,7 +121,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
           <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Medical Records</h1>
           <p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records on file</p>
         </div>
-        <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '9px 14px' : '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)', flexShrink: 0 }}>
+        <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '9px 14px' : '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)', flexShrink: 0, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px) scale(1.03)';e.currentTarget.style.boxShadow='0 8px 24px rgba(59,91,219,0.55)';}} onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='0 4px 16px rgba(59,91,219,0.35)';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.95)'} onMouseUp={e=>{e.currentTarget.style.transform='translateY(-2px) scale(1.03)';}}>
           <Plus size={16} /> {isMobile ? 'Add' : 'Add Record'}
         </button>
       </div>
@@ -134,7 +135,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
         </div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
           {['All', ...Object.keys(TYPE_COLORS)].map(s => (
-            <button key={s} onClick={() => setFilter(s)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filter === s ? BLUE : t.border}`, background: filter === s ? 'rgba(59,91,219,0.15)' : t.card, color: filter === s ? '#60a5fa' : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <button key={s} onClick={() => setFilter(s)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filter === s ? BLUE : t.border}`, background: filter === s ? 'rgba(59,91,219,0.15)' : t.card, color: filter === s ? '#60a5fa' : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s ease' }} onMouseEnter={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseLeave={e=>e.currentTarget.style.transform=''} onMouseDown={e=>e.currentTarget.style.transform='scale(0.93)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.05)'}>
               {s === 'All' ? 'All' : TYPE_COLORS[s]?.label}
             </button>
           ))}
@@ -164,8 +165,8 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                   <span style={{ background: tc.bg, color: tc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 8 }}>{tc.label}</span>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', color: ACCENT.blue, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} /></button>
-                    <button onClick={() => handleDelete(r.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ACCENT.red, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>
+                    <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', color: ACCENT.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(59,130,246,0.22)';e.currentTarget.style.transform='scale(1.12)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(59,130,246,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.12)'}><Eye size={13} /></button>
+                    <button onClick={() => handleDelete(r.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ACCENT.red, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.12)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.08)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.12)'}><Trash2 size={13} /></button>
                   </div>
                 </div>
                 <h3 style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{r.title}</h3>
@@ -196,7 +197,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Medical Record</h2>
                 <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Create a new patient medical record</p>
               </div>
-              <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>
+              <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1) rotate(90deg)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1) rotate(90deg)'}><X size={16} /></button>
             </div>
             <form onSubmit={handleAdd} style={{ padding: '20px' }}>
               {formError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
@@ -239,8 +240,8 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-                <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>
+                <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'all 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.background=t.hover;e.currentTarget.style.transform='scale(1.02)';}} onMouseLeave={e=>{e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.97)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.02)'}>Cancel</button>
+                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }} onMouseEnter={e=>{ if(!e.currentTarget.disabled){e.currentTarget.style.transform='translateY(-1px) scale(1.02)';e.currentTarget.style.boxShadow='0 6px 20px rgba(59,91,219,0.45)';} }} onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.97)'} onMouseUp={e=>e.currentTarget.style.transform='translateY(-1px) scale(1.02)'}>
                   {submitting ? 'Saving...' : 'Save Record'}
                 </button>
               </div>
@@ -255,7 +256,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
           <div style={modalBox(440)}>
             <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontWeight: 700, fontSize: 15 }}>{viewRec.title}</h2>
-              <button onClick={() => setViewRec(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>
+              <button onClick={() => setViewRec(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1) rotate(90deg)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1) rotate(90deg)'}><X size={16} /></button>
             </div>
             <div style={{ padding: 20 }}>
               {(() => { const tc = TYPE_COLORS[viewRec.recordType] || TYPE_COLORS.other; return <span style={{ background: tc.bg, color: tc.text, fontSize: 12, fontWeight: 600, padding: '5px 12px', borderRadius: 8, display: 'inline-block', marginBottom: 14 }}>{tc.label}</span>; })()}

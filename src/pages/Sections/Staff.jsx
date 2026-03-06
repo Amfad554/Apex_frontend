@@ -4,16 +4,16 @@ import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { staffAPI } from '../../Services/api.js';
 
 const ROLE_COLORS = {
-    doctor: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa' },
-    nurse: { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
-    pharmacist: { bg: 'rgba(236,72,153,0.15)', text: '#f472b6' },
-    lab_staff: { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24' },
-    receptionist: { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa' },
+    doctor:       { bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa' },
+    nurse:        { bg: 'rgba(16,185,129,0.15)',  text: '#34d399' },
+    pharmacist:   { bg: 'rgba(236,72,153,0.15)',  text: '#f472b6' },
+    lab_staff:    { bg: 'rgba(245,158,11,0.15)',  text: '#fbbf24' },
+    receptionist: { bg: 'rgba(139,92,246,0.15)',  text: '#a78bfa' },
 };
-const DEPARTMENTS = ['Cardiology', 'Emergency', 'General', 'ICU', 'Laboratory', 'Maternity', 'Neurology', 'Oncology', 'Orthopedics', 'Pediatrics', 'Pharmacy', 'Radiology', 'Surgery'];
+const DEPARTMENTS = ['Cardiology','Emergency','General','ICU','Laboratory','Maternity','Neurology','Oncology','Orthopedics','Pediatrics','Pharmacy','Radiology','Surgery'];
 const STATUS_COLORS = {
-    active: { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
-    inactive: { bg: 'rgba(239,68,68,0.15)', text: '#f87171' },
+    active:   { bg: 'rgba(16,185,129,0.15)', text: '#34d399' },
+    inactive: { bg: 'rgba(239,68,68,0.15)',  text: '#f87171' },
 };
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 
@@ -21,12 +21,13 @@ function Toast({ message, type = 'success', onClose }) {
     useEffect(() => { const id = setTimeout(onClose, 5000); return () => clearTimeout(id); }, []);
     const colors = {
         success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
-        error: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+        error:   { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
     };
     const c = colors[type] || colors.success;
     return (
         <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 'calc(100vw - 40px)', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
-            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes btnPress { 0% { transform: scale(1); } 50% { transform: scale(0.94); } 100% { transform: scale(1); } }`}</style>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
         </div>
@@ -111,7 +112,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                     <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Staff Management</h1>
                     <p style={{ color: t.textSub, fontSize: 13 }}>{staff.length} staff members</p>
                 </div>
-                <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '9px 14px' : '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)', flexShrink: 0 }}>
+                <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: isMobile ? '9px 14px' : '10px 20px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(59,91,219,0.35)', flexShrink: 0, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px) scale(1.03)';e.currentTarget.style.boxShadow='0 8px 24px rgba(59,91,219,0.55)';}} onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='0 4px 16px rgba(59,91,219,0.35)';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.95)'} onMouseUp={e=>{e.currentTarget.style.transform='translateY(-2px) scale(1.03)';}}>
                     <UserPlus size={16} /> {isMobile ? 'Add' : 'Add Staff'}
                 </button>
             </div>
@@ -123,7 +124,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {['All', 'Doctor', 'Nurse', 'Pharmacist', 'Lab_staff', 'Receptionist'].map(r => (
-                        <button key={r} onClick={() => setFilter(r)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filterRole === r ? BLUE : t.border}`, background: filterRole === r ? 'rgba(59,91,219,0.15)' : t.card, color: filterRole === r ? '#60a5fa' : t.textSub, fontWeight: filterRole === r ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>{r}</button>
+                        <button key={r} onClick={() => setFilter(r)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filterRole === r ? BLUE : t.border}`, background: filterRole === r ? 'rgba(59,91,219,0.15)' : t.card, color: filterRole === r ? '#60a5fa' : t.textSub, fontWeight: filterRole === r ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'all 0.15s ease' }} onMouseEnter={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseLeave={e=>e.currentTarget.style.transform=''} onMouseDown={e=>e.currentTarget.style.transform='scale(0.93)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.05)'}>{r}</button>
                     ))}
                 </div>
             </div>
@@ -165,8 +166,8 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                     {s.phone && <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: t.textSub }}><Phone size={12} color={t.textMuted} />{s.phone}</div>}
                                 </div>
                                 <div style={{ display: 'flex', gap: 8 }}>
-                                    <button onClick={() => setViewStaff(s)} style={{ flex: 1, padding: '8px', background: 'rgba(59,130,246,0.1)', border: 'none', borderRadius: 8, color: ACCENT.blue, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Eye size={13} /> View</button>
-                                    <button onClick={() => handleDelete(s.id)} style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 8, color: ACCENT.red, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>
+                                    <button onClick={() => setViewStaff(s)} style={{ flex: 1, padding: '8px', background: 'rgba(59,130,246,0.1)', border: 'none', borderRadius: 8, color: ACCENT.blue, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, transition: 'all 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(59,130,246,0.22)';e.currentTarget.style.transform='scale(1.03)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(59,130,246,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.95)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.03)'}><Eye size={13} /> View</button>
+                                    <button onClick={() => handleDelete(s.id)} style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 8, color: ACCENT.red, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.08)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1)'}><Trash2 size={13} /></button>
                                 </div>
                             </div>
                         );
@@ -183,7 +184,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Staff Member</h2>
                                 <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Credentials will be returned after registration</p>
                             </div>
-                            <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>
+                            <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1) rotate(90deg)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1) rotate(90deg)'}><X size={16} /></button>
                         </div>
                         <form onSubmit={handleAdd} style={{ padding: '20px' }}>
                             {formError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
@@ -207,8 +208,8 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                 <div><label style={labelStyle}>Specialty</label><input style={inputStyle} value={form.specialty} onChange={e => setForm({ ...form, specialty: e.target.value })} placeholder="e.g. Cardiologist" /></div>
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                                <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
-                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>
+                                <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'all 0.15s ease' }} onMouseEnter={e=>{e.currentTarget.style.background=t.hover;e.currentTarget.style.transform='scale(1.02)';}} onMouseLeave={e=>{e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.97)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.02)'}>Cancel</button>
+                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }} onMouseEnter={e=>{ if(!e.currentTarget.disabled){e.currentTarget.style.transform='translateY(-1px) scale(1.02)';e.currentTarget.style.boxShadow='0 6px 20px rgba(59,91,219,0.45)';} }} onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.97)'} onMouseUp={e=>e.currentTarget.style.transform='translateY(-1px) scale(1.02)'}>
                                     {submitting ? 'Adding...' : 'Add & Get Credentials'}
                                 </button>
                             </div>
@@ -223,7 +224,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                     <div style={modalBox(420)}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>{viewStaff.fullName}</h2>
-                            <button onClick={() => setViewStaff(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={16} /></button>
+                            <button onClick={() => setViewStaff(null)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1) rotate(90deg)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1) rotate(90deg)'}><X size={16} /></button>
                         </div>
                         <div style={{ padding: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
