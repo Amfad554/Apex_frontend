@@ -1,65 +1,104 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck,
     Activity,
     Users,
-    Clock,
     ClipboardList,
     Lock,
-    Search,
     Bell
 } from 'lucide-react';
 
+// ─── Config ────────────────────────────────────────────────────────────────────
+// Update this to your Express API base URL (e.g. from .env: import.meta.env.VITE_API_URL)
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// ─── Helper ─────────────────────────────────────────────────────────────────────
+/**
+ * Calls GET /api/hospitals/me using the JWT stored in localStorage.
+ * Returns true if the token is valid and the hospital exists in the DB.
+ */
+async function checkIsRegistered() {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/hospitals/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.ok; // 200 → registered, 401/404 → not
+    } catch {
+        return false;
+    }
+}
+
+// ─── Feature Card ────────────────────────────────────────────────────────────────
 const FeatureCard = ({ icon: Icon, title, description, color }) => (
     <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+        <div
+            className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+        >
             <Icon className="w-6 h-6 text-white" />
         </div>
         <h3 className="text-xl font-bold text-slate-800 mb-3">{title}</h3>
-        <p className="text-slate-600 leading-relaxed">
-            {description}
-        </p>
+        <p className="text-slate-600 leading-relaxed">{description}</p>
     </div>
 );
 
+// ─── Main Component ──────────────────────────────────────────────────────────────
 export default function Features() {
+    const navigate = useNavigate();
+
+    // null = still checking, true = already registered, false = not registered
+    const [isRegistered, setIsRegistered] = useState(null);
+
+    useEffect(() => {
+        checkIsRegistered().then(setIsRegistered);
+    }, []);
+
     const features = [
         {
             icon: ShieldCheck,
-            title: "Verified Hospitals",
-            description: "Every hospital on our platform undergoes a rigorous manual verification process by Super Admins to ensure medical standards.",
-            color: "bg-blue-600"
+            title: 'Verified Hospitals',
+            description:
+                'Every hospital on our platform undergoes a rigorous manual verification process by Super Admins to ensure medical standards.',
+            color: 'bg-blue-600',
         },
         {
             icon: ClipboardList,
-            title: "Digital Records",
-            description: "Say goodbye to paper files. Access patient history, lab results, and prescriptions instantly from any authorized device.",
-            color: "bg-indigo-600"
+            title: 'Digital Records',
+            description:
+                'Say goodbye to paper files. Access patient history, lab results, and prescriptions instantly from any authorized device.',
+            color: 'bg-indigo-600',
         },
         {
             icon: Activity,
-            title: "Real-time Analytics",
-            description: "Hospital admins can track admission rates, department performance, and resource allocation through visual dashboards.",
-            color: "bg-emerald-600"
+            title: 'Real-time Analytics',
+            description:
+                'Hospital admins can track admission rates, department performance, and resource allocation through visual dashboards.',
+            color: 'bg-emerald-600',
         },
         {
             icon: Users,
-            title: "Patient Management",
-            description: "Streamlined registration, appointment scheduling, and communication tools to enhance the patient experience.",
-            color: "bg-orange-500"
+            title: 'Patient Management',
+            description:
+                'Streamlined registration, appointment scheduling, and communication tools to enhance the patient experience.',
+            color: 'bg-orange-500',
         },
         {
             icon: Lock,
-            title: "Data Security",
-            description: "Enterprise-grade encryption for all medical data. We ensure HIPAA-compliant storage and secure access controls.",
-            color: "bg-slate-800"
+            title: 'Data Security',
+            description:
+                'Enterprise-grade encryption for all medical data. We ensure HIPAA-compliant storage and secure access controls.',
+            color: 'bg-slate-800',
         },
         {
             icon: Bell,
-            title: "Smart Notifications",
-            description: "Automated reminders for follow-ups, prescription refills, and critical updates for both doctors and patients.",
-            color: "bg-rose-500"
-        }
+            title: 'Smart Notifications',
+            description:
+                'Automated reminders for follow-ups, prescription refills, and critical updates for both doctors and patients.',
+            color: 'bg-rose-500',
+        },
     ];
 
     return (
@@ -83,7 +122,7 @@ export default function Features() {
                 </div>
             </section>
 
-            {/* Grid Section */}
+            {/* Feature Grid */}
             <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {features.map((feature, index) => (
@@ -95,15 +134,39 @@ export default function Features() {
             {/* Call to Action */}
             <section className="py-20 px-4">
                 <div className="max-w-5xl mx-auto bg-indigo-600 rounded-3xl p-12 text-center text-white shadow-xl shadow-indigo-200">
-                    <h2 className="text-3xl font-bold mb-6">Ready to transform your hospital?</h2>
+                    <h2 className="text-3xl font-bold mb-6">
+                        Ready to transform your hospital?
+                    </h2>
                     <p className="text-indigo-100 mb-8 text-lg max-w-xl mx-auto">
                         Join our network today and get your medical facility verified in less than 24 hours.
                     </p>
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="px-8 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition">
-                            Register Hospital
-                        </button>
-                        <button className="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-400 transition border border-indigo-400">
+                        {/* 
+                          isRegistered === null  → still loading, show nothing for this button
+                          isRegistered === true  → hospital already registered, hide the button
+                          isRegistered === false → not registered, show the button
+                        */}
+                        {isRegistered === false && (
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="px-8 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition"
+                            >
+                                Register Hospital
+                            </button>
+                        )}
+
+                        {isRegistered === true && (
+                            <div className="px-8 py-3 bg-indigo-500 text-white font-semibold rounded-xl border border-indigo-400 flex items-center gap-2 justify-center">
+                                <ShieldCheck className="w-5 h-5" />
+                                Your hospital is registered
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => navigate('/demo')}
+                            className="px-8 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-400 transition border border-indigo-400"
+                        >
                             View Demo
                         </button>
                     </div>
