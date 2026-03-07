@@ -58,6 +58,13 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
   const hospitalId = hospital?.id;
   const showToast = (message, type = 'success') => setToast({ message, type });
 
+  const modalOverlay = {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
+    overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
+    display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+    minHeight: '100vh',
+  };
+
   const load = async () => {
     if (!hospitalId) return;
     try {
@@ -127,7 +134,6 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
         </button>
       </div>
 
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
         {[
           { label: 'Scheduled', count: counts.scheduled, icon: AlertCircle, color: ACCENT.orange },
@@ -146,7 +152,6 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
         ))}
       </div>
 
-      {/* Search + Filters */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexDirection: isMobile ? 'column' : 'row' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.card, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1 }}>
           <Search size={15} color={t.textMuted} />
@@ -205,20 +210,12 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
         </div>
       )}
 
-      {/* Book Appointment Modal */}
       {showBook && (
-        <div
-          onClick={e => e.target === e.currentTarget && setShowBook(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
-            overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
-            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-          }}
-        >
+        <div onClick={e => e.target === e.currentTarget && setShowBook(false)} style={modalOverlay}>
           <div style={{
             background: t.card, borderRadius: 20, width: '100%', maxWidth: 520,
             border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-            flexShrink: 0, marginTop: isMobile ? 16 : 40,
+            flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40,
           }}>
             <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontWeight: 700, fontSize: 16 }}>Book Appointment</h2>

@@ -51,14 +51,15 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
     const showToast = (message, type = 'success') => setToast({ message, type });
 
     const modalOverlay = {
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
-        overflowY: 'auto', padding: isMobile ? '12px' : '40px 20px',
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
+        overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        minHeight: '100vh',
     };
     const modalBox = (maxW = 520) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
         border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-        flexShrink: 0, marginTop: isMobile ? 16 : 40,
+        flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40,
     });
 
     const loadStaff = async () => {
@@ -175,7 +176,6 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                 </div>
             )}
 
-            {/* Add Staff Modal */}
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={modalOverlay}>
                     <div style={modalBox(520)}>
@@ -218,7 +218,6 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                 </div>
             )}
 
-            {/* View Staff Modal */}
             {viewStaff && (
                 <div onClick={e => e.target === e.currentTarget && setViewStaff(null)} style={modalOverlay}>
                     <div style={modalBox(420)}>
