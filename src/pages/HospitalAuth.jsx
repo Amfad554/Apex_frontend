@@ -85,8 +85,13 @@ export default function HospitalAuth() {
         localStorage.setItem('userRole', 'hospital_admin');
         window.dispatchEvent(new Event('authChange'));
 
-        showToast('Login successful! Redirecting...', 'success');
-        setTimeout(() => navigate('/hospitaldashboard'), 1000);
+        if (data.requiresPayment) {
+          showToast('Please choose a plan to activate your account.', 'info');
+          setTimeout(() => navigate('/pricing'), 1000);
+        } else {
+          showToast('Login successful! Redirecting...', 'success');
+          setTimeout(() => navigate('/hospitaldashboard'), 1000);
+        }
 
       } catch (error) {
         showToast(error.message || 'Login failed', 'error');
