@@ -57,7 +57,7 @@ export default function Security() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 font-sans">
       {/* Hero Header */}
       <section className="bg-slate-900 py-20 px-4 text-white">
         <div className="max-w-7xl mx-auto text-center">

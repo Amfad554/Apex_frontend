@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Check, HelpCircle, Zap, Building, Building2, Globe,
+  Check, HelpCircle, Zap, Building2, Globe,
   X, Loader2, AlertCircle, CheckCheck, Send, Mail,
   Copy, CopyCheck, Landmark, Upload,
 } from 'lucide-react';
@@ -13,26 +13,12 @@ const BANK = {
   account: 'Chiamaka George Favour',
 };
 
-const TIERS = [
-  {
-    tier: 'Clinic', planKey: 'clinic', price: '4,900', rawPrice: 4900, currency: '₦',
-    description: 'Perfect for private practices and small specialized clinics.',
-    icon: Building,
-    features: ['Up to 5 Medical Staff', '1,000 Patient Records', 'Basic Prescription Module', 'Email Support', 'Standard Analytics'],
-  },
-  {
-    tier: 'Professional', planKey: 'professional', price: '19,900', rawPrice: 19900, currency: '₦',
-    description: 'Comprehensive solution for mid-sized hospitals.',
-    icon: Building2, highlighted: true,
-    features: ['Unlimited Medical Staff', 'Unlimited Patient Records', 'Advanced Pharmacy & Lab Sync', '24/7 Priority Support', 'Role-Based Access Control', 'Inventory Management'],
-  },
-  {
-    tier: 'Enterprise', planKey: 'enterprise', price: '49,900', rawPrice: 49900, currency: '₦',
-    description: 'For hospital chains requiring multi-branch synchronization.',
-    icon: Globe,
-    features: ['Multiple Branch Support', 'Custom API Integration', 'Dedicated Account Manager', 'White-label Patient Portal', 'On-premise Deployment Option', 'Audit Logs & Compliance Export'],
-  },
-];
+const PROFESSIONAL = {
+  tier: 'Professional', planKey: 'professional', price: '19,900', rawPrice: 19900, currency: '₦',
+  description: 'Comprehensive solution for mid-sized hospitals.',
+  icon: Building2,
+  features: ['Unlimited Medical Staff', 'Unlimited Patient Records', 'Advanced Pharmacy & Lab Sync', '24/7 Priority Support', 'Role-Based Access Control', 'Inventory Management'],
+};
 
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
@@ -316,50 +302,19 @@ function ContactModal({ onClose }) {
   );
 }
 
-function PricingCard({ tier, planKey, price, rawPrice, currency, description, features, icon: Icon, highlighted, onSelect }) {
-  return (
-    <div className={`relative p-8 rounded-3xl border transition-all duration-300 flex flex-col ${highlighted ? 'bg-white border-indigo-600 shadow-xl shadow-indigo-100 scale-105 z-10' : 'bg-slate-50 border-slate-200 hover:border-slate-300 hover:shadow-md'}`}>
-      {highlighted && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap">Most Popular</span>}
-      <div className="mb-6">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${highlighted ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}><Icon size={24} /></div>
-        <h3 className="text-2xl font-bold text-slate-900">{tier}</h3>
-        <p className="text-slate-500 mt-2 text-sm">{description}</p>
-      </div>
-      <div className="mb-6">
-        <div className="flex items-baseline gap-1">
-          <span className="text-xl font-bold text-slate-400">{currency}</span>
-          <span className="text-4xl font-black text-slate-900">{price}</span>
-          <span className="text-slate-500 font-medium">/month</span>
-        </div>
-        <p className="text-xs text-slate-400 mt-1">Pay via bank transfer · Activated within 24h</p>
-      </div>
-      <ul className="space-y-3 mb-8 flex-1">
-        {features.map((f, i) => (
-          <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-            <div className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"><Check size={12} className="text-emerald-600" /></div>
-            {f}
-          </li>
-        ))}
-      </ul>
-      <button onClick={() => onSelect({ tier, planKey, price, rawPrice, currency })}
-        className={`w-full py-3 rounded-xl font-bold transition-all ${highlighted ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200' : 'bg-white border border-slate-200 text-slate-800 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700'}`}>
-        Get Started
-      </button>
-    </div>
-  );
-}
-
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan]         = useState(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  const plan = PROFESSIONAL;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-sans">
+      {/* Hero */}
       <section className="py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-4">Pricing Plans</h2>
+          <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-4">Pricing Plan</h2>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">
-            Scalable solutions for <br />
+            One powerful plan for <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">every healthcare facility.</span>
           </h1>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">Transparent pricing with no hidden fees. Pay via bank transfer and get activated within 24 hours.</p>
@@ -374,12 +329,42 @@ export default function Pricing() {
         </div>
       </section>
 
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {TIERS.map(tier => <PricingCard key={tier.planKey} {...tier} onSelect={setSelectedPlan} />)}
+      {/* Single Plan Card — centered */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex justify-center">
+        <div className="relative p-8 rounded-3xl border bg-white border-indigo-600 shadow-xl shadow-indigo-100 w-full max-w-sm flex flex-col">
+          <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap">Most Popular</span>
+          <div className="mb-6">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-indigo-600 text-white">
+              <Building2 size={24} />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900">{plan.tier}</h3>
+            <p className="text-slate-500 mt-2 text-sm">{plan.description}</p>
+          </div>
+          <div className="mb-6">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-slate-400">{plan.currency}</span>
+              <span className="text-4xl font-black text-slate-900">{plan.price}</span>
+              <span className="text-slate-500 font-medium">/month</span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">Pay via bank transfer · Activated within 24h</p>
+          </div>
+          <ul className="space-y-3 mb-8 flex-1">
+            {plan.features.map((f, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
+                <div className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"><Check size={12} className="text-emerald-600" /></div>
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={() => setSelectedPlan({ tier: plan.tier, planKey: plan.planKey, price: plan.price, rawPrice: plan.rawPrice, currency: plan.currency })}
+            className="w-full py-3 rounded-xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+            Get Started
+          </button>
         </div>
       </section>
 
+      {/* Custom plan CTA */}
       <section className="py-20 px-4 max-w-4xl mx-auto">
         <div className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
@@ -393,6 +378,7 @@ export default function Pricing() {
         </div>
       </section>
 
+      {/* Trust bar */}
       <section className="py-12 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center gap-8 md:gap-16 opacity-40">
           {[{ icon: <Zap size={18} />, label: 'Reliable' }, { icon: <Check size={18} />, label: 'Secure' }, { icon: <Building2 size={18} />, label: 'Scalable' }, { icon: <Mail size={18} />, label: '24h Activation' }].map(({ icon, label }) => (
