@@ -59,17 +59,17 @@ export default function Security() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       {/* Hero Header */}
-      <section className="bg-slate-900 py-20 px-4 text-white">
+      <section className="py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full text-indigo-600 text-sm font-bold uppercase tracking-widest mb-6">
             <ShieldCheck className="w-4 h-4" />
             Enterprise-Grade Protection
           </div>
-          <h1 className="text-4xl md:text-5xl font-black mb-6">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">
             Your health data is <br />
-            <span className="text-indigo-400">our highest priority.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">our highest priority.</span>
           </h1>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
             Apex-HMS employs a multi-layered security strategy to protect patient records 
             and hospital operations against evolving digital threats.
           </p>
