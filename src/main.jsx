@@ -10,7 +10,7 @@ import Layout from './layouts/Layout.jsx';
 import PatientDashboardLayout from './layouts/PatientDashboardLayout.jsx';
 
 // Guards
-import SubscriptionGuard from './components/SubscriptionGuard.jsx';
+
 
 // Pages
 import Home from './pages/Home.jsx';
@@ -29,6 +29,7 @@ import Contact from './pages/Contact.jsx';
 import Security from './pages/Security.jsx';
 import Pricing from './pages/Pricing.jsx';
 import StaffLogin from './pages/StaffLogin.jsx';
+import SubscriptionGuard from './pages/Subscriptionguard.jsx';
 
 /* ─── Auth helpers (synchronous) ────────────────────────────────────────────── */
 function getToken() { return localStorage.getItem('token'); }
