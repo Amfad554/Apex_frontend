@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from 'lucide-react';
 import Toast from '../Components/Toast';
 
-
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -10,6 +10,8 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
+    hospitalName: '',
     subject: '',
     message: ''
   });
@@ -22,21 +24,39 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          administratorName: formData.name,
+          email: formData.email,
+          phone: formData.phone || 'Not provided',
+          hospitalName: formData.hospitalName || 'Not specified',
+          hospitalType: formData.subject || 'General',
+          message: formData.message,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Submission failed.');
+
+      setToast({ message: "Message sent! We'll get back to you within 24 hours.", type: 'success' });
+      setFormData({ name: '', email: '', phone: '', hospitalName: '', subject: '', message: '' });
+    } catch (err) {
+      setToast({ message: err.message || 'Something went wrong. Please try again.', type: 'error' });
+    } finally {
       setIsSubmitting(false);
-      setToast({ message: "Message sent successfully! We'll get back to you soon.", type: 'success' });
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 1500);
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
       {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
 
@@ -52,7 +72,7 @@ export default function Contact() {
 
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Contact Information Cards */}
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
@@ -111,7 +131,7 @@ export default function Contact() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -123,7 +143,7 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address *</label>
                     <input
                       type="email"
                       name="email"
@@ -136,8 +156,33 @@ export default function Contact() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+234 800 000 0000"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Hospital Name</label>
+                    <input
+                      type="text"
+                      name="hospitalName"
+                      value={formData.hospitalName}
+                      onChange={handleChange}
+                      placeholder="Your hospital's name"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Subject</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Subject *</label>
                   <select
                     name="subject"
                     required
@@ -149,12 +194,13 @@ export default function Contact() {
                     <option value="Hospital Registration">Hospital Registration</option>
                     <option value="Technical Issue">Technical Issue</option>
                     <option value="Partnership">Partnership</option>
+                    <option value="Billing">Billing</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Message</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Message *</label>
                   <textarea
                     name="message"
                     required
@@ -171,7 +217,7 @@ export default function Contact() {
                   disabled={isSubmitting}
                   className="w-full md:w-auto px-10 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70"
                 >
-                  {isSubmitting ? "Sending..." : "Send Message"}
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                   <Send className="w-4 h-4" />
                 </button>
               </form>
