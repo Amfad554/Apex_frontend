@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, X, Eye, Trash2, Phone, Mail, MapPin, Droplets, Loader, AlertCircle } from 'lucide-react';
+import { UserPlus, Search, X, Eye, Trash2, Phone, Mail, MapPin, Droplets, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { patientsAPI } from '../../Services/api.js';
 
@@ -14,10 +14,102 @@ function Toast({ message, type = 'success', onClose }) {
     const c = colors[type] || colors.success;
     return (
         <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 'calc(100vw - 40px)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
-            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-        @keyframes btnPress { 0% { transform: scale(1); } 50% { transform: scale(0.94); } 100% { transform: scale(1); } }`}</style>
+            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
+        </div>
+    );
+}
+
+// ── Credentials modal shown after patient registration ────────────────────────
+function CredentialsModal({ credentials, t, isMobile, onClose }) {
+    const [copiedField, setCopiedField] = useState(null);
+
+    const copy = (text, field) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const CopyBtn = ({ text, field }) => (
+        <button onClick={() => copy(text, field)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedField === field ? '#10b981' : 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6, transition: 'color 0.2s' }}>
+            {copiedField === field ? <CopyCheck size={15} /> : <Copy size={15} />}
+        </button>
+    );
+
+    const modalOverlay = {
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 99999,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: isMobile ? 16 : 24,
+    };
+
+    return (
+        <div style={modalOverlay}>
+            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ background: 'linear-gradient(135deg, #10b981, #059669)', padding: '20px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <KeyRound size={18} color="#fff" />
+                        </div>
+                        <div>
+                            <p style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Patient Registered!</p>
+                            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Share these credentials with the patient</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Credentials */}
+                <div style={{ padding: '20px 24px' }}>
+                    <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.6 }}>
+                        ⚠️ Since email delivery is unavailable, <strong>copy and share these credentials manually</strong> with the patient. They won't be shown again.
+                    </p>
+
+                    {/* Patient Name */}
+                    <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
+                        <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Patient Name</p>
+                        <p style={{ fontSize: 14, fontWeight: 700 }}>{credentials.fullName}</p>
+                    </div>
+
+                    {/* Patient Number */}
+                    <div style={{ marginBottom: 10, background: 'rgba(59,130,246,0.1)', borderRadius: 12, padding: '12px 16px', border: '1px solid rgba(59,130,246,0.2)' }}>
+                        <p style={{ fontSize: 11, color: 'rgba(59,130,246,0.8)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Patient Number (Login ID)</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 20, fontWeight: 800, color: '#3b82f6', letterSpacing: '0.05em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
+                            <button onClick={() => copy(credentials.patientNumber, 'patientNumber')} style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 8, cursor: 'pointer', color: copiedField === 'patientNumber' ? '#10b981' : '#3b82f6', display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>
+                                {copiedField === 'patientNumber' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Temp Password */}
+                    <div style={{ marginBottom: 10, background: 'rgba(245,158,11,0.1)', borderRadius: 12, padding: '12px 16px', border: '1px solid rgba(245,158,11,0.2)' }}>
+                        <p style={{ fontSize: 11, color: 'rgba(245,158,11,0.9)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Temporary Password</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 20, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <button onClick={() => copy(credentials.tempPassword, 'tempPassword')} style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, cursor: 'pointer', color: copiedField === 'tempPassword' ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>
+                                {copiedField === 'tempPassword' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Email if available */}
+                    {credentials.email && (
+                        <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
+                            <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</p>
+                            <p style={{ fontSize: 13, fontWeight: 600 }}>{credentials.email}</p>
+                        </div>
+                    )}
+
+                    <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#059669', lineHeight: 1.6 }}>
+                        The patient logs in at <strong>/patientlogin</strong> using their <strong>email</strong> + this password, or their <strong>patient number</strong> as the identifier.
+                    </div>
+
+                    <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Done
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -32,6 +124,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
     const [toast, setToast] = useState(null);
+    const [credentials, setCredentials] = useState(null); // ← NEW: holds registered patient credentials
     const [form, setForm] = useState({
         fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '',
         address: '', bloodGroup: 'O+', medicalConditions: '',
@@ -62,11 +155,17 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         }
         try {
             setSubmitting(true); setFormError('');
-            await patientsAPI.create(form);
+            const res = await patientsAPI.create(form);
             setShowReg(false);
             setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
-            showToast('Patient registered successfully!');
             loadPatients();
+            // ── Show credentials modal instead of plain toast ─────────────────
+            setCredentials({
+                fullName: res.patient.fullName,
+                patientNumber: res.patient.patientNumber,
+                tempPassword: res.tempPassword,
+                email: res.patient.email || null,
+            });
         } catch (err) { setFormError(err.message); }
         finally { setSubmitting(false); }
     };
@@ -98,6 +197,16 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
     return (
         <div>
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+
+            {/* Credentials modal */}
+            {credentials && (
+                <CredentialsModal
+                    credentials={credentials}
+                    t={t}
+                    isMobile={isMobile}
+                    onClose={() => { setCredentials(null); showToast('Patient registered successfully!'); }}
+                />
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
                 <div>
@@ -218,7 +327,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Register New Patient</h2>
-                                <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Fill in the patient details below</p>
+                                <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Credentials will be shown after registration</p>
                             </div>
                             <button onClick={() => setShowReg(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(239,68,68,0.2)';e.currentTarget.style.transform='scale(1.1) rotate(90deg)';}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(239,68,68,0.1)';e.currentTarget.style.transform='';}} onMouseDown={e=>e.currentTarget.style.transform='scale(0.9)'} onMouseUp={e=>e.currentTarget.style.transform='scale(1.1) rotate(90deg)'}><X size={16} /></button>
                         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, X, Mail, Phone, Trash2, Eye, Loader, AlertCircle } from 'lucide-react';
+import { UserPlus, Search, X, Mail, Phone, Trash2, Eye, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { staffAPI } from '../../Services/api.js';
 
@@ -34,6 +34,82 @@ function Toast({ message, type = 'success', onClose }) {
     );
 }
 
+// ── Credentials modal shown after staff is added ──────────────────────────────
+function CredentialsModal({ credentials, t, isMobile, onClose }) {
+    const [copiedField, setCopiedField] = useState(null);
+
+    const copy = (text, field) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const roleLabel = credentials.role?.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
+            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ background: 'linear-gradient(135deg, #3b5bdb, #228be6)', padding: '20px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <KeyRound size={18} color="#fff" />
+                        </div>
+                        <div>
+                            <p style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Staff Added!</p>
+                            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Share these credentials with the staff member</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Credentials */}
+                <div style={{ padding: '20px 24px' }}>
+                    <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.6 }}>
+                        ⚠️ Since email delivery is unavailable, <strong>copy and share these credentials manually</strong> with the staff member. They won't be shown again.
+                    </p>
+
+                    {/* Name & Role */}
+                    <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
+                        <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Member</p>
+                        <p style={{ fontSize: 14, fontWeight: 700 }}>{credentials.fullName}</p>
+                        <p style={{ fontSize: 12, color: t.textSub, marginTop: 2, textTransform: 'capitalize' }}>{roleLabel}</p>
+                    </div>
+
+                    {/* Email */}
+                    <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
+                        <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Login Email</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <p style={{ fontSize: 13, fontWeight: 700 }}>{credentials.email}</p>
+                            <button onClick={() => copy(credentials.email, 'email')} style={{ background: t.border, border: 'none', borderRadius: 8, cursor: 'pointer', color: copiedField === 'email' ? '#10b981' : t.textSub, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                                {copiedField === 'email' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Temp Password */}
+                    <div style={{ marginBottom: 10, background: 'rgba(245,158,11,0.1)', borderRadius: 12, padding: '12px 16px', border: '1px solid rgba(245,158,11,0.2)' }}>
+                        <p style={{ fontSize: 11, color: 'rgba(245,158,11,0.9)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Temporary Password</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 20, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <button onClick={() => copy(credentials.tempPassword, 'tempPassword')} style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, cursor: 'pointer', color: copiedField === 'tempPassword' ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                                {copiedField === 'tempPassword' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(59,91,219,0.08)', border: '1px solid rgba(59,91,219,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#3b5bdb', lineHeight: 1.6 }}>
+                        Staff logs in at <strong>/stafflogin</strong> — they select the hospital, then enter their <strong>email</strong> + this password.
+                    </div>
+
+                    <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #3b5bdb, #228be6)', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Staff({ isDark, t, hospital, isMobile }) {
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,6 +121,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
     const [submitting, setSubmit] = useState(false);
     const [formError, setFormError] = useState('');
     const [toast, setToast] = useState(null);
+    const [credentials, setCredentials] = useState(null); // ← NEW
     const [form, setForm] = useState({ fullName: '', email: '', role: 'doctor', department: '', specialty: '', phone: '' });
 
     const hospitalId = hospital?.id;
@@ -84,10 +161,16 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
         try {
             setSubmit(true); setFormError('');
             const res = await staffAPI.create(form);
-            showToast(`Staff added! Temp password: ${res.tempPassword}`);
             setShowAdd(false);
             setForm({ fullName: '', email: '', role: 'doctor', department: '', specialty: '', phone: '' });
             loadStaff();
+            // ── Show credentials modal ────────────────────────────────────────
+            setCredentials({
+                fullName: res.staff.fullName,
+                email: res.staff.email,
+                role: res.staff.role,
+                tempPassword: res.tempPassword,
+            });
         } catch (err) { setFormError(err.message); }
         finally { setSubmit(false); }
     };
@@ -107,6 +190,16 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
     return (
         <div>
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+
+            {/* Credentials modal */}
+            {credentials && (
+                <CredentialsModal
+                    credentials={credentials}
+                    t={t}
+                    isMobile={isMobile}
+                    onClose={() => { setCredentials(null); showToast('Staff member added successfully!'); }}
+                />
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
                 <div>
@@ -182,14 +275,14 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Staff Member</h2>
-                                <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Credentials will be returned after registration</p>
+                                <p style={{ fontSize: 12, color: t.textSub, marginTop: 2 }}>Credentials will be shown after registration</p>
                             </div>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'transform 0.15s ease, background 0.15s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.transform = ''; }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)'}><X size={16} /></button>
                         </div>
                         <form onSubmit={handleAdd} style={{ padding: '20px' }}>
                             {formError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
                             <div style={{ background: isDark ? 'rgba(59,91,219,0.1)' : 'rgba(59,91,219,0.05)', border: `1px solid rgba(59,91,219,0.2)`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub }}>
-                                🔐 A temporary password will be auto-generated and shown after registration.
+                                🔐 A temporary password will be shown after registration — email delivery is currently unavailable.
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Full Name *</label><input required style={inputStyle} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Dr. Kelechi Amadi" /></div>
