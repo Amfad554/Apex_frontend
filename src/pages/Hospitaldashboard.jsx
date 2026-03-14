@@ -14,7 +14,7 @@ import Pharmacy from './Sections/Pharmacy.jsx';
 import RecordsSection from './Sections/Recordssection.jsx';
 import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
-import CredentialsHistory from './CredentialsHistory.jsx';
+import CredentialsHistory from './Sections/CredentialsHistory.jsx';
 
 
 const NAV_ITEMS = [

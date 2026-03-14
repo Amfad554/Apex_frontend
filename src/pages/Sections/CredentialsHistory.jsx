@@ -254,7 +254,7 @@ export default function CredentialsHistory({ t, isDark, isMobile }) {
                                         ))}
                                     </div>
 
-                                    {/* WhatsApp preview */}
+                                    {/* WhatsApp preview kk*/}
                                     <div style={{ background: isDark ? 'rgba(37,211,102,0.07)' : 'rgba(37,211,102,0.05)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
                                         <p style={{ fontSize: 11, color: '#25d366', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>WhatsApp Message Preview</p>
                                         <pre style={{ fontSize: 12, color: t.textSub, lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{formatWhatsApp(c)}</pre>
