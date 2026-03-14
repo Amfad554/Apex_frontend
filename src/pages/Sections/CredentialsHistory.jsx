@@ -104,19 +104,6 @@ export default function CredentialsHistory({ t, isDark, isMobile }) {
         return matchType && matchSearch;
     });
 
-    const copyWhatsApp = (c) => {
-        const text = formatWhatsApp(c);
-
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(() => {
-                setCopiedId(c.id);
-                setTimeout(() => setCopiedId(null), 2500);
-            }).catch(() => fallbackCopy(text, c.id));
-        } else {
-            fallbackCopy(text, c.id);
-        }
-    };
-
     const fallbackCopy = (text, id) => {
         const el = document.createElement('textarea');
         el.value = text;
@@ -131,10 +118,22 @@ export default function CredentialsHistory({ t, isDark, isMobile }) {
             setTimeout(() => setCopiedId(null), 2500);
         } catch (err) {
             console.log(err);
-            
+
             alert('Copy failed. Please copy manually:\n\n' + text);
         }
         document.body.removeChild(el);
+    };
+
+    const copyWhatsApp = (c) => {
+        const text = formatWhatsApp(c);
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                setCopiedId(c.id);
+                setTimeout(() => setCopiedId(null), 2500);
+            }).catch(() => fallbackCopy(text, c.id));
+        } else {
+            fallbackCopy(text, c.id);
+        }
     };
 
     const remove = (id) => {

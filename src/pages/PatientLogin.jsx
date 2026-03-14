@@ -41,8 +41,7 @@ const themes = {
 
 const BLUE  = '#3b5bdb';
 const BLUE2 = '#228be6';
-const PINK  = '#ec4899';
-const PINK2 = '#f472b6';
+
 
 export default function PatientLogin() {
   const navigate = useNavigate();
