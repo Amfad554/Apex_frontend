@@ -85,7 +85,7 @@ export default function HospitalAuth() {
         localStorage.setItem('userRole', 'hospital_admin');
         window.dispatchEvent(new Event('authChange'));
 
-        if (data.requiresPayment && formData.email !== 'your@email.com') {
+        if (data.requiresPayment && formData.email !== 'georgechiamaka02@gmail.com') {
           showToast('Please choose a plan to activate your account.', 'info');
           setTimeout(() => navigate('/pricing'), 1000);
         } else {
