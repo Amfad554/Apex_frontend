@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Home, Users, Calendar, Stethoscope, Pill, FileText,
   Settings, LogOut, Activity, Bell, Search, Sun, Moon,
-  Menu, ChevronDown, X, MoreHorizontal
+  Menu, ChevronDown, X, MoreHorizontal, KeyRound   // ← add KeyRound
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
 
@@ -126,20 +126,19 @@ export default function HospitalDashboard() {
 
   const sectionProps = { isDark, t, hospital, isMobile };
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients': return <Patients       {...sectionProps} />;
-      case 'appointments': return <Appointments   {...sectionProps} />;
-      case 'staff': return <Staff          {...sectionProps} />;
-      case 'pharmacy': return <Pharmacy       {...sectionProps} />;
-      case 'records': return <RecordsSection {...sectionProps} />;
-      case 'settings': return <DashSettings   {...sectionProps} />;
-      default: return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
-
-      case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-    }
-  };
+const renderSection = () => {
+  switch (activeSection) {
+    case 'dashboard':     return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+    case 'patients':      return <Patients       {...sectionProps} />;
+    case 'appointments':  return <Appointments   {...sectionProps} />;
+    case 'staff':         return <Staff          {...sectionProps} />;
+    case 'pharmacy':      return <Pharmacy       {...sectionProps} />;
+    case 'records':       return <RecordsSection {...sectionProps} />;
+    case 'settings':      return <DashSettings   {...sectionProps} />;
+    case 'credentials':   return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
+    default:              return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+  }
+};
 
   // ── Sidebar content ──────────────────────────────────────────────────────────
   const SidebarContent = ({ forceFull = false }) => {
