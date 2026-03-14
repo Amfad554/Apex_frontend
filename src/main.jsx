@@ -20,7 +20,6 @@ import PatientDashboard from './pages/PatientDashboard.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
 import HospitalDashboard from './pages/Hospitaldashboard.jsx';
-import StaffDashboard from './pages/StaffDashboard.jsx';
 import PatientManagement from './pages/PatientManagement.jsx';
 import Features from './pages/Features.jsx';
 import Contact from './pages/Contact.jsx';
@@ -28,6 +27,7 @@ import Security from './pages/Security.jsx';
 import Pricing from './pages/Pricing.jsx';
 import StaffLogin from './pages/StaffLogin.jsx';
 import SubscriptionGuard from './pages/Subscriptionguard.jsx';
+import StaffDashboard from './pages/Staffdashboard.jsx';
 
 /* ─── Auth helpers ───────────────────────────────────────────────────────────── */
 function getToken() { return localStorage.getItem('token'); }
