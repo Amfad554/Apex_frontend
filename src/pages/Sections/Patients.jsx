@@ -157,6 +157,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         try {
             setSubmitting(true); setFormError('');
             const res = await patientsAPI.create(form);
+            console.log('Full API response:', res); 
             setShowReg(false);
             setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
             loadPatients();
