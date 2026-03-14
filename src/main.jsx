@@ -9,9 +9,6 @@ import App from './App.jsx';
 import Layout from './layouts/Layout.jsx';
 import PatientDashboardLayout from './layouts/PatientDashboardLayout.jsx';
 
-// Guards
-
-
 // Pages
 import Home from './pages/Home.jsx';
 import VerifyEmail from './pages/VerifyEmail.jsx';
@@ -31,7 +28,7 @@ import Pricing from './pages/Pricing.jsx';
 import StaffLogin from './pages/StaffLogin.jsx';
 import SubscriptionGuard from './pages/Subscriptionguard.jsx';
 
-/* ─── Auth helpers (synchronous) ────────────────────────────────────────────── */
+/* ─── Auth helpers ───────────────────────────────────────────────────────────── */
 function getToken() { return localStorage.getItem('token'); }
 function getUser()  {
   try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
@@ -70,13 +67,15 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
+
+      // ── Routes WITH navbar + footer (Layout) ──────────────────────────────
       {
         path: '/',
         element: <Layout />,
         children: [
           { index: true, element: <PublicOnlyHome /> },
 
-          // Public
+          // Public pages
           { path: 'hospital/auth',       element: <HospitalAuth /> },
           { path: 'patientregistration', element: <PatientRegister /> },
           { path: 'patientlogin',        element: <PatientLogin /> },
@@ -99,36 +98,39 @@ const router = createBrowserRouter([
             ),
           },
 
-          // Hospital Admin — login guard → subscription guard → dashboard
-          {
-            element: <HospitalAuthGuard />,
-            children: [
-              {
-                element: <SubscriptionGuard />,
-                children: [
-                  { path: 'hospitaldashboard', element: <HospitalDashboard /> },
-                  { path: 'patientmanagement', element: <PatientManagement /> },
-                ],
-              },
-            ],
-          },
-
-          // Super Admin
-          { path: 'superadmindashboard', element: <SuperAdminDashboard /> },
-
-          // Patient
-          {
-            path: 'patientdashboard',
-            element: <PatientDashboardLayout />,
-            children: [
-              { index: true, element: <PatientDashboard /> },
-              { path: 'prescriptions', element: <Prescriptions /> },
-            ],
-          },
-
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },
+
+      // ── Routes WITHOUT navbar + footer (no Layout) ────────────────────────
+
+      // Hospital Admin dashboard
+      {
+        element: <HospitalAuthGuard />,
+        children: [
+          {
+            element: <SubscriptionGuard />,
+            children: [
+              { path: 'hospitaldashboard', element: <HospitalDashboard /> },
+              { path: 'patientmanagement', element: <PatientManagement /> },
+            ],
+          },
+        ],
+      },
+
+      // Super Admin dashboard
+      { path: 'superadmindashboard', element: <SuperAdminDashboard /> },
+
+      // Patient dashboard
+      {
+        path: 'patientdashboard',
+        element: <PatientDashboardLayout />,
+        children: [
+          { index: true, element: <PatientDashboard /> },
+          { path: 'prescriptions', element: <Prescriptions /> },
+        ],
+      },
+
     ],
   },
 ]);
