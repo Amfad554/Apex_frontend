@@ -43,9 +43,7 @@ function formatWhatsApp(c) {
             `🔑 *Temporary Password:* ${c.tempPassword}`,
             `━━━━━━━━━━━━━━━━━━━━`,
             `📱 *How to log in:*`,
-            `1. Go to the HMSCare website`,
-            `2. Click *Patient Portal*`,
-            `3. Enter your email + password above`,
+            `🔗 ${window.location.origin}/patientlogin`,
             ``,
             `⚠️ Please change your password after first login.`,
         ].filter(Boolean).join('\n');
@@ -61,10 +59,7 @@ function formatWhatsApp(c) {
         c.hospitalName ? `🏨 *Hospital:* ${c.hospitalName}` : null,
         `━━━━━━━━━━━━━━━━━━━━`,
         `📱 *How to log in:*`,
-        `1. Go to the HMSCare website`,
-        `2. Click *Staff Portal*`,
-        `3. Search and select your hospital`,
-        `4. Enter email + password above`,
+        `🔗 ${window.location.origin}/stafflogin`,
         ``,
         `⚠️ Please change your password after first login.`,
     ].filter(Boolean).join('\n');
@@ -110,9 +105,36 @@ export default function CredentialsHistory({ t, isDark, isMobile }) {
     });
 
     const copyWhatsApp = (c) => {
-        navigator.clipboard.writeText(formatWhatsApp(c));
-        setCopiedId(c.id);
-        setTimeout(() => setCopiedId(null), 2500);
+        const text = formatWhatsApp(c);
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                setCopiedId(c.id);
+                setTimeout(() => setCopiedId(null), 2500);
+            }).catch(() => fallbackCopy(text, c.id));
+        } else {
+            fallbackCopy(text, c.id);
+        }
+    };
+
+    const fallbackCopy = (text, id) => {
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        try {
+            document.execCommand('copy');
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2500);
+        } catch (err) {
+            console.log(err);
+            
+            alert('Copy failed. Please copy manually:\n\n' + text);
+        }
+        document.body.removeChild(el);
     };
 
     const remove = (id) => {
