@@ -876,10 +876,10 @@ const DEFAULT_NAV = [
 ];
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   MAIN EXPORT
+   MAIN EXPORTion
 ══════════════════════════════════════════════════════════════════════════════ */
 export default function StaffDashboard() {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
     const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
     const [staff, setStaff] = useState(null);
     const [section, setSection] = useState('home');
