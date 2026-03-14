@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import {
-  Eye, EyeOff, Heart, Mail, Lock, Sun, Moon,
-  AlertCircle, BadgeCheck, ArrowLeft, Activity
+  Eye, EyeOff, Activity, Mail, Lock, Sun, Moon,
+  AlertCircle, BadgeCheck, ArrowLeft
 } from "lucide-react";
 
 // ── Theme tokens matching dashboard exactly ──────────────────────
@@ -21,7 +21,6 @@ const themes = {
     divider: 'rgba(255,255,255,0.07)',
     shadow: '0 24px 60px rgba(0,0,0,0.6)',
     hover: 'rgba(255,255,255,0.04)',
-
   },
   light: {
     bg: '#f0f4fb',
@@ -41,7 +40,6 @@ const themes = {
 
 const BLUE  = '#3b5bdb';
 const BLUE2 = '#228be6';
-
 
 export default function PatientLogin() {
   const navigate = useNavigate();
@@ -118,7 +116,7 @@ export default function PatientLogin() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         input::placeholder { color: ${t.textMuted}; }
-        .input-field:focus { border-color: ${PINK} !important; }
+        .input-field:focus { border-color: ${BLUE} !important; }
       `}</style>
 
       {/* ── Theme Toggle ── */}
@@ -139,12 +137,12 @@ export default function PatientLogin() {
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16,
-            background: `linear-gradient(135deg, ${PINK}, ${PINK2})`,
+            background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
-            boxShadow: `0 8px 32px rgba(236,72,153,0.4)`,
+            boxShadow: `0 8px 32px rgba(59,91,219,0.4)`,
           }}>
-            <Heart size={28} color="#fff" />
+            <Activity size={28} color="#fff" />
           </div>
           <h1 style={{ fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px', marginBottom: 4 }}>
             HMS<span style={{
@@ -168,15 +166,15 @@ export default function PatientLogin() {
           <div style={{
             padding: '20px 28px',
             borderBottom: `1px solid ${t.divider}`,
-            background: isDark ? 'rgba(236,72,153,0.06)' : 'rgba(236,72,153,0.03)',
+            background: isDark ? 'rgba(59,91,219,0.06)' : 'rgba(59,91,219,0.03)',
             display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(236,72,153,0.15)',
+              background: 'rgba(59,91,219,0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Activity size={18} color={PINK} />
+              <Activity size={18} color={BLUE} />
             </div>
             <div>
               <p style={{ fontWeight: 700, fontSize: 15 }}>Patient Login</p>
@@ -252,7 +250,7 @@ export default function PatientLogin() {
               <div style={{ textAlign: 'right', marginBottom: 20 }}>
                 <button type="button" style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: PINK, fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                  color: BLUE, fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
                 }}>
                   Forgot password?
                 </button>
@@ -287,8 +285,8 @@ export default function PatientLogin() {
                   width: '100%',
                   padding: '13px',
                   background: loading
-                    ? `rgba(236,72,153,0.5)`
-                    : `linear-gradient(135deg, ${PINK}, ${PINK2})`,
+                    ? `rgba(59,91,219,0.5)`
+                    : `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
                   color: '#fff',
                   border: 'none',
                   borderRadius: 12,
@@ -296,7 +294,7 @@ export default function PatientLogin() {
                   fontSize: 15,
                   cursor: loading ? 'not-allowed' : 'pointer',
                   fontFamily: 'inherit',
-                  boxShadow: loading ? 'none' : '0 4px 20px rgba(236,72,153,0.4)',
+                  boxShadow: loading ? 'none' : `0 4px 20px rgba(59,91,219,0.4)`,
                   transition: 'opacity 0.2s',
                 }}
               >
