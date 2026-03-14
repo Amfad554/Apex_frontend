@@ -20,6 +20,7 @@ import PatientDashboard from './pages/PatientDashboard.jsx';
 import Prescriptions from './pages/Prescriptions.jsx';
 import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
 import HospitalDashboard from './pages/Hospitaldashboard.jsx';
+import StaffDashboard from './pages/StaffDashboard.jsx';
 import PatientManagement from './pages/PatientManagement.jsx';
 import Features from './pages/Features.jsx';
 import Contact from './pages/Contact.jsx';
@@ -30,14 +31,14 @@ import SubscriptionGuard from './pages/Subscriptionguard.jsx';
 
 /* ─── Auth helpers ───────────────────────────────────────────────────────────── */
 function getToken() { return localStorage.getItem('token'); }
-function getUser()  {
+function getUser() {
   try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
 }
 
 /* ─── Public-only home ───────────────────────────────────────────────────────── */
 const PublicOnlyHome = () => {
   const token = getToken();
-  const user  = getUser();
+  const user = getUser();
   const isHospital = token && user && (user.role === 'hospital_admin' || user.hospital_id);
   if (isHospital) return <Navigate to="/hospitaldashboard" replace />;
   return <Home />;
@@ -46,16 +47,26 @@ const PublicOnlyHome = () => {
 /* ─── Hospital login guard ───────────────────────────────────────────────────── */
 const HospitalAuthGuard = () => {
   const token = getToken();
-  const user  = getUser();
+  const user = getUser();
   const isHospital = token && user && (user.role === 'hospital_admin' || user.hospital_id);
   if (!isHospital) return <Navigate to="/hospital/auth" replace />;
+  return <Outlet />;
+};
+
+/* ─── Staff login guard ──────────────────────────────────────────────────────── */
+const StaffAuthGuard = () => {
+  const token = getToken();
+  const user = getUser();
+  const STAFF_ROLES = ['doctor', 'nurse', 'pharmacist', 'lab_technician', 'receptionist', 'admin', 'staff'];
+  const isStaff = token && user && STAFF_ROLES.includes(user.role?.toLowerCase());
+  if (!isStaff) return <Navigate to="/stafflogin" replace />;
   return <Outlet />;
 };
 
 /* ─── General protected route ────────────────────────────────────────────────── */
 const ProtectedRoute = ({ allowedRoles }) => {
   const token = getToken();
-  const user  = getUser();
+  const user = getUser();
   if (!token || !user) return <Navigate to="/patientlogin" replace />;
   if (!allowedRoles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
   return <Outlet />;
@@ -75,17 +86,16 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <PublicOnlyHome /> },
 
-          // Public pages
-          { path: 'hospital/auth',       element: <HospitalAuth /> },
+          { path: 'hospital/auth', element: <HospitalAuth /> },
           { path: 'patientregistration', element: <PatientRegister /> },
-          { path: 'patientlogin',        element: <PatientLogin /> },
-          { path: 'superadminlogin',     element: <SuperAdminLogin /> },
-          { path: 'verify-email',        element: <VerifyEmail /> },
-          { path: 'features',            element: <Features /> },
-          { path: 'contact',             element: <Contact /> },
-          { path: 'security',            element: <Security /> },
-          { path: 'pricing',             element: <Pricing /> },
-          { path: 'stafflogin',          element: <StaffLogin /> },
+          { path: 'patientlogin', element: <PatientLogin /> },
+          { path: 'superadminlogin', element: <SuperAdminLogin /> },
+          { path: 'verify-email', element: <VerifyEmail /> },
+          { path: 'features', element: <Features /> },
+          { path: 'contact', element: <Contact /> },
+          { path: 'security', element: <Security /> },
+          { path: 'pricing', element: <Pricing /> },
+          { path: 'stafflogin', element: <StaffLogin /> },
           {
             path: 'unauthorized',
             element: (
@@ -102,9 +112,9 @@ const router = createBrowserRouter([
         ],
       },
 
-      // ── Routes WITHOUT navbar + footer (no Layout) ────────────────────────
+      // ── Routes WITHOUT navbar + footer ────────────────────────────────────
 
-      // Hospital Admin dashboard
+      // Hospital Admin
       {
         element: <HospitalAuthGuard />,
         children: [
@@ -118,10 +128,18 @@ const router = createBrowserRouter([
         ],
       },
 
-      // Super Admin dashboard
+      // Staff (doctor, nurse, pharmacist, lab_technician, receptionist, etc.)
+      {
+        element: <StaffAuthGuard />,
+        children: [
+          { path: 'staffdashboard', element: <StaffDashboard /> },
+        ],
+      },
+
+      // Super Admin
       { path: 'superadmindashboard', element: <SuperAdminDashboard /> },
 
-      // Patient dashboard
+      // Patient
       {
         path: 'patientdashboard',
         element: <PatientDashboardLayout />,
