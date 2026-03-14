@@ -48,7 +48,7 @@ export default function StaffLogin() {
         window.dispatchEvent(new Event('themeChange'));
     };
 
-    // Hospital search — uses hospitalsAPI.search from services/api.js
+    // Hospital search
     useEffect(() => {
         if (hospitalQuery.trim().length < 2) { setHospitalResults([]); setShowDropdown(false); return; }
         const timer = setTimeout(async () => {
@@ -86,15 +86,25 @@ export default function StaffLogin() {
         setIsLoading(true);
         setError('');
         try {
-            // authAPI.staffLogin maps to POST /api/auth/staff/login
             const data = await authAPI.staffLogin({
                 identifier: formData.identifier,
                 password: formData.password,
                 hospitalId: selectedHospital.id,
             });
+
+            // ── KEY FIX ────────────────────────────────────────────────────────
+            // Preserve the actual role returned by the server (e.g. "doctor",
+            // "nurse", "pharmacist", "lab_technician", "receptionist").
+            // Never overwrite it with a hardcoded string — the StaffDashboard
+            // and StaffAuthGuard both depend on the real role to work correctly.
+            const user = data.user || {};
+            const role = (user.role || user.staffRole || 'staff').toLowerCase();
+
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ ...data.user, role: 'staff' }));
-            localStorage.setItem('userRole', 'staff');
+            localStorage.setItem('user', JSON.stringify({ ...user, role }));
+            localStorage.setItem('userRole', role);
+            // ──────────────────────────────────────────────────────────────────
+
             window.dispatchEvent(new Event('authChange'));
             navigate('/staffdashboard');
         } catch (err) {
@@ -109,7 +119,6 @@ export default function StaffLogin() {
         setIsLoading(true);
         setError('');
         try {
-            // TODO: implement forgot password endpoint
             // await authAPI.forgotPassword(forgotEmail);
             setSuccessMsg('If this email exists, a reset link has been sent. Check your inbox.');
         } catch (err) {
