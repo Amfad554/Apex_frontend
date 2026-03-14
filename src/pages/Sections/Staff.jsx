@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Search, X, Mail, Phone, Trash2, Eye, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
 import { ACCENT, BLUE, BLUE2 } from '../theme.js';
 import { staffAPI } from '../../Services/api.js';
+import { saveCredential } from './CredentialsHistory.jsx';
 
 const ROLE_COLORS = {
     doctor: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa' },
@@ -44,6 +45,24 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
         setTimeout(() => setCopiedField(null), 2000);
     };
 
+    const copyAll = () => {
+        const text = [
+            `Staff Portal Login Credentials`,
+            `─────────────────────────────`,
+            `Name:       ${credentials.fullName}`,
+            `Role:       ${credentials.role?.replace('_', ' ')}`,
+            credentials.employeeId ? `Employee ID: ${credentials.employeeId}` : null,
+            `Email:      ${credentials.email}`,
+            `Password:   ${credentials.tempPassword}`,
+            `─────────────────────────────`,
+            `Login URL:  /stafflogin`,
+            `Select hospital → enter email + password`,
+        ].filter(Boolean).join('\n');
+        navigator.clipboard.writeText(text);
+        setCopiedField('all');
+        setTimeout(() => setCopiedField(null), 2500);
+    };
+
     const roleLabel = credentials.role?.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     return (
@@ -56,8 +75,8 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
                             <KeyRound size={18} color="#fff" />
                         </div>
                         <div>
-                            <p style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Staff Added!</p>
-                            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Share these credentials with the staff member</p>
+                            <p style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Staff Added Successfully!</p>
+                            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Share these login credentials with the staff member</p>
                         </div>
                     </div>
                 </div>
@@ -65,21 +84,28 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
                 {/* Credentials */}
                 <div style={{ padding: '20px 24px' }}>
                     <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.6 }}>
-                        ⚠️ Since email delivery is unavailable, <strong>copy and share these credentials manually</strong> with the staff member. They won't be shown again.
+                        ⚠️ These credentials will <strong>not be shown again</strong>. Copy and share them manually with the staff member now.
                     </p>
 
                     {/* Name & Role */}
                     <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
                         <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Staff Member</p>
                         <p style={{ fontSize: 14, fontWeight: 700 }}>{credentials.fullName}</p>
-                        <p style={{ fontSize: 12, color: t.textSub, marginTop: 2, textTransform: 'capitalize' }}>{roleLabel}</p>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: t.textSub, textTransform: 'capitalize', background: t.border, padding: '2px 8px', borderRadius: 6 }}>{roleLabel}</span>
+                            {credentials.employeeId && (
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#60a5fa', background: 'rgba(59,91,219,0.1)', padding: '2px 8px', borderRadius: 6 }}>
+                                    ID: {credentials.employeeId}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Email */}
                     <div style={{ marginBottom: 10, background: t.cardAlt || 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 16px', border: `1px solid ${t.border}` }}>
                         <p style={{ fontSize: 11, color: t.textMuted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Login Email</p>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                            <p style={{ fontSize: 13, fontWeight: 700 }}>{credentials.email}</p>
+                            <p style={{ fontSize: 13, fontWeight: 700, wordBreak: 'break-all' }}>{credentials.email}</p>
                             <button onClick={() => copy(credentials.email, 'email')} style={{ background: t.border, border: 'none', borderRadius: 8, cursor: 'pointer', color: copiedField === 'email' ? '#10b981' : t.textSub, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
                                 {copiedField === 'email' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
                             </button>
@@ -87,23 +113,33 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
                     </div>
 
                     {/* Temp Password */}
-                    <div style={{ marginBottom: 10, background: 'rgba(245,158,11,0.1)', borderRadius: 12, padding: '12px 16px', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    <div style={{ marginBottom: 10, background: 'rgba(245,158,11,0.08)', borderRadius: 12, padding: '12px 16px', border: '1px solid rgba(245,158,11,0.25)' }}>
                         <p style={{ fontSize: 11, color: 'rgba(245,158,11,0.9)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Temporary Password</p>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 20, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <p style={{ fontSize: 22, fontWeight: 800, color: '#f59e0b', letterSpacing: '0.12em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
                             <button onClick={() => copy(credentials.tempPassword, 'tempPassword')} style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, cursor: 'pointer', color: copiedField === 'tempPassword' ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
                                 {copiedField === 'tempPassword' ? <><CopyCheck size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
                             </button>
                         </div>
                     </div>
 
-                    <div style={{ background: 'rgba(59,91,219,0.08)', border: '1px solid rgba(59,91,219,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#3b5bdb', lineHeight: 1.6 }}>
-                        Staff logs in at <strong>/stafflogin</strong> — they select the hospital, then enter their <strong>email</strong> + this password.
+                    {/* Login instructions */}
+                    <div style={{ background: 'rgba(59,91,219,0.08)', border: '1px solid rgba(59,91,219,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: '#60a5fa', lineHeight: 1.7 }}>
+                        <strong>How to log in:</strong><br />
+                        1. Go to <strong>/stafflogin</strong><br />
+                        2. Search and select <strong>{credentials.hospitalName || 'your hospital'}</strong><br />
+                        3. Enter email + temporary password above
                     </div>
 
-                    <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #3b5bdb, #228be6)', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        Done
-                    </button>
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        <button onClick={copyAll} style={{ flex: 1, padding: '11px', background: t.cardAlt || 'rgba(0,0,0,0.04)', border: `1px solid ${t.border}`, borderRadius: 12, color: copiedField === 'all' ? '#10b981' : t.textSub, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s' }}>
+                            {copiedField === 'all' ? <><CopyCheck size={14} /> All Copied!</> : <><Copy size={14} /> Copy All</>}
+                        </button>
+                        <button onClick={onClose} style={{ flex: 2, padding: '11px', background: 'linear-gradient(135deg, #3b5bdb, #228be6)', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            Done
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,7 +157,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
     const [submitting, setSubmit] = useState(false);
     const [formError, setFormError] = useState('');
     const [toast, setToast] = useState(null);
-    const [credentials, setCredentials] = useState(null); // ← NEW
+    const [credentials, setCredentials] = useState(null);
     const [form, setForm] = useState({ fullName: '', email: '', role: 'doctor', department: '', specialty: '', phone: '' });
 
     const hospitalId = hospital?.id;
@@ -158,19 +194,36 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!form.fullName || !form.email || !form.role) { setFormError('Name, email and role are required.'); return; }
+        if (!hospitalId) { setFormError('Hospital ID is missing. Please refresh and try again.'); return; }
         try {
             setSubmit(true); setFormError('');
-            const res = await staffAPI.create(form);
+
+            // Always pass hospitalId so the backend links the staff to the right hospital
+            const res = await staffAPI.create({ ...form, hospitalId });
+
             setShowAdd(false);
             setForm({ fullName: '', email: '', role: 'doctor', department: '', specialty: '', phone: '' });
             loadStaff();
-            // ── Show credentials modal ────────────────────────────────────────
-            setCredentials({
-                fullName: res.staff.fullName,
-                email: res.staff.email,
-                role: res.staff.role,
-                tempPassword: res.tempPassword,
-            });
+
+            // Safely extract credentials — handle both flat and nested response shapes:
+            // { staff: {...}, tempPassword: '...' }        ← most common
+            // { data: { staff: {...}, tempPassword } }     ← some backends wrap in data
+            const staffData    = res?.staff || res?.data?.staff || {};
+            const tempPassword = res?.tempPassword || res?.data?.tempPassword || res?.password || '—';
+
+            const credEntry = {
+                type:         'staff',
+                fullName:     staffData.fullName    || form.fullName,
+                email:        staffData.email       || form.email,
+                role:         staffData.role        || form.role,
+                employeeId:   staffData.employeeId  || staffData.staffId || staffData.id || null,
+                hospitalName: hospital?.hospitalName || hospital?.name || null,
+                tempPassword,
+            };
+
+            // Persist to localStorage so it can be retrieved from Credentials Log later
+            saveCredential(credEntry);
+            setCredentials(credEntry);
         } catch (err) { setFormError(err.message); }
         finally { setSubmit(false); }
     };
@@ -245,7 +298,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                         <div style={{ width: 44, height: 44, borderRadius: 12, background: color + '22', color, fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>
                                         <div>
                                             <p style={{ fontWeight: 700, fontSize: 14 }}>{s.fullName}</p>
-                                            <p style={{ fontSize: 11, color: t.textMuted }}>ID: {s.id}</p>
+                                            <p style={{ fontSize: 11, color: t.textMuted }}>ID: {s.employeeId || s.id}</p>
                                         </div>
                                     </div>
                                     <span style={{ background: sc.bg, color: sc.text, fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 20, flexShrink: 0 }}>{s.status}</span>
@@ -282,7 +335,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                         <form onSubmit={handleAdd} style={{ padding: '20px' }}>
                             {formError && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
                             <div style={{ background: isDark ? 'rgba(59,91,219,0.1)' : 'rgba(59,91,219,0.05)', border: `1px solid rgba(59,91,219,0.2)`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub }}>
-                                🔐 A temporary password will be shown after registration — email delivery is currently unavailable.
+                                🔐 A temporary password will be shown after registration — copy and share it manually with the staff member.
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                                 <div style={{ gridColumn: '1/-1' }}><label style={labelStyle}>Full Name *</label><input required style={inputStyle} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Dr. Kelechi Amadi" /></div>
@@ -323,6 +376,7 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                 {[
                                     { label: 'Role', value: viewStaff.role, cap: true },
                                     { label: 'Status', value: viewStaff.status, cap: true },
+                                    { label: 'Employee ID', value: viewStaff.employeeId || viewStaff.id || '—' },
                                     { label: 'Department', value: viewStaff.department || '—' },
                                     { label: 'Specialty', value: viewStaff.specialty || '—' },
                                     { label: 'Phone', value: viewStaff.phone || '—' },

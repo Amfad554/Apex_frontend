@@ -14,19 +14,22 @@ import Pharmacy from './Sections/Pharmacy.jsx';
 import RecordsSection from './Sections/Recordssection.jsx';
 import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
+import CredentialsHistory from './CredentialsHistory.jsx';
+
 
 const NAV_ITEMS = [
-  { id: 'dashboard',    icon: Home,        label: 'Dashboard' },
-  { id: 'patients',     icon: Users,       label: 'Patients' },
-  { id: 'appointments', icon: Calendar,    label: 'Appointments' },
-  { id: 'staff',        icon: Stethoscope, label: 'Staff' },
-  { id: 'pharmacy',     icon: Pill,        label: 'Pharmacy' },
-  { id: 'records',      icon: FileText,    label: 'Records' },
-  { id: 'settings',     icon: Settings,    label: 'Settings' },
+  { id: 'dashboard', icon: Home, label: 'Dashboard' },
+  { id: 'patients', icon: Users, label: 'Patients' },
+  { id: 'appointments', icon: Calendar, label: 'Appointments' },
+  { id: 'staff', icon: Stethoscope, label: 'Staff' },
+  { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
+  { id: 'records', icon: FileText, label: 'Records' },
+  { id: 'settings', icon: Settings, label: 'Settings' },
+  { id: 'credentials', icon: KeyRound, label: 'Credentials Log' }
 ];
 
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
-const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
+const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
 
 /* ─── Animated nav item indicator ─────────────────────────────────────────── */
 function ActivePill({ isDark }) {
@@ -43,21 +46,21 @@ function ActivePill({ isDark }) {
 }
 
 export default function HospitalDashboard() {
-  const navigate    = useNavigate();
-  const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
-  const [activeSection, setActive]  = useState('dashboard');
-  const [prevSection, setPrev]      = useState(null);
-  const [transitioning, setTrans]   = useState(false);
-  const [sidebarOpen, setSidebar]   = useState(true);
-  const [mobileSidebar, setMobile]  = useState(false);
+  const navigate = useNavigate();
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeSection, setActive] = useState('dashboard');
+  const [prevSection, setPrev] = useState(null);
+  const [transitioning, setTrans] = useState(false);
+  const [sidebarOpen, setSidebar] = useState(true);
+  const [mobileSidebar, setMobile] = useState(false);
   const [moreDrawer, setMoreDrawer] = useState(false);
-  const [hospital, setHospital]     = useState(null);
-  const [searchQuery, setSearch]    = useState('');
+  const [hospital, setHospital] = useState(null);
+  const [searchQuery, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [notifications]             = useState(3);
-  const [isMobile, setIsMobile]     = useState(false);
-  const [isTablet, setIsTablet]     = useState(false);
-  const [headerIn, setHeaderIn]     = useState(false);
+  const [notifications] = useState(3);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [headerIn, setHeaderIn] = useState(false);
   const [navMounted, setNavMounted] = useState(false);
 
   const t = isDark ? themes.dark : themes.light;
@@ -125,14 +128,16 @@ export default function HospitalDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'dashboard':    return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients':     return <Patients       {...sectionProps} />;
+      case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients': return <Patients       {...sectionProps} />;
       case 'appointments': return <Appointments   {...sectionProps} />;
-      case 'staff':        return <Staff          {...sectionProps} />;
-      case 'pharmacy':     return <Pharmacy       {...sectionProps} />;
-      case 'records':      return <RecordsSection {...sectionProps} />;
-      case 'settings':     return <DashSettings   {...sectionProps} />;
-      default:             return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+      case 'staff': return <Staff          {...sectionProps} />;
+      case 'pharmacy': return <Pharmacy       {...sectionProps} />;
+      case 'records': return <RecordsSection {...sectionProps} />;
+      case 'settings': return <DashSettings   {...sectionProps} />;
+      default: return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+
+      case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
     }
   };
 
