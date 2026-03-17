@@ -148,7 +148,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
 
     useEffect(() => { loadPatients(); }, [hospitalId]);
     useEffect(() => { const t = setTimeout(() => loadPatients(search), 400); return () => clearTimeout(t); }, [search]);
-
     const handleRegister = async (e) => {
         e.preventDefault();
         if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) {
@@ -156,23 +155,37 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         }
         try {
             setSubmitting(true); setFormError('');
-            const res = await patientsAPI.create(form);
-            console.log('Full API response:', res); 
+
+            const generatedPassword = Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 100);
+
+            const res = await patientsAPI.create({ ...form, password: generatedPassword });
+
+            console.log('API res:', res);
+            console.log('tempPassword from backend:', res.tempPassword);
+            console.log('generatedPassword (frontend):', generatedPassword);
+
             setShowReg(false);
             setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
             loadPatients();
-            // ── Show credentials modal instead of plain toast ─────────────────
+
             const credEntry = {
                 type: 'patient',
                 fullName: res.patient?.fullName || form.fullName,
                 patientNumber: res.patient?.patientNumber || '—',
-                tempPassword: res.tempPassword || res.password || '—',
+                tempPassword: res.tempPassword || generatedPassword, // backend first, frontend as fallback
                 email: res.patient?.email || form.email || null,
             };
+
+            console.log('credEntry:', credEntry);
+
             saveCredential(credEntry);
             setCredentials(credEntry);
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmitting(false); }
+        } catch (err) {
+            console.error('Registration error:', err);
+            setFormError(err.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleDelete = async (id) => {
