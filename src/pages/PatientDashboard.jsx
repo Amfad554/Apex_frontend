@@ -1,63 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Heart, Calendar, FileText, Pill, LogOut, Sun, Moon,
   Activity, User, X, Clock, Droplets, Phone, Mail,
-  MapPin, AlertCircle, ChevronRight, Shield, Bell,
-  TrendingUp, Thermometer, Wind, Zap, Plus, ArrowRight,
-  CheckCircle, Home, Menu, Search, RefreshCw, Eye,
-  ChevronLeft, Star, MessageSquare, Download
+  MapPin, AlertCircle, CheckCircle, Home, Menu,
+  RefreshCw, Eye, Zap, Bell, Download, Plus,
+  Shield, Thermometer, Wind, ChevronRight, Loader
 } from 'lucide-react';
 
-/* ─── Design Tokens — matched to Hospital Dashboard ─────────────────────────── */
-const BLUE = '#3b5bdb';
-const BLUE2 = '#4c6ef5';
-const BLUE_LIGHT = '#74c0fc';
-const EMERALD = '#059669';
-const AMBER = '#d97706';
-const ROSE = '#e11d48';
-const INDIGO = '#4f46e5';
+/* ─── API ────────────────────────────────────────────────────────────────────── */
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const getToken = () => localStorage.getItem('token');
+const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` });
+
+const handle = async (res) => {
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
+  return data;
+};
+
+const patientApi = {
+  // Appointments filtered by patient — backend GET /api/appointments/:hospitalId?patientId=X
+  appointments: (hospitalId, patientId) =>
+    fetch(`${BASE_URL}/api/appointments/${hospitalId}?patientId=${patientId}`, { headers: authHeaders() }).then(handle),
+
+  // Records filtered by patient — backend GET /api/medical-records/:hospitalId?patientId=X
+  records: (hospitalId, patientId) =>
+    fetch(`${BASE_URL}/api/medical-records/${hospitalId}?patientId=${patientId}`, { headers: authHeaders() }).then(handle),
+
+  // Prescriptions filtered by patient — backend GET /api/prescriptions/:hospitalId?patientId=X
+  prescriptions: (hospitalId, patientId) =>
+    fetch(`${BASE_URL}/api/prescriptions/${hospitalId}?patientId=${patientId}`, { headers: authHeaders() }).then(handle),
+
+  // Full patient detail
+  detail: (patientId) =>
+    fetch(`${BASE_URL}/api/patients/detail/${patientId}`, { headers: authHeaders() }).then(handle),
+};
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────────── */
+const BLUE = '#3b5bdb', BLUE2 = '#4c6ef5', EMERALD = '#059669',
+  AMBER = '#d97706', ROSE = '#e11d48', INDIGO = '#4f46e5', CYAN = '#0891b2';
 
 const T = {
   dark: {
-    bg: '#0d1117',
-    bgAlt: '#161b22',
-    surface: '#161b22',
-    surfaceAlt: '#1c2432',
-    surfaceHover: '#21293a',
-    glass: 'rgba(59,91,219,0.06)',
-    border: 'rgba(255,255,255,0.06)',
-    borderStrong: 'rgba(59,91,219,0.28)',
-    text: '#e6edf3',
-    textSub: 'rgba(230,237,243,0.55)',
-    textMuted: 'rgba(230,237,243,0.3)',
-    shadow: '0 4px 24px rgba(0,0,0,0.5)',
-    shadowLg: '0 16px 48px rgba(0,0,0,0.6)',
-    card: '#161b22',
-    accentBg: 'rgba(59,91,219,0.12)',
-    sidebar: '#0d1117',
-    hover: 'rgba(59,91,219,0.1)',
-    input: 'rgba(255,255,255,0.05)',
+    bg: '#0d1117', bgAlt: '#161b22', surface: '#161b22', surfaceAlt: '#1c2432',
+    glass: 'rgba(59,91,219,0.06)', border: 'rgba(255,255,255,0.06)',
+    borderStrong: 'rgba(59,91,219,0.28)', text: '#e6edf3',
+    textSub: 'rgba(230,237,243,0.55)', textMuted: 'rgba(230,237,243,0.3)',
+    shadow: '0 4px 24px rgba(0,0,0,0.5)', shadowLg: '0 16px 48px rgba(0,0,0,0.6)',
+    card: '#161b22', accentBg: 'rgba(59,91,219,0.12)', sidebar: '#0d1117',
+    hover: 'rgba(59,91,219,0.1)', input: 'rgba(255,255,255,0.05)',
   },
   light: {
-    bg: '#f5f7ff',
-    bgAlt: '#eef1ff',
-    surface: '#ffffff',
-    surfaceAlt: '#f5f7ff',
-    surfaceHover: '#eef1ff',
-    glass: 'rgba(59,91,219,0.04)',
-    border: 'rgba(0,0,0,0.07)',
-    borderStrong: 'rgba(59,91,219,0.22)',
-    text: '#111827',
-    textSub: 'rgba(17,24,39,0.6)',
-    textMuted: 'rgba(17,24,39,0.38)',
-    shadow: '0 4px 24px rgba(59,91,219,0.08)',
-    shadowLg: '0 16px 48px rgba(59,91,219,0.12)',
-    card: '#ffffff',
-    accentBg: 'rgba(59,91,219,0.07)',
-    sidebar: '#ffffff',
-    hover: 'rgba(59,91,219,0.06)',
-    input: 'rgba(0,0,0,0.04)',
+    bg: '#f5f7ff', bgAlt: '#eef1ff', surface: '#ffffff', surfaceAlt: '#f5f7ff',
+    glass: 'rgba(59,91,219,0.04)', border: 'rgba(0,0,0,0.07)',
+    borderStrong: 'rgba(59,91,219,0.22)', text: '#111827',
+    textSub: 'rgba(17,24,39,0.6)', textMuted: 'rgba(17,24,39,0.38)',
+    shadow: '0 4px 24px rgba(59,91,219,0.08)', shadowLg: '0 16px 48px rgba(59,91,219,0.12)',
+    card: '#ffffff', accentBg: 'rgba(59,91,219,0.07)', sidebar: '#ffffff',
+    hover: 'rgba(59,91,219,0.06)', input: 'rgba(0,0,0,0.04)',
   },
 };
 
@@ -66,25 +67,24 @@ const STATUS_MAP = {
   completed: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Completed' },
   cancelled: { bg: 'rgba(225,29,72,0.12)', text: ROSE, dot: ROSE, label: 'Cancelled' },
   active: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Active' },
-  pending: { bg: 'rgba(217,119,6,0.12)', text: AMBER, dot: AMBER, label: 'Pending' },
+  no_show: { bg: 'rgba(107,114,128,0.12)', text: '#6b7280', dot: '#6b7280', label: 'No Show' },
 };
 
-function initials(name) {
-  if (!name) return '??';
-  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-}
+const RECORD_TYPES = {
+  lab_results: { label: 'Lab Results', color: CYAN },
+  consultation: { label: 'Consultation', color: BLUE },
+  imaging: { label: 'Imaging', color: INDIGO },
+  other: { label: 'Other', color: '#6b7280' },
+};
+
+/* ─── Helpers ────────────────────────────────────────────────────────────────── */
+const initials = (name) => !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 function Badge({ status }) {
-  const s = STATUS_MAP[status?.toLowerCase()] || STATUS_MAP.scheduled;
+  const s = STATUS_MAP[status?.toLowerCase()] || { bg: 'rgba(128,128,128,0.12)', text: '#9ca3af', dot: '#9ca3af', label: status || '—' };
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      background: s.bg, color: s.text,
-      fontSize: 11, fontWeight: 700,
-      padding: '3px 10px 3px 7px', borderRadius: 20,
-      textTransform: 'capitalize', whiteSpace: 'nowrap', letterSpacing: '0.02em',
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot }} />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: s.bg, color: s.text, fontSize: 11, fontWeight: 700, padding: '3px 10px 3px 7px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
       {s.label}
     </span>
   );
@@ -92,10 +92,10 @@ function Badge({ status }) {
 
 function Spinner({ t }) {
   return (
-    <div style={{ padding: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, color: t.textMuted }}>
+    <div style={{ padding: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ width: 32, height: 32, border: `2.5px solid ${t.border}`, borderTopColor: BLUE, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-      <span style={{ fontSize: 13, fontWeight: 500 }}>Loading...</span>
+      <span style={{ fontSize: 13, color: t.textMuted, fontWeight: 500 }}>Loading...</span>
     </div>
   );
 }
@@ -112,7 +112,7 @@ function Empty({ icon: Icon, label, t }) {
   );
 }
 
-function Err({ msg }) {
+function Err({ msg, t }) {
   return (
     <div style={{ padding: '16px 18px', borderRadius: 14, background: 'rgba(225,29,72,0.07)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, display: 'flex', alignItems: 'center', gap: 9, fontSize: 13, fontWeight: 500 }}>
       <AlertCircle size={16} />{msg}
@@ -120,177 +120,165 @@ function Err({ msg }) {
   );
 }
 
-/* ─── Overview / Home ──────────────────────────────────────────────────────── */
-function Overview({ t, patient, isDark, onNavigate }) {
-  const av = initials(patient?.fullName);
+/* ─── Overview / Home ────────────────────────────────────────────────────────── */
+function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
+  const [stats, setStats] = useState({ appointments: 0, prescriptions: 0, records: 0 });
+  const [recentAppts, setRecentAppts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
+  useEffect(() => {
+    if (!hospitalId || !patient?.id) { setLoading(false); return; }
+    Promise.all([
+      patientApi.appointments(hospitalId, patient.id),
+      patientApi.prescriptions(hospitalId, patient.id),
+      patientApi.records(hospitalId, patient.id),
+    ]).then(([aRes, rxRes, rRes]) => {
+      const appts = aRes.appointments || [];
+      setStats({
+        appointments: appts.length,
+        prescriptions: (rxRes.prescriptions || []).filter(r => r.status === 'active').length,
+        records: (rRes.records || []).length,
+      });
+      setRecentAppts(appts.slice(0, 3));
+    }).catch(console.error).finally(() => setLoading(false));
+  }, [hospitalId, patient?.id]);
+
   const vitals = [
-    { label: 'Heart Rate', value: '72', unit: 'bpm', icon: Heart, color: ROSE, trend: '+2%', good: true },
-    { label: 'Blood Pressure', value: '118/76', unit: 'mmHg', icon: Activity, color: BLUE, trend: 'Normal', good: true },
-    { label: 'Temperature', value: '36.6', unit: '°C', icon: Thermometer, color: AMBER, trend: 'Normal', good: true },
-    { label: 'O₂ Saturation', value: '98', unit: '%', icon: Wind, color: INDIGO, trend: '+1%', good: true },
+    { label: 'Heart Rate', value: '—', unit: 'bpm', icon: Heart, color: ROSE },
+    { label: 'Blood Pressure', value: '—', unit: 'mmHg', icon: Activity, color: BLUE },
+    { label: 'Temperature', value: '—', unit: '°C', icon: Thermometer, color: AMBER },
+    { label: 'O₂ Saturation', value: '—', unit: '%', icon: Wind, color: INDIGO },
   ];
 
   const quickActions = [
-    { label: 'Book Appointment', icon: Calendar, color: BLUE, section: 'appointments' },
-    { label: 'View Records', icon: FileText, color: INDIGO, section: 'records' },
-    { label: 'My Prescriptions', icon: Pill, color: EMERALD, section: 'prescriptions' },
-    { label: 'My Profile', icon: User, color: AMBER, section: 'profile' },
+    { label: 'Appointments', icon: Calendar, color: BLUE, section: 'appointments', count: stats.appointments },
+    { label: 'Medical Records', icon: FileText, color: INDIGO, section: 'records', count: stats.records },
+    { label: 'Prescriptions', icon: Pill, color: EMERALD, section: 'prescriptions', count: stats.prescriptions },
+    { label: 'My Profile', icon: User, color: AMBER, section: 'profile', count: null },
   ];
 
   return (
     <div>
-      {/* Hero greeting card */}
-      <div style={{
-        background: isDark
-          ? `linear-gradient(135deg, ${BLUE}22 0%, ${BLUE2}11 50%, transparent 100%)`
-          : `linear-gradient(135deg, ${BLUE}12 0%, ${BLUE2}08 50%, transparent 100%)`,
-        borderRadius: 28, padding: '36px 32px',
-        border: `1px solid ${t.borderStrong}`,
-        marginBottom: 28, position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle, ${BLUE}18, transparent 70%)`, pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -40, right: 120, width: 120, height: 120, borderRadius: '50%', background: `radial-gradient(circle, ${BLUE2}12, transparent 70%)`, pointerEvents: 'none' }} />
-
+      {/* Hero */}
+      <div style={{ background: isDark ? `linear-gradient(135deg,${BLUE}22,${BLUE2}11,transparent)` : `linear-gradient(135deg,${BLUE}12,${BLUE2}08,transparent)`, borderRadius: 28, padding: '32px', border: `1px solid ${t.borderStrong}`, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,${BLUE}18,transparent 70%)`, pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
-              {greeting} 👋
-            </p>
-            <h1 style={{ fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 10, lineHeight: 1.2 }}>
-              {patient?.fullName?.split(' ')[0] || 'Patient'}
-            </h1>
-            <p style={{ fontSize: 14, color: t.textSub, marginBottom: 18, lineHeight: 1.6 }}>
-              Welcome to your health dashboard. Everything you need, in one place.
-            </p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>{greeting} 👋</p>
+            <h1 style={{ fontSize: 'clamp(20px,4vw,30px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 8, lineHeight: 1.2 }}>{patient?.fullName?.split(' ')[0] || 'Patient'}</h1>
+            <p style={{ fontSize: 13, color: t.textSub, marginBottom: 16, lineHeight: 1.6 }}>Welcome to your health portal. All your records, appointments and prescriptions in one place.</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {patient?.patientNumber && (
-                <span style={{ background: t.accentBg, border: `1px solid ${t.borderStrong}`, color: '#60a5fa', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, letterSpacing: '0.05em' }}>
-                  ID: {patient.patientNumber}
-                </span>
-              )}
-              {patient?.bloodGroup && (
-                <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
-                  {patient.bloodGroup} Blood Type
-                </span>
-              )}
-              <span style={{ background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)', color: EMERALD, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <CheckCircle size={10} />Active Patient
-              </span>
+              {patient?.patientNumber && <span style={{ background: t.accentBg, border: `1px solid ${t.borderStrong}`, color: '#60a5fa', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>ID: {patient.patientNumber}</span>}
+              {patient?.bloodGroup && <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.bloodGroup} Blood Type</span>}
+              <span style={{ background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)', color: EMERALD, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}><CheckCircle size={10} />Active Patient</span>
             </div>
           </div>
-          <div style={{
-            width: 88, height: 88, borderRadius: 24, flexShrink: 0,
-            background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: 26, color: '#fff',
-            boxShadow: `0 8px 32px ${BLUE}44`,
-            border: `3px solid ${BLUE}33`,
-          }}>{av}</div>
+          <div style={{ width: 84, height: 84, borderRadius: 24, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26, color: '#fff', boxShadow: `0 8px 32px ${BLUE}44`, flexShrink: 0 }}>{initials(patient?.fullName)}</div>
         </div>
       </div>
 
-      {/* Vitals strip */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 800, color: t.text, letterSpacing: '-0.3px' }}>Health Vitals</h2>
-          <span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, background: t.surfaceAlt, padding: '4px 10px', borderRadius: 20, border: `1px solid ${t.border}` }}>Last updated today</span>
+      {/* Real stats */}
+      {loading ? <Spinner t={t} /> : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 12, marginBottom: 24 }}>
+            {quickActions.map(({ label, icon: Icon, color, section, count }, i) => (
+              <div key={section} onClick={() => onNavigate(section)} style={{ background: t.surface, borderRadius: 20, padding: '18px 16px', border: `1px solid ${t.border}`, boxShadow: t.shadow, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden', animation: `fadeUp 0.3s ease ${i * 0.06}s both` }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = color + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; }}>
+                <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: color + '10', pointerEvents: 'none' }} />
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: color + '16', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}><Icon size={17} color={color} /></div>
+                {count !== null && <p style={{ fontSize: 26, fontWeight: 800, color: t.text, fontFamily: 'monospace', marginBottom: 3 }}>{count}</p>}
+                <p style={{ fontSize: 12, fontWeight: 700, color: t.textMuted, textTransform: count !== null ? 'uppercase' : 'none', letterSpacing: count !== null ? '0.04em' : 0, fontSize: count !== null ? 11 : 13 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent appointments */}
+          {recentAppts.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Recent Appointments</h2>
+                <button onClick={() => onNavigate('appointments')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#60a5fa', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View all <ChevronRight size={14} /></button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {recentAppts.map((a, i) => (
+                  <div key={a.id} style={{ background: t.surface, borderRadius: 16, padding: '14px 18px', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 14, animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
+                    <div style={{ width: 48, height: 52, borderRadius: 14, background: t.accentBg, border: `1px solid ${t.borderStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase' }}>{new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short' })}</span>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: t.text, fontFamily: 'monospace', lineHeight: 1 }}>{new Date(a.appointmentDate).getDate()}</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <p style={{ fontWeight: 700, fontSize: 14 }}>{a.reason || 'Appointment'}</p>
+                        <Badge status={a.status} />
+                      </div>
+                      <p style={{ fontSize: 12, color: t.textMuted }}>Dr. {a.doctor?.fullName || '—'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Vitals strip — static placeholder since there's no vitals endpoint */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Health Vitals</h2>
+          <span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, background: t.surfaceAlt, padding: '3px 10px', borderRadius: 20, border: `1px solid ${t.border}` }}>Update at clinic visit</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
-          {vitals.map(({ label, value, unit, icon: Icon, color, trend, good }, i) => (
-            <div key={label} style={{
-              background: t.surface, borderRadius: 20, padding: '18px 16px',
-              border: `1px solid ${t.border}`, boxShadow: t.shadow,
-              position: 'relative', overflow: 'hidden',
-              animation: `fadeUp 0.35s ease ${i * 0.06}s both`,
-            }}>
-              <div style={{ position: 'absolute', top: -20, right: -20, width: 70, height: 70, borderRadius: '50%', background: color + '10' }} />
-              <div style={{ width: 36, height: 36, borderRadius: 11, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <Icon size={16} color={color} strokeWidth={2} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12 }}>
+          {vitals.map(({ label, value, unit, icon: Icon, color }, i) => (
+            <div key={label} style={{ background: t.surface, borderRadius: 18, padding: '16px', border: `1px solid ${t.border}`, boxShadow: t.shadow, position: 'relative', overflow: 'hidden', animation: `fadeUp 0.3s ease ${i * 0.06}s both` }}>
+              <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: color + '10', pointerEvents: 'none' }} />
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}><Icon size={15} color={color} /></div>
+              <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <span style={{ fontSize: 20, fontWeight: 800, color: t.textMuted, fontFamily: 'monospace' }}>{value}</span>
+                <span style={{ fontSize: 10, color: t.textMuted }}>{unit}</span>
               </div>
-              <p style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-                <span style={{ fontSize: 22, fontWeight: 800, color: t.text, letterSpacing: '-0.5px', fontFamily: 'monospace' }}>{value}</span>
-                <span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>{unit}</span>
-              </div>
-              <span style={{ fontSize: 11, color: good ? EMERALD : ROSE, fontWeight: 700, background: good ? 'rgba(5,150,105,0.08)' : 'rgba(225,29,72,0.08)', padding: '2px 8px', borderRadius: 20 }}>{trend}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 800, color: t.text, letterSpacing: '-0.3px', marginBottom: 16 }}>Quick Actions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
-          {quickActions.map(({ label, icon: Icon, color, section }) => (
-            <button key={section} onClick={() => onNavigate(section)}
-              style={{
-                background: t.surface, borderRadius: 18, padding: '20px 16px',
-                border: `1px solid ${t.border}`, cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12,
-                transition: 'all 0.2s', fontFamily: 'inherit',
-                boxShadow: t.shadow,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = color + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 12px 32px ${color}22`; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = t.shadow; }}
-            >
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={18} color={color} strokeWidth={2} />
-              </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: t.text, lineHeight: 1.3, textAlign: 'left' }}>{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Health tip banner */}
-      <div style={{
-        background: isDark ? `linear-gradient(135deg, ${BLUE}18, ${BLUE2}10)` : `linear-gradient(135deg, ${BLUE}10, ${BLUE2}06)`,
-        border: `1px solid ${t.borderStrong}`,
-        borderRadius: 20, padding: '20px 22px',
-        display: 'flex', alignItems: 'center', gap: 16,
-      }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Zap size={20} color="#fff" strokeWidth={2.5} />
-        </div>
+      {/* Health tip */}
+      <div style={{ background: isDark ? `linear-gradient(135deg,${BLUE}18,${BLUE2}10)` : `linear-gradient(135deg,${BLUE}10,${BLUE2}06)`, border: `1px solid ${t.borderStrong}`, borderRadius: 20, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={20} color="#fff" strokeWidth={2.5} /></div>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 800, color: t.text, marginBottom: 3 }}>Daily Health Tip</p>
-          <p style={{ fontSize: 13, color: t.textSub, lineHeight: 1.5 }}>Drink at least 8 glasses of water today. Staying hydrated improves energy levels and cognitive function.</p>
+          <p style={{ fontSize: 13, color: t.textSub, lineHeight: 1.5 }}>Drink at least 8 glasses of water daily. Staying hydrated improves energy and cognitive function.</p>
         </div>
-        <RefreshCw size={16} color={t.textMuted} style={{ flexShrink: 0, cursor: 'pointer' }} />
       </div>
     </div>
   );
 }
 
 /* ─── Appointments ───────────────────────────────────────────────────────────── */
-function MyAppointments({ t, patient }) {
+function MyAppointments({ t, patient, hospitalId }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    if (!patient?.id) return;
-    (async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/appointments/${patient.id}`,
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        );
-        if (!res.ok) throw new Error('Failed to load appointments');
-        const d = await res.json();
-        setItems(d.appointments || []);
-      } catch (e) { setError(e.message); }
-      finally { setLoading(false); }
-    })();
-  }, [patient?.id]);
+  const load = useCallback(async () => {
+    if (!hospitalId || !patient?.id) { setLoading(false); return; }
+    try {
+      setLoading(true); setError('');
+      const res = await patientApi.appointments(hospitalId, patient.id);
+      setItems(res.appointments || []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }, [hospitalId, patient?.id]);
 
-  const filters = ['all', 'scheduled', 'completed', 'cancelled'];
+  useEffect(() => { load(); }, [load]);
+
   const filtered = filter === 'all' ? items : items.filter(a => a.status?.toLowerCase() === filter);
+  const counts = { all: items.length, scheduled: 0, completed: 0, cancelled: 0 };
+  items.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
   return (
     <div>
@@ -299,39 +287,32 @@ function MyAppointments({ t, patient }) {
           <h1 style={{ fontSize: 24, fontWeight: 800, color: t.text, letterSpacing: '-0.4px', marginBottom: 3 }}>Appointments</h1>
           <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total appointments</p>
         </div>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', border: 'none', borderRadius: 12, padding: '10px 18px', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: `0 4px 16px ${BLUE}44` }}>
-          <Plus size={15} /> Book New
-        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
-        {filters.map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '7px 16px', borderRadius: 20, border: `1.5px solid ${filter === f ? BLUE : t.border}`,
-            background: filter === f ? t.accentBg : t.surface,
-            color: filter === f ? '#60a5fa' : t.textMuted,
-            fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
-            cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s',
-          }}>{f === 'all' ? `All (${items.length})` : f.charAt(0).toUpperCase() + f.slice(1)}</button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
+        {[{ label: 'Scheduled', count: counts.scheduled, color: AMBER }, { label: 'Completed', count: counts.completed, color: EMERALD }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
+          <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}` }}>
+            <p style={{ fontSize: 26, fontWeight: 800, color: t.text, fontFamily: 'monospace' }}>{count}</p>
+            <p style={{ fontSize: 11, color: t.textMuted, marginTop: 2, fontWeight: 600 }}>{label}</p>
+          </div>
         ))}
       </div>
 
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} /> : filtered.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
+      <div style={{ display: 'flex', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
+        {['all', 'scheduled', 'completed', 'cancelled'].map(f => (
+          <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 16px', borderRadius: 20, border: `1.5px solid ${filter === f ? BLUE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? '#60a5fa' : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
+            {f === 'all' ? `All (${items.length})` : f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {filtered.map((a, i) => (
-            <div key={a.id} style={{
-              background: t.surface, borderRadius: 20, padding: '20px 22px',
-              border: `1px solid ${t.border}`, boxShadow: t.shadow,
-              display: 'flex', gap: 18, alignItems: 'flex-start',
-              animation: `fadeUp 0.3s ease ${i * 0.05}s both`,
-            }}>
+            <div key={a.id} style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', gap: 18, alignItems: 'flex-start', animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
               <div style={{ width: 54, height: 60, borderRadius: 16, background: t.accentBg, border: `1.5px solid ${t.borderStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  {new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short' })}
-                </span>
-                <span style={{ fontSize: 22, fontWeight: 800, color: t.text, lineHeight: 1, fontFamily: 'monospace' }}>
-                  {new Date(a.appointmentDate).getDate()}
-                </span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{new Date(a.appointmentDate).toLocaleDateString('en-US', { month: 'short' })}</span>
+                <span style={{ fontSize: 22, fontWeight: 800, color: t.text, lineHeight: 1, fontFamily: 'monospace' }}>{new Date(a.appointmentDate).getDate()}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
@@ -340,19 +321,16 @@ function MyAppointments({ t, patient }) {
                 </div>
                 <p style={{ fontSize: 13, color: t.textSub, marginBottom: 10, fontWeight: 500 }}>
                   Dr. {a.doctor?.fullName || '—'}
-                  {(a.doctor?.specialty || a.doctor?.department) && (
-                    <span style={{ color: t.textMuted }}> · {a.doctor?.specialty || a.doctor?.department}</span>
-                  )}
+                  {(a.doctor?.specialty || a.doctor?.department) && <span style={{ color: t.textMuted }}> · {a.doctor?.specialty || a.doctor?.department}</span>}
                 </p>
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500 }}>
-                    <Clock size={12} color={'#60a5fa'} />
+                    <Clock size={12} color="#60a5fa" />
                     {new Date(a.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                   </span>
-                  {a.appointmentTime && (
-                    <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 500 }}>{a.appointmentTime}</span>
-                  )}
+                  {a.appointmentTime && <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 500 }}>{a.appointmentTime}</span>}
                 </div>
+                {a.notes && <p style={{ fontSize: 12, color: t.textMuted, marginTop: 8, fontStyle: 'italic' }}>{a.notes}</p>}
               </div>
             </div>
           ))}
@@ -362,35 +340,27 @@ function MyAppointments({ t, patient }) {
   );
 }
 
-/* ─── Medical Records ─────────────────────────────────────────────────────────── */
-const RECORD_TYPES = {
-  lab_results: { label: 'Lab', color: '#06b6d4' },
-  consultation: { label: 'Consult', color: BLUE },
-  imaging: { label: 'Imaging', color: INDIGO },
-  other: { label: 'Other', color: '#6b7280' },
-};
-
-function MyRecords({ t, patient }) {
+/* ─── Medical Records ────────────────────────────────────────────────────────── */
+function MyRecords({ t, patient, hospitalId }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('All');
 
-  useEffect(() => {
-    if (!patient?.id) return;
-    (async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/medical-records/patient/${patient.id}`,
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        );
-        if (!res.ok) throw new Error('Failed to load records');
-        const d = await res.json();
-        setItems(d.records || []);
-      } catch (e) { setError(e.message); }
-      finally { setLoading(false); }
-    })();
-  }, [patient?.id]);
+  const load = useCallback(async () => {
+    if (!hospitalId || !patient?.id) { setLoading(false); return; }
+    try {
+      setLoading(true); setError('');
+      const res = await patientApi.records(hospitalId, patient.id);
+      setItems(res.records || []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }, [hospitalId, patient?.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = filter === 'All' ? items : items.filter(r => r.recordType === filter);
 
   return (
     <div>
@@ -399,31 +369,27 @@ function MyRecords({ t, patient }) {
           <h1 style={{ fontSize: 24, fontWeight: 800, color: t.text, letterSpacing: '-0.4px', marginBottom: 3 }}>Medical Records</h1>
           <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} records on file</p>
         </div>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, color: '#60a5fa', border: `1.5px solid ${t.borderStrong}`, borderRadius: 12, padding: '10px 18px', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-          <Download size={15} /> Export All
-        </button>
       </div>
 
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} /> : items.length === 0 ? <Empty icon={FileText} label="records" t={t} /> : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-          {items.map((r, i) => {
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {['All', ...Object.keys(RECORD_TYPES)].map(f => (
+          <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${filter === f ? BLUE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? '#60a5fa' : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
+            {f === 'All' ? 'All' : RECORD_TYPES[f]?.label}
+          </button>
+        ))}
+      </div>
+
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={FileText} label="records" t={t} /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
+          {filtered.map((r, i) => {
             const rt = RECORD_TYPES[r.recordType] || RECORD_TYPES.other;
             return (
-              <div key={r.id} onClick={() => setSelected(r)}
-                style={{
-                  background: t.surface, borderRadius: 22, padding: '22px', border: `1px solid ${t.border}`,
-                  boxShadow: t.shadow, cursor: 'pointer', transition: 'all 0.2s',
-                  animation: `fadeUp 0.3s ease ${i * 0.04}s both`,
-                  display: 'flex', flexDirection: 'column', gap: 14,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = rt.color + '44'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 16px 40px ${rt.color}18`; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = t.shadow; }}
-              >
+              <div key={r.id} onClick={() => setSelected(r)} style={{ background: t.surface, borderRadius: 22, padding: '22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, cursor: 'pointer', transition: 'all 0.2s', animation: `fadeUp 0.3s ease ${i * 0.04}s both`, display: 'flex', flexDirection: 'column', gap: 14 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = rt.color + '44'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: rt.color, background: rt.color + '14', padding: '4px 11px', borderRadius: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{rt.label}</span>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: t.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Eye size={13} color={t.textMuted} />
-                  </div>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: t.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} color={t.textMuted} /></div>
                 </div>
                 <div>
                   <h3 style={{ fontWeight: 800, fontSize: 15, color: t.text, marginBottom: 5, lineHeight: 1.3 }}>{r.title}</h3>
@@ -441,20 +407,18 @@ function MyRecords({ t, patient }) {
       )}
 
       {selected && (
-        <div onClick={e => e.target === e.currentTarget && setSelected(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }}>
+        <div onClick={e => e.target === e.currentTarget && setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }}>
           <div style={{ background: t.surface, borderRadius: 26, width: '100%', maxWidth: 480, maxHeight: '88vh', overflowY: 'auto', border: `1px solid ${t.borderStrong}`, boxShadow: '0 32px 80px rgba(0,0,0,0.5)', animation: 'fadeUp 0.22s ease' }}>
             <div style={{ padding: '22px 24px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: t.surface, borderRadius: '26px 26px 0 0' }}>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Medical Record</p>
                 <h2 style={{ fontWeight: 800, fontSize: 17, color: t.text }}>{selected.title}</h2>
               </div>
-              <button onClick={() => setSelected(null)} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.15)', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <X size={15} />
-              </button>
+              <button onClick={() => setSelected(null)} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.15)', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
+                ['Type', (RECORD_TYPES[selected.recordType] || RECORD_TYPES.other).label],
                 ['Attending Doctor', selected.doctor?.fullName || '—'],
                 ['Record Date', new Date(selected.recordDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })],
                 ['Diagnosis', selected.diagnosis || '—'],
@@ -480,36 +444,28 @@ function MyRecords({ t, patient }) {
 }
 
 /* ─── Prescriptions ──────────────────────────────────────────────────────────── */
-function MyPrescriptions({ t, patient }) {
+function MyPrescriptions({ t, patient, hospitalId }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!patient?.id) return;
-    (async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/prescriptions/patient/${patient.id}`,
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        );
-        if (!res.ok) throw new Error('Failed to load prescriptions');
-        const d = await res.json();
-        setItems(d.prescriptions || []);
-      } catch (e) { setError(e.message); }
-      finally { setLoading(false); }
-    })();
-  }, [patient?.id]);
+  const load = useCallback(async () => {
+    if (!hospitalId || !patient?.id) { setLoading(false); return; }
+    try {
+      setLoading(true); setError('');
+      const res = await patientApi.prescriptions(hospitalId, patient.id);
+      setItems(res.prescriptions || []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }, [hospitalId, patient?.id]);
 
-  const activeRx = items.filter(r => r.status?.toLowerCase() === 'active' || !r.status);
-  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active' && r.status);
+  useEffect(() => { load(); }, [load]);
+
+  const activeRx = items.filter(r => r.status?.toLowerCase() === 'active');
+  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active');
 
   const RxCard = ({ rx, i }) => (
-    <div key={rx.id} style={{
-      background: t.surface, borderRadius: 20, padding: '20px 22px',
-      border: `1px solid ${t.border}`, boxShadow: t.shadow,
-      animation: `fadeUp 0.3s ease ${i * 0.05}s both`,
-    }}>
+    <div style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, minWidth: 0 }}>
           <div style={{ width: 46, height: 46, borderRadius: 14, background: `${EMERALD}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -531,7 +487,7 @@ function MyPrescriptions({ t, patient }) {
         <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 600 }}>Dr. {rx.doctor?.fullName || '—'}</span>
         {rx.duration && <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={11} />{rx.duration}</span>}
         <span style={{ fontSize: 12, color: t.textMuted, marginLeft: 'auto' }}>
-          {new Date(rx.prescribedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          {rx.prescribedDate ? new Date(rx.prescribedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
         </span>
       </div>
     </div>
@@ -544,7 +500,7 @@ function MyPrescriptions({ t, patient }) {
         <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total · {activeRx.length} active</p>
       </div>
 
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} /> : items.length === 0 ? <Empty icon={Pill} label="prescriptions" t={t} /> : (
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : items.length === 0 ? <Empty icon={Pill} label="prescriptions" t={t} /> : (
         <>
           {activeRx.length > 0 && (
             <div style={{ marginBottom: 28 }}>
@@ -577,42 +533,29 @@ function MyPrescriptions({ t, patient }) {
 
 /* ─── Profile ────────────────────────────────────────────────────────────────── */
 function MyProfile({ t, patient, isDark }) {
-  const av = initials(patient?.fullName);
   const info = [
     { label: 'Full Name', value: patient?.fullName || '—', icon: User, color: BLUE },
     { label: 'Patient ID', value: patient?.patientNumber || '—', icon: Shield, color: INDIGO },
     { label: 'Blood Group', value: patient?.bloodGroup || '—', icon: Droplets, color: ROSE },
     { label: 'Gender', value: patient?.gender || '—', icon: User, color: BLUE2 },
+    { label: 'Date of Birth', value: patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—', icon: Activity, color: AMBER },
     { label: 'Phone', value: patient?.phone || '—', icon: Phone, color: EMERALD },
     { label: 'Email', value: patient?.email || '—', icon: Mail, color: INDIGO },
     { label: 'Address', value: patient?.address || '—', icon: MapPin, color: AMBER },
-    { label: 'Conditions', value: patient?.medicalConditions || 'None listed', icon: Activity, color: ROSE },
-    { label: 'Next of Kin', value: patient?.nextOfKinName || '—', icon: User, color: '#06b6d4' },
-    { label: 'Kin Phone', value: patient?.nextOfKinPhone || '—', icon: Phone, color: '#06b6d4' },
+    { label: 'Medical Conditions', value: patient?.medicalConditions || 'None listed', icon: Activity, color: ROSE },
+    { label: 'Next of Kin', value: patient?.nextOfKinName || '—', icon: User, color: CYAN },
+    { label: 'Kin Phone', value: patient?.nextOfKinPhone || '—', icon: Phone, color: CYAN },
   ];
 
   return (
     <div>
-      <div style={{
-        background: isDark
-          ? `linear-gradient(135deg, ${BLUE}20, ${INDIGO}10, transparent)`
-          : `linear-gradient(135deg, ${BLUE}12, ${INDIGO}06, transparent)`,
-        borderRadius: 28, padding: '36px 32px', marginBottom: 28,
-        border: `1px solid ${t.borderStrong}`, position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle, ${BLUE}18, transparent 70%)` }} />
+      <div style={{ background: isDark ? `linear-gradient(135deg,${BLUE}20,${INDIGO}10,transparent)` : `linear-gradient(135deg,${BLUE}12,${INDIGO}06,transparent)`, borderRadius: 28, padding: '32px', marginBottom: 24, border: `1px solid ${t.borderStrong}`, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle,${BLUE}18,transparent 70%)`, pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-          <div style={{
-            width: 96, height: 96, borderRadius: 28, flexShrink: 0,
-            background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: 32, color: '#fff',
-            boxShadow: `0 12px 36px ${BLUE}44`,
-            border: `4px solid ${BLUE}33`,
-          }}>{av}</div>
+          <div style={{ width: 92, height: 92, borderRadius: 26, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 30, color: '#fff', boxShadow: `0 12px 36px ${BLUE}44`, flexShrink: 0 }}>{initials(patient?.fullName)}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Patient Profile</p>
-            <h1 style={{ fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 10 }}>{patient?.fullName || '—'}</h1>
+            <h1 style={{ fontSize: 'clamp(18px,3vw,26px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 10 }}>{patient?.fullName || '—'}</h1>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {patient?.patientNumber && <span style={{ background: t.accentBg, border: `1px solid ${t.borderStrong}`, color: '#60a5fa', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.patientNumber}</span>}
               {patient?.bloodGroup && <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.bloodGroup}</span>}
@@ -622,21 +565,14 @@ function MyProfile({ t, patient, isDark }) {
         </div>
       </div>
 
-      <h2 style={{ fontSize: 17, fontWeight: 800, color: t.text, letterSpacing: '-0.3px', marginBottom: 16 }}>Personal Information</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+      <h2 style={{ fontSize: 17, fontWeight: 800, color: t.text, marginBottom: 16 }}>Personal Information</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 12 }}>
         {info.map(({ label, value, icon: Icon, color }, i) => (
-          <div key={label} style={{
-            background: t.surface, borderRadius: 18, padding: '18px 20px',
-            border: `1px solid ${t.border}`, boxShadow: t.shadow,
-            display: 'flex', alignItems: 'flex-start', gap: 14,
-            animation: `fadeUp 0.3s ease ${i * 0.04}s both`,
-          }}>
-            <div style={{ width: 38, height: 38, borderRadius: 11, background: color + '14', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-              <Icon size={16} color={color} strokeWidth={2} />
-            </div>
+          <div key={label} style={{ background: t.surface, borderRadius: 18, padding: '16px 18px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', alignItems: 'flex-start', gap: 12, animation: `fadeUp 0.3s ease ${i * 0.04}s both` }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '14', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon size={15} color={color} /></div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>{label}</p>
-              <p style={{ fontSize: 13, fontWeight: 700, color: t.text, lineHeight: 1.4, wordBreak: 'break-word' }}>{value}</p>
+              <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>{label}</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: t.text, wordBreak: 'break-word', textTransform: label === 'Gender' ? 'capitalize' : 'none', lineHeight: 1.4 }}>{value}</p>
             </div>
           </div>
         ))}
@@ -645,7 +581,7 @@ function MyProfile({ t, patient, isDark }) {
   );
 }
 
-/* ─── Navigation ─────────────────────────────────────────────────────────────── */
+/* ─── Nav ────────────────────────────────────────────────────────────────────── */
 const NAV = [
   { id: 'overview', label: 'Home', icon: Home },
   { id: 'appointments', label: 'Appointments', icon: Calendar },
@@ -665,356 +601,158 @@ export default function PatientDashboard() {
 
   const t = isDark ? T.dark : T.light;
 
-  // Sync with hospital dashboard theme key
-  useEffect(() => {
-    const onThemeChange = () => setIsDark(localStorage.getItem('theme') === 'dark');
-    window.addEventListener('themeChange', onThemeChange);
-    return () => window.removeEventListener('themeChange', onThemeChange);
-  }, []);
+  // hospitalId comes from JWT payload stored in user object at login
+  const hospitalId = patient?.hospital_id;
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
+  useEffect(() => { const fn = () => setIsDark(localStorage.getItem('theme') === 'dark'); window.addEventListener('themeChange', fn); return () => window.removeEventListener('themeChange', fn); }, []);
+  useEffect(() => { const check = () => setIsMobile(window.innerWidth < 768); check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check); }, []);
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
-      if (raw) setPatient(JSON.parse(raw));
-    } catch { }
+      if (!raw) { navigate('/patientlogin'); return; }
+      setPatient(JSON.parse(raw));
+    } catch { navigate('/patientlogin'); }
   }, []);
 
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-    window.dispatchEvent(new Event('themeChange'));
-  };
-
-  const handleLogout = () => {
-    ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k));
-    window.dispatchEvent(new Event('authChange'));
-    navigate('/patientlogin');
-  };
-
+  const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
+  const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/patientlogin'); };
   const goTo = (id) => { setSection(id); setMobileMenu(false); };
+
+  const sectionProps = { t, patient, isDark, hospitalId };
+
+  const renderSection = () => {
+    switch (section) {
+      case 'overview': return <Overview {...sectionProps} onNavigate={goTo} />;
+      case 'appointments': return <MyAppointments {...sectionProps} />;
+      case 'records': return <MyRecords {...sectionProps} />;
+      case 'prescriptions': return <MyPrescriptions {...sectionProps} />;
+      case 'profile': return <MyProfile {...sectionProps} />;
+      default: return <Overview {...sectionProps} onNavigate={goTo} />;
+    }
+  };
 
   const av = initials(patient?.fullName);
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const sectionProps = { t, patient, isDark };
-
-  const renderSection = () => {
-    switch (section) {
-      case 'overview': return <Overview         {...sectionProps} onNavigate={goTo} />;
-      case 'appointments': return <MyAppointments   {...sectionProps} />;
-      case 'records': return <MyRecords        {...sectionProps} />;
-      case 'prescriptions': return <MyPrescriptions  {...sectionProps} />;
-      case 'profile': return <MyProfile        {...sectionProps} />;
-      default: return <Overview         {...sectionProps} onNavigate={goTo} />;
-    }
-  };
+  const SidebarContent = ({ forceFull = false }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ padding: '18px 14px', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px ${BLUE}44` }}><Heart size={18} color="#fff" strokeWidth={2.2} /></div>
+          <div>
+            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>HMS<span style={{ background: `linear-gradient(135deg,${BLUE},${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span></span>
+            <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Patient Portal</p>
+          </div>
+        </div>
+        {forceFull && <button onClick={() => setMobileMenu(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 4, borderRadius: 8, transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'rotate(90deg)'} onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg)'}><X size={18} /></button>}
+      </div>
+      <div style={{ padding: '12px 16px 6px' }}>
+        <p style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>{today}</p>
+      </div>
+      <nav style={{ flex: 1, padding: '8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {NAV.map(({ id, label, icon: Icon }) => {
+          const active = section === id;
+          return (
+            <button key={id} onClick={() => goTo(id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: active ? (isDark ? 'rgba(59,91,219,0.22)' : 'rgba(59,91,219,0.11)') : 'transparent', color: active ? '#60a5fa' : t.textSub, fontWeight: active ? 600 : 400, fontSize: 14, textAlign: 'left', transition: 'all 0.15s', minHeight: 44 }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = t.hover; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+              <Icon size={18} style={{ flexShrink: 0, transform: active ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s' }} />
+              <span style={{ flex: 1 }}>{label}</span>
+              {active && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: BLUE, flexShrink: 0 }} />}
+            </button>
+          );
+        })}
+      </nav>
+      <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: t.accentBg, border: `1px solid ${t.borderStrong}` }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{av}</div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{patient?.fullName || 'Patient'}</p>
+            <p style={{ fontSize: 11, color: t.textMuted }}>{patient?.patientNumber || '—'}</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={toggleTheme} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, border: `1px solid ${t.border}`, cursor: 'pointer', fontFamily: 'inherit', background: t.input, color: t.textSub, fontWeight: 600, fontSize: 12 }}>
+            {isDark ? <Sun size={14} /> : <Moon size={14} />} {isDark ? 'Light' : 'Dark'}
+          </button>
+          <button onClick={handleLogout} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: 'rgba(239,68,68,0.08)', color: '#ef4444', fontWeight: 600, fontSize: 12 }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}>
+            <LogOut size={14} /> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{
-      display: 'flex', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden',
-      background: t.bg, fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-      color: t.text, transition: 'background 0.3s',
-    }}>
+    <div style={{ display: 'flex', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: t.bg, fontFamily: "'DM Sans','Segoe UI',sans-serif", color: t.text, transition: 'background 0.3s' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(59,91,219,0.25); border-radius: 8px; }
-        @keyframes fadeUp   { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-        @keyframes pulsePip {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(59,91,219,0.5); transform: scale(1); }
-          50%       { box-shadow: 0 0 0 4px rgba(59,91,219,0); transform: scale(1.3); }
-        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        ::-webkit-scrollbar{width:4px;}
+        ::-webkit-scrollbar-track{background:transparent;}
+        ::-webkit-scrollbar-thumb{background:rgba(59,91,219,0.25);border-radius:8px;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes slideLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+        @keyframes spin{to{transform:rotate(360deg)}}
       `}</style>
 
-      {/* ── Desktop Sidebar ────────────────────────────────────────────────── */}
       {!isMobile && (
-        <aside style={{
-          width: 240, height: '100dvh',
-          background: t.sidebar,
-          borderRight: `1px solid ${t.border}`,
-          display: 'flex', flexDirection: 'column', flexShrink: 0,
-          boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.3)' : '2px 0 12px rgba(0,0,0,0.06)',
-          zIndex: 100,
-        }}>
-          {/* Logo */}
-          <div style={{ padding: '18px 14px', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: `0 4px 14px ${BLUE}44`,
-            }}>
-              <Heart size={18} color="#fff" strokeWidth={2.2} />
-            </div>
-            <div>
-              <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.5px', color: t.text }}>
-                HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
-              </span>
-              <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Patient Portal</p>
-            </div>
-          </div>
-
-          {/* Date strip */}
-          <div style={{ padding: '12px 16px 6px' }}>
-            <p style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>{today}</p>
-          </div>
-
-          {/* Nav */}
-          <nav style={{ flex: 1, padding: '8px 8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {NAV.map(({ id, label, icon: Icon }, idx) => {
-              const active = section === id;
-              return (
-                <button key={id} onClick={() => goTo(id)}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 12px', borderRadius: 10, border: 'none',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    background: active ? (isDark ? 'rgba(59,91,219,0.22)' : 'rgba(59,91,219,0.11)') : 'transparent',
-                    color: active ? '#60a5fa' : t.textSub,
-                    fontWeight: active ? 600 : 400, fontSize: 14,
-                    textAlign: 'left', transition: 'all 0.15s',
-                    minHeight: 44,
-                  }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = t.hover; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <Icon size={18} style={{ flexShrink: 0, transform: active ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s' }} />
-                  <span style={{ flex: 1 }}>{label}</span>
-                  {active && (
-                    <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: BLUE, animation: 'pulsePip 2s ease-in-out infinite', flexShrink: 0 }} />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* User card + controls */}
-          <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: t.accentBg, border: `1px solid ${t.borderStrong}` }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{av}</div>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{patient?.fullName || 'Patient'}</p>
-                <p style={{ fontSize: 11, color: t.textMuted }}>{patient?.patientNumber || '—'}</p>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={toggleTheme} style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                padding: '9px', borderRadius: 10, border: `1px solid ${t.border}`,
-                cursor: 'pointer', fontFamily: 'inherit', background: t.input,
-                color: t.textSub, fontWeight: 600, fontSize: 12, transition: 'all 0.15s',
-              }}>
-                {isDark ? <Sun size={14} /> : <Moon size={14} />}
-                {isDark ? 'Light' : 'Dark'}
-              </button>
-              <button onClick={handleLogout} style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                padding: '9px', borderRadius: 10, border: 'none',
-                cursor: 'pointer', fontFamily: 'inherit',
-                background: 'rgba(239,68,68,0.08)', color: '#ef4444',
-                fontWeight: 600, fontSize: 12, transition: 'background 0.15s',
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-              >
-                <LogOut size={14} /> Logout
-              </button>
-            </div>
-          </div>
+        <aside style={{ width: 240, height: '100dvh', background: t.sidebar, borderRight: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.3)' : '2px 0 12px rgba(0,0,0,0.06)', zIndex: 100 }}>
+          <SidebarContent />
         </aside>
       )}
 
-      {/* ── Mobile Sidebar Overlay ─────────────────────────────────────────── */}
       {isMobile && mobileMenu && (
         <>
           <div onClick={() => setMobileMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, backdropFilter: 'blur(3px)', animation: 'fadeIn 0.2s ease' }} />
-          <aside style={{
-            position: 'fixed', top: 0, left: 0, bottom: 0, width: 270,
-            background: t.sidebar, zIndex: 201,
-            display: 'flex', flexDirection: 'column',
-            boxShadow: '6px 0 32px rgba(0,0,0,0.3)',
-            animation: 'slideLeft 0.24s ease',
-          }}>
-            <div style={{ padding: '18px 14px', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Heart size={18} color="#fff" strokeWidth={2.2} />
-                </div>
-                <span style={{ fontWeight: 800, fontSize: 16, color: t.text }}>
-                  HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
-                </span>
-              </div>
-              <button onClick={() => setMobileMenu(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8, transition: 'transform 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'rotate(90deg)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg)'}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-              {NAV.map(({ id, label, icon: Icon }) => {
-                const active = section === id;
-                return (
-                  <button key={id} onClick={() => goTo(id)}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '10px 12px', borderRadius: 10, border: 'none',
-                      cursor: 'pointer', fontFamily: 'inherit',
-                      background: active ? (isDark ? 'rgba(59,91,219,0.22)' : 'rgba(59,91,219,0.11)') : 'transparent',
-                      color: active ? '#60a5fa' : t.textSub,
-                      fontWeight: active ? 600 : 400, fontSize: 15,
-                      textAlign: 'left', minHeight: 50,
-                    }}
-                  >
-                    <Icon size={19} />
-                    {label}
-                  </button>
-                );
-              })}
-            </nav>
-            <div style={{ padding: '10px 8px 32px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: t.accentBg, border: `1px solid ${t.borderStrong}`, marginBottom: 4 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{av}</div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{patient?.fullName || 'Patient'}</p>
-                  <p style={{ fontSize: 11, color: t.textMuted }}>{patient?.patientNumber || '—'}</p>
-                </div>
-              </div>
-              <button onClick={toggleTheme} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: `1px solid ${t.border}`, cursor: 'pointer', fontFamily: 'inherit', background: t.input, color: t.textSub, fontWeight: 600, fontSize: 14, width: '100%' }}>
-                {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                {isDark ? 'Switch to Light' : 'Switch to Dark'}
-              </button>
-              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: 'rgba(239,68,68,0.08)', color: '#ef4444', fontWeight: 600, fontSize: 14, width: '100%', transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-              >
-                <LogOut size={16} /> Sign Out
-              </button>
-            </div>
+          <aside style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 270, background: t.sidebar, zIndex: 201, display: 'flex', flexDirection: 'column', boxShadow: '6px 0 32px rgba(0,0,0,0.3)', animation: 'slideLeft 0.24s ease' }}>
+            <SidebarContent forceFull />
           </aside>
         </>
       )}
 
-      {/* ── Content area ──────────────────────────────────────────────────── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', minWidth: 0 }}>
-
-        {/* ── Top bar ──────────────────────────────────────────────────────── */}
-        <header style={{
-          height: isMobile ? 56 : 64, flexShrink: 0,
-          background: t.sidebar, borderBottom: `1px solid ${t.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: isMobile ? '0 12px' : '0 20px', gap: 8,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 10 }}>
-            {isMobile && (
-              <button onClick={() => setMobileMenu(true)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = t.hover}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-              >
-                <Menu size={20} />
-              </button>
-            )}
-            {isMobile ? (
-              <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>
-                HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
-              </span>
-            ) : (
-              <p style={{ fontSize: 16, fontWeight: 800, color: t.text, letterSpacing: '-0.3px' }}>
-                {NAV.find(n => n.id === section)?.label || 'Dashboard'}
-              </p>
-            )}
+        <header style={{ height: isMobile ? 56 : 64, flexShrink: 0, background: t.sidebar, borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 12px' : '0 20px', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isMobile && <button onClick={() => setMobileMenu(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}><Menu size={20} /></button>}
+            {isMobile
+              ? <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>HMS<span style={{ background: `linear-gradient(135deg,${BLUE},${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span></span>
+              : <p style={{ fontSize: 16, fontWeight: 800, color: t.text }}>{NAV.find(n => n.id === section)?.label || 'Dashboard'}</p>
+            }
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
-            {!isMobile && (
-              <button onClick={toggleTheme}
-                style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.3s, background 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'rotate(20deg) scale(1.08)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg) scale(1)'}
-              >
-                {isDark ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            )}
+            {!isMobile && <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>{isDark ? <Sun size={16} /> : <Moon size={16} />}</button>}
             <div style={{ position: 'relative' }}>
-              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <Bell size={16} />
-              </button>
+              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}><Bell size={16} /></button>
               <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: ROSE, border: `2px solid ${t.sidebar}` }} />
             </div>
-            <div style={{
-              width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-              background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, color: '#fff', fontSize: 13, cursor: 'pointer',
-              boxShadow: `0 2px 12px ${BLUE}44`,
-              transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
-            }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.12) rotate(-6deg)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
-            >{av}</div>
-            {!isMobile && (
-              <>
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontWeight: 600, fontSize: 13, color: t.text, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{patient?.fullName || 'Patient'}</span>
-                  <span style={{ fontSize: 11, color: t.textMuted }}>Patient</span>
-                </div>
-              </>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${BLUE},${BLUE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>{av}</div>
+              {!isMobile && <div style={{ minWidth: 0 }}>
+                <span style={{ fontWeight: 600, fontSize: 13, color: t.text, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{patient?.fullName || 'Patient'}</span>
+                <span style={{ fontSize: 11, color: t.textMuted }}>Patient</span>
+              </div>}
+            </div>
           </div>
         </header>
 
-        {/* ── Scrollable main content ───────────────────────────────────────── */}
-        <main style={{
-          flex: 1, overflowY: 'auto', overflowX: 'hidden',
-          padding: isMobile ? '14px 12px 80px' : '24px',
-          height: 0,
-        }}>
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px 12px 80px' : '24px', height: 0 }}>
           <div style={{ maxWidth: 920, width: '100%', animation: 'fadeUp 0.3s ease' }} key={section}>
             {renderSection()}
           </div>
         </main>
 
-        {/* ── Mobile Bottom Nav ─────────────────────────────────────────────── */}
         {isMobile && (
-          <nav style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0,
-            background: t.sidebar, borderTop: `1px solid ${t.border}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-around',
-            paddingTop: 8, paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-            zIndex: 150, boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
-          }}>
+          <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: t.sidebar, borderTop: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingTop: 8, paddingBottom: 'max(12px,env(safe-area-inset-bottom))', zIndex: 150, boxShadow: '0 -4px 24px rgba(0,0,0,0.12)' }}>
             {NAV.map(({ id, label, icon: Icon }) => {
               const active = section === id;
               return (
-                <button key={id} onClick={() => goTo(id)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                    padding: '6px 8px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                    background: active ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
-                    color: active ? '#60a5fa' : t.textMuted,
-                    fontFamily: 'inherit', flex: 1, transition: 'color 0.2s, background 0.2s',
-                    minHeight: 48,
-                  }}
-                >
-                  <Icon size={21} style={{ transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)', transform: active ? 'scale(1.2)' : 'scale(1)' }} />
-                  <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, letterSpacing: '0.01em' }}>{label}</span>
+                <button key={id} onClick={() => goTo(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 8px', borderRadius: 12, border: 'none', cursor: 'pointer', background: active ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent', color: active ? '#60a5fa' : t.textMuted, fontFamily: 'inherit', flex: 1, minHeight: 48 }}>
+                  <Icon size={21} style={{ transform: active ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.2s' }} />
+                  <span style={{ fontSize: 10, fontWeight: active ? 600 : 400 }}>{label}</span>
                 </button>
               );
             })}
