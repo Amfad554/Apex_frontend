@@ -153,35 +153,34 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) {
             setFormError('Please fill all required fields.'); return;
         }
+
+        const generatedPassword = Math.random().toString(36).slice(-8) +
+            Math.floor(Math.random() * 100);
         try {
             setSubmitting(true); setFormError('');
 
-            const generatedPassword = Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 100);
-
             const res = await patientsAPI.create({ ...form, password: generatedPassword });
 
-            console.log('API res:', res);
-            console.log('tempPassword from backend:', res.tempPassword);
-            console.log('generatedPassword (frontend):', generatedPassword);
-
             setShowReg(false);
-            setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
+            setForm({
+                fullName: '', dateOfBirth: '', gender: 'male', phone: '',
+                email: '', address: '', bloodGroup: 'O+', medicalConditions: '',
+                nextOfKinName: '', nextOfKinPhone: ''
+            });
             loadPatients();
 
             const credEntry = {
                 type: 'patient',
-                fullName: res.patient?.fullName || form.fullName,
-                patientNumber: res.patient?.patientNumber || '—',
-                tempPassword: res.tempPassword || generatedPassword, // backend first, frontend as fallback
-                email: res.patient?.email || form.email || null,
+                fullName: res.patient.fullName,
+                patientNumber: res.patient.patientNumber,
+                tempPassword: generatedPassword,
+                email: res.patient.email || null,
             };
-
-            console.log('credEntry:', credEntry);
 
             saveCredential(credEntry);
             setCredentials(credEntry);
+
         } catch (err) {
-            console.error('Registration error:', err);
             setFormError(err.message);
         } finally {
             setSubmitting(false);
