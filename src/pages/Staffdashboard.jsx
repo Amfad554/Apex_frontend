@@ -139,7 +139,6 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
     const [error, setError] = useState('');
 
     const load = useCallback(async (q = '') => {
-        if (!hospitalId) return;
         try {
             setLoading(true); setError('');
             const res = await api.patients.list(hospitalId, q ? { search: q } : {});

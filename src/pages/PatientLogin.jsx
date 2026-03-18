@@ -38,7 +38,7 @@ const themes = {
   }
 };
 
-const BLUE  = '#3b5bdb';
+const BLUE = '#3b5bdb';
 const BLUE2 = '#228be6';
 
 export default function PatientLogin() {
@@ -73,7 +73,11 @@ export default function PatientLogin() {
       const data = res.data;
 
       localStorage.setItem("token", data.token || "no-token");
-      localStorage.setItem("user", JSON.stringify({ ...data.user, role: 'patient' }));
+      localStorage.setItem("user", JSON.stringify({
+        ...data.user,
+        role: 'patient',
+        hospital_id: data.user?.hospitalId || data.user?.hospital_id
+      }));
       localStorage.setItem("userRole", "patient");
       window.dispatchEvent(new Event('authChange'));
 

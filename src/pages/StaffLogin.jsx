@@ -101,7 +101,11 @@ export default function StaffLogin() {
             const role = (user.role || user.staffRole || 'staff').toLowerCase();
 
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({ ...user, role }));
+            localStorage.setItem('user', JSON.stringify({
+                ...user,
+                role,
+                hospital_id: user.hospitalId || user.hospital_id  // ← normalize the key
+            }));
             localStorage.setItem('userRole', role);
             // ──────────────────────────────────────────────────────────────────
 
