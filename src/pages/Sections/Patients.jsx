@@ -153,13 +153,11 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) {
             setFormError('Please fill all required fields.'); return;
         }
-
-        const generatedPassword = Math.random().toString(36).slice(-8) +
-            Math.floor(Math.random() * 100);
         try {
             setSubmitting(true); setFormError('');
 
-            const res = await patientsAPI.create({ ...form, password: generatedPassword });
+            // ✅ Don't generate or send a password — let the backend do it
+            const res = await patientsAPI.create({ ...form });
 
             setShowReg(false);
             setForm({
@@ -173,7 +171,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 type: 'patient',
                 fullName: res.patient.fullName,
                 patientNumber: res.patient.patientNumber,
-                tempPassword: generatedPassword,
+                tempPassword: res.tempPassword, // ✅ use what backend actually hashed
                 email: res.patient.email || null,
             };
 
@@ -186,7 +184,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
             setSubmitting(false);
         }
     };
-
     const handleDelete = async (id) => {
         if (!confirm('Delete this patient? This cannot be undone.')) return;
         try {
