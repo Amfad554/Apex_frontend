@@ -64,40 +64,75 @@ const api = {
     },
 };
 
-/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+/* ─── Brand Palette ──────────────────────────────────────────────────────────── */
+const NAVY      = '#0A1A3F';
+const SOFT_NAVY = '#1F2A44';
+const ORANGE    = '#FF5A1F';
+const LIGHT_GRAY = '#F5F7FA';
+
+/* ─── Role accent colors kept for UX differentiation ────────────────────────── */
 const BLUE = '#3b5bdb', BLUE2 = '#4c6ef5', EMERALD = '#059669', AMBER = '#d97706',
     ROSE = '#e11d48', CYAN = '#0891b2', VIOLET = '#7c3aed';
 
 const ROLE_META = {
-    doctor: { label: 'Doctor', accent: BLUE, accent2: BLUE2, icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR' },
-    nurse: { label: 'Nurse', accent: EMERALD, accent2: '#10b981', icon: Heart, gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN' },
-    pharmacist: { label: 'Pharmacist', accent: VIOLET, accent2: '#8b5cf6', icon: Pill, gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
-    lab_staff: { label: 'Lab Staff', accent: CYAN, accent2: '#06b6d4', icon: Microscope, gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
-    receptionist: { label: 'Receptionist', accent: AMBER, accent2: '#f59e0b', icon: PhoneCall, gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
+    doctor:       { label: 'Doctor',       accent: BLUE,    accent2: BLUE2,      icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR'  },
+    nurse:        { label: 'Nurse',        accent: EMERALD, accent2: '#10b981',  icon: Heart,       gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN'  },
+    pharmacist:   { label: 'Pharmacist',   accent: VIOLET,  accent2: '#8b5cf6',  icon: Pill,        gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
+    lab_staff:    { label: 'Lab Staff',    accent: CYAN,    accent2: '#06b6d4',  icon: Microscope,  gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
+    receptionist: { label: 'Receptionist', accent: AMBER,   accent2: '#f59e0b',  icon: PhoneCall,   gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
 };
 
+/* ─── Themes — Navy/Orange shell ─────────────────────────────────────────────── */
 const themes = {
-    dark: { bg: '#0d1117', surface: '#161b22', surfaceAlt: '#1c2432', border: 'rgba(255,255,255,0.06)', text: '#e6edf3', textSub: 'rgba(230,237,243,0.55)', textMuted: 'rgba(230,237,243,0.3)', shadow: '0 4px 24px rgba(0,0,0,0.5)', sidebar: '#0d1117', hover: 'rgba(59,91,219,0.1)', input: 'rgba(255,255,255,0.05)', card: '#161b22', cardAlt: '#1c2432' },
-    light: { bg: '#f5f7ff', surface: '#ffffff', surfaceAlt: '#f5f7ff', border: 'rgba(0,0,0,0.07)', text: '#111827', textSub: 'rgba(17,24,39,0.6)', textMuted: 'rgba(17,24,39,0.38)', shadow: '0 4px 24px rgba(59,91,219,0.08)', sidebar: '#ffffff', hover: 'rgba(59,91,219,0.06)', input: 'rgba(0,0,0,0.04)', card: '#ffffff', cardAlt: '#f5f7ff' },
+    dark: {
+        bg:        NAVY,
+        surface:   SOFT_NAVY,
+        surfaceAlt:'#162035',
+        border:    'rgba(255,255,255,0.07)',
+        text:      '#F5F7FA',
+        textSub:   'rgba(245,247,250,0.6)',
+        textMuted: 'rgba(245,247,250,0.32)',
+        shadow:    `0 4px 24px rgba(0,0,0,0.45)`,
+        sidebar:   NAVY,
+        hover:     `rgba(255,90,31,0.08)`,
+        input:     'rgba(255,255,255,0.06)',
+        card:      SOFT_NAVY,
+        cardAlt:   '#162035',
+    },
+    light: {
+        bg:        LIGHT_GRAY,
+        surface:   '#ffffff',
+        surfaceAlt:LIGHT_GRAY,
+        border:    'rgba(10,26,63,0.09)',
+        text:      NAVY,
+        textSub:   'rgba(10,26,63,0.58)',
+        textMuted: 'rgba(10,26,63,0.36)',
+        shadow:    `0 4px 20px rgba(10,26,63,0.07)`,
+        sidebar:   '#ffffff',
+        hover:     `rgba(255,90,31,0.06)`,
+        input:     'rgba(10,26,63,0.04)',
+        card:      '#ffffff',
+        cardAlt:   LIGHT_GRAY,
+    },
 };
 
 const STATUS_COLORS = {
-    scheduled: { bg: 'rgba(217,119,6,0.12)', color: AMBER, label: 'Scheduled' },
-    completed: { bg: 'rgba(5,150,105,0.12)', color: EMERALD, label: 'Completed' },
-    cancelled: { bg: 'rgba(225,29,72,0.12)', color: ROSE, label: 'Cancelled' },
-    active: { bg: 'rgba(5,150,105,0.12)', color: EMERALD, label: 'Active' },
-    no_show: { bg: 'rgba(107,114,128,0.12)', color: '#6b7280', label: 'No Show' },
+    scheduled: { bg: 'rgba(217,119,6,0.12)',  color: AMBER,   label: 'Scheduled' },
+    completed: { bg: 'rgba(5,150,105,0.12)',  color: EMERALD, label: 'Completed' },
+    cancelled: { bg: 'rgba(225,29,72,0.12)',  color: ROSE,    label: 'Cancelled' },
+    active:    { bg: 'rgba(5,150,105,0.12)',  color: EMERALD, label: 'Active'    },
+    no_show:   { bg: 'rgba(107,114,128,0.12)',color: '#6b7280',label: 'No Show'  },
 };
 
 const TYPE_COLORS = {
-    lab_results: { bg: 'rgba(6,182,212,0.15)', text: '#22d3ee', label: 'Lab Results' },
+    lab_results:  { bg: 'rgba(6,182,212,0.15)',  text: '#22d3ee', label: 'Lab Results'  },
     consultation: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa', label: 'Consultation' },
-    imaging: { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', label: 'Imaging' },
-    other: { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: 'Other' },
+    imaging:      { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', label: 'Imaging'      },
+    other:        { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: 'Other'        },
 };
 
-const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#7c3aed', '#059669'];
-const DEPARTMENTS = ['Cardiology', 'Emergency', 'General', 'ICU', 'Laboratory', 'Maternity', 'Neurology', 'Oncology', 'Orthopedics', 'Pediatrics', 'Pharmacy', 'Radiology', 'Surgery'];
+const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#7c3aed','#059669'];
+const DEPARTMENTS   = ['Cardiology','Emergency','General','ICU','Laboratory','Maternity','Neurology','Oncology','Orthopedics','Pediatrics','Pharmacy','Radiology','Surgery'];
 
 /* ─── Helpers ───────────────────────────────────────────────────────────────── */
 const initials = (name) => !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -109,7 +144,9 @@ function Badge({ status }) {
 
 function Toast({ message, type = 'success', onClose }) {
     useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
-    const c = type === 'error' ? { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' } : { bg: '#f0fdf4', border: '#86efac', text: '#166534' };
+    const c = type === 'error'
+        ? { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' }
+        : { bg: '#f0fdf4', border: '#86efac', text: '#166534' };
     return (
         <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: 10, animation: 'toastIn 0.3s ease forwards' }}>
             <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
@@ -129,14 +166,13 @@ function LoadingState({ t, accent }) {
     );
 }
 
-/* ─── Shared Section Components ─────────────────────────────────────────────── */
-
+/* ─── PatientsSection ────────────────────────────────────────────────────────── */
 function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
-    const [patients, setPatients] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+    const [patients, setPatients]     = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [search, setSearch]         = useState('');
     const [viewPatient, setViewPatient] = useState(null);
-    const [error, setError] = useState('');
+    const [error, setError]           = useState('');
 
     const load = useCallback(async (q = '') => {
         try {
@@ -175,7 +211,7 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
                         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         return (
                             <div key={p.id} style={{ background: t.surface, borderRadius: 14, padding: '14px 18px', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'border-color 0.15s' }}
-                                onMouseEnter={e => e.currentTarget.style.borderColor = accent + '55'}
+                                onMouseEnter={e => e.currentTarget.style.borderColor = ORANGE + '66'}
                                 onMouseLeave={e => e.currentTarget.style.borderColor = t.border}
                                 onClick={() => setViewPatient(p)}>
                                 <div style={{ width: 42, height: 42, borderRadius: 12, background: color + '22', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(p.fullName)}</div>
@@ -185,7 +221,7 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
                                 </div>
                                 <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
                                     <div style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={12} />{p.phone}</div>
-                                    <Eye size={16} color={accent} />
+                                    <Eye size={16} color={ORANGE} />
                                 </div>
                             </div>
                         );
@@ -196,9 +232,9 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
             {viewPatient && (
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 460, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-                        <div style={{ padding: '18px 20px', background: accent + '18', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '18px 20px', background: ORANGE + '14', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <div style={{ width: 46, height: 46, borderRadius: 12, background: accent + '33', color: accent, fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(viewPatient.fullName)}</div>
+                                <div style={{ width: 46, height: 46, borderRadius: 12, background: ORANGE + '28', color: ORANGE, fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(viewPatient.fullName)}</div>
                                 <div>
                                     <h2 style={{ fontWeight: 800, fontSize: 16 }}>{viewPatient.fullName}</h2>
                                     <p style={{ fontSize: 12, color: t.textSub }}>{viewPatient.patientNumber}</p>
@@ -233,17 +269,18 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
     );
 }
 
+/* ─── AppointmentsSection ────────────────────────────────────────────────────── */
 function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile, role }) {
     const [appointments, setAppointments] = useState([]);
-    const [patients, setPatients] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
-    const [showAdd, setShowAdd] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError] = useState('');
-    const [toast, setToast] = useState(null);
+    const [patients, setPatients]         = useState([]);
+    const [doctors, setDoctors]           = useState([]);
+    const [loading, setLoading]           = useState(true);
+    const [filter, setFilter]             = useState('All');
+    const [search, setSearch]             = useState('');
+    const [showAdd, setShowAdd]           = useState(false);
+    const [submitting, setSubmitting]     = useState(false);
+    const [formError, setFormError]       = useState('');
+    const [toast, setToast]               = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
     const canCreate = ['doctor', 'receptionist', 'nurse'].includes(role);
 
@@ -318,7 +355,7 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                     <p style={{ color: t.textSub, fontSize: 13 }}>{appointments.length} total appointments</p>
                 </div>
                 {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: `linear-gradient(135deg,${accent},${accent}cc)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${accent}44` }}>
+                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
                         <Plus size={15} /> Book Appointment
                     </button>
                 )}
@@ -326,7 +363,7 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                 {[{ label: 'Scheduled', count: counts.scheduled, color: AMBER }, { label: 'Completed', count: counts.completed, color: EMERALD }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
-                    <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}` }}>
+                    <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}`, borderLeft: `3px solid ${color}` }}>
                         <p style={{ fontSize: 26, fontWeight: 800, color: t.text }}>{count}</p>
                         <p style={{ fontSize: 12, color: t.textMuted, marginTop: 2 }}>{label}</p>
                     </div>
@@ -340,7 +377,7 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['All', 'Scheduled', 'Completed', 'Cancelled'].map(s => (
-                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${filter === s ? accent : t.border}`, background: filter === s ? accent + '18' : t.surface, color: filter === s ? accent : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', transition: 'all 0.15s' }}>{s}</button>
+                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${filter === s ? ORANGE : t.border}`, background: filter === s ? ORANGE + '18' : t.surface, color: filter === s ? ORANGE : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', transition: 'all 0.15s' }}>{s}</button>
                     ))}
                 </div>
             </div>
@@ -350,7 +387,6 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                     {filtered.length === 0 ? (
                         <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No appointments found</div>
                     ) : filtered.map((a, i) => {
-                        const sc = STATUS_COLORS[a.status] || STATUS_COLORS.scheduled;
                         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         return (
                             <div key={a.id} style={{ background: t.surface, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
@@ -392,7 +428,7 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
-                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Book Appointment</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
                         </div>
@@ -408,7 +444,7 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                                 <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
-                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg,${accent},${accent}cc)`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Booking...' : 'Book Appointment'}</button>
+                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: ORANGE, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Booking...' : 'Book Appointment'}</button>
                             </div>
                         </form>
                     </div>
@@ -418,17 +454,18 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
     );
 }
 
+/* ─── PrescriptionsSection ───────────────────────────────────────────────────── */
 function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
     const [prescriptions, setPrescriptions] = useState([]);
-    const [patients, setPatients] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
-    const [showAdd, setShowAdd] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError] = useState('');
-    const [toast, setToast] = useState(null);
+    const [patients, setPatients]           = useState([]);
+    const [doctors, setDoctors]             = useState([]);
+    const [loading, setLoading]             = useState(true);
+    const [filter, setFilter]               = useState('All');
+    const [search, setSearch]               = useState('');
+    const [showAdd, setShowAdd]             = useState(false);
+    const [submitting, setSubmitting]       = useState(false);
+    const [formError, setFormError]         = useState('');
+    const [toast, setToast]                 = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', medication: '', dosage: '', duration: '', instructions: '' });
     const canCreate = ['doctor', 'pharmacist'].includes(role);
 
@@ -502,7 +539,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                     <p style={{ color: t.textSub, fontSize: 13 }}>{prescriptions.length} total prescriptions</p>
                 </div>
                 {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: `linear-gradient(135deg,${accent},${accent}cc)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${accent}44` }}>
+                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
                         <Plus size={15} /> Issue Prescription
                     </button>
                 )}
@@ -510,7 +547,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                 {[{ label: 'Active', count: counts.active, color: EMERALD }, { label: 'Completed', count: counts.completed, color: BLUE }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
-                    <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}` }}>
+                    <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}`, borderLeft: `3px solid ${color}` }}>
                         <p style={{ fontSize: 26, fontWeight: 800, color: t.text }}>{count}</p>
                         <p style={{ fontSize: 12, color: t.textMuted, marginTop: 2 }}>{label}</p>
                     </div>
@@ -524,7 +561,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['All', 'Active', 'Completed', 'Cancelled'].map(s => (
-                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${filter === s ? accent : t.border}`, background: filter === s ? accent + '18' : t.surface, color: filter === s ? accent : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>{s}</button>
+                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${filter === s ? ORANGE : t.border}`, background: filter === s ? ORANGE + '18' : t.surface, color: filter === s ? ORANGE : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>{s}</button>
                     ))}
                 </div>
             </div>
@@ -548,7 +585,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                                         </td>
                                         <td style={{ padding: '12px 16px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                <Pill size={13} color={VIOLET} />
+                                                <Pill size={13} color={ORANGE} />
                                                 <span style={{ fontSize: 13, fontWeight: 600 }}>{rx.medication}</span>
                                             </div>
                                         </td>
@@ -558,7 +595,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                                         <td style={{ padding: '12px 16px' }}>
                                             <div style={{ display: 'flex', gap: 6 }}>
                                                 {rx.status === 'active' && canCreate && (
-                                                    <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: 'rgba(59,130,246,0.1)', border: 'none', borderRadius: 7, color: BLUE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>
+                                                    <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: `${ORANGE}15`, border: 'none', borderRadius: 7, color: ORANGE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>
                                                 )}
                                                 {canCreate && <button onClick={() => handleDelete(rx.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>}
                                             </div>
@@ -574,7 +611,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
-                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Issue Prescription</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
                         </div>
@@ -590,7 +627,7 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                                 <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
-                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg,${accent},${accent}cc)`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Issuing...' : 'Issue Prescription'}</button>
+                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: ORANGE, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Issuing...' : 'Issue Prescription'}</button>
                             </div>
                         </form>
                     </div>
@@ -600,18 +637,19 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
     );
 }
 
+/* ─── RecordsSection ─────────────────────────────────────────────────────────── */
 function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
-    const [records, setRecords] = useState([]);
+    const [records, setRecords]   = useState([]);
     const [patients, setPatients] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
-    const [showAdd, setShowAdd] = useState(false);
-    const [viewRec, setViewRec] = useState(null);
+    const [doctors, setDoctors]   = useState([]);
+    const [loading, setLoading]   = useState(true);
+    const [filter, setFilter]     = useState('All');
+    const [search, setSearch]     = useState('');
+    const [showAdd, setShowAdd]   = useState(false);
+    const [viewRec, setViewRec]   = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError] = useState('');
-    const [toast, setToast] = useState(null);
+    const [formError, setFormError]   = useState('');
+    const [toast, setToast]           = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', recordType: 'lab_results', title: '', diagnosis: '', findings: '', notes: '' });
     const canCreate = ['doctor', 'lab_staff', 'nurse'].includes(role);
 
@@ -674,7 +712,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                     <p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records on file</p>
                 </div>
                 {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: `linear-gradient(135deg,${accent},${accent}cc)`, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${accent}44` }}>
+                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
                         <Plus size={15} /> Add Record
                     </button>
                 )}
@@ -687,7 +725,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {['All', ...Object.keys(TYPE_COLORS)].map(s => (
-                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filter === s ? accent : t.border}`, background: filter === s ? accent + '18' : t.surface, color: filter === s ? accent : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                        <button key={s} onClick={() => setFilter(s)} style={{ padding: '7px 12px', borderRadius: 10, border: `1px solid ${filter === s ? ORANGE : t.border}`, background: filter === s ? ORANGE + '18' : t.surface, color: filter === s ? ORANGE : t.textSub, fontWeight: filter === s ? 600 : 400, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                             {s === 'All' ? 'All' : TYPE_COLORS[s]?.label}
                         </button>
                     ))}
@@ -706,7 +744,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                                     <span style={{ background: tc.bg, color: tc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 8 }}>{tc.label}</span>
                                     <div style={{ display: 'flex', gap: 6 }}>
-                                        <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', color: BLUE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} /></button>
+                                        <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: `${ORANGE}15`, border: 'none', cursor: 'pointer', color: ORANGE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} /></button>
                                         {canCreate && <button onClick={() => handleDelete(r.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
                                     </div>
                                 </div>
@@ -729,7 +767,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
             {viewRec && (
                 <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 15 }}>{viewRec.title}</h2>
                             <button onClick={() => setViewRec(null)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
                         </div>
@@ -752,7 +790,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
-                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Medical Record</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
                         </div>
@@ -769,7 +807,7 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
                                 <button type="button" onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Cancel</button>
-                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: `linear-gradient(135deg,${accent},${accent}cc)`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Saving...' : 'Save Record'}</button>
+                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: ORANGE, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, opacity: submitting ? 0.7 : 1 }}>{submitting ? 'Saving...' : 'Save Record'}</button>
                             </div>
                         </form>
                     </div>
@@ -779,12 +817,12 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
     );
 }
 
-/* ─── Home Dashboard (role-aware, real counts) ───────────────────────────────── */
+/* ─── HomeDashboard ──────────────────────────────────────────────────────────── */
 function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isMobile }) {
-    const [stats, setStats] = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
-    const [recentAppointments, setRecentAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const hour = new Date().getHours();
+    const [stats, setStats]                   = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
+    const [recentAppointments, setRecent]     = useState([]);
+    const [loading, setLoading]               = useState(true);
+    const hour     = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     useEffect(() => {
@@ -795,42 +833,37 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
             api.prescriptions.list(hospitalId),
             api.records.list(hospitalId),
         ]).then(([pRes, aRes, rxRes, rRes]) => {
-            setStats({
-                patients: (pRes.patients || []).length,
-                appointments: (aRes.appointments || []).length,
-                prescriptions: (rxRes.prescriptions || []).length,
-                records: (rRes.records || []).length,
-            });
-            setRecentAppointments((aRes.appointments || []).slice(0, 4));
+            setStats({ patients: (pRes.patients || []).length, appointments: (aRes.appointments || []).length, prescriptions: (rxRes.prescriptions || []).length, records: (rRes.records || []).length });
+            setRecent((aRes.appointments || []).slice(0, 4));
         }).catch(console.error).finally(() => setLoading(false));
     }, [hospitalId]);
 
     const statCards = [
-        { label: 'Patients', value: stats.patients, icon: Users, color: BLUE, section: 'patients' },
-        { label: 'Appointments', value: stats.appointments, icon: Calendar, color: EMERALD, section: 'appointments' },
-        { label: 'Prescriptions', value: stats.prescriptions, icon: Pill, color: VIOLET, section: 'prescriptions' },
-        { label: 'Records', value: stats.records, icon: FileText, color: AMBER, section: 'records' },
+        { label: 'Patients',      value: stats.patients,      icon: Users,    color: BLUE,    section: 'patients'      },
+        { label: 'Appointments',  value: stats.appointments,  icon: Calendar, color: EMERALD, section: 'appointments'  },
+        { label: 'Prescriptions', value: stats.prescriptions, icon: Pill,     color: VIOLET,  section: 'prescriptions' },
+        { label: 'Records',       value: stats.records,       icon: FileText, color: AMBER,   section: 'records'       },
     ];
 
     const quickActions = [
-        { label: 'Patients', icon: Users, section: 'patients' },
-        { label: 'Appointments', icon: Calendar, section: 'appointments' },
-        { label: 'Prescriptions', icon: Pill, section: 'prescriptions' },
-        { label: 'Records', icon: FileText, section: 'records' },
+        { label: 'Patients',      icon: Users,    section: 'patients'      },
+        { label: 'Appointments',  icon: Calendar, section: 'appointments'  },
+        { label: 'Prescriptions', icon: Pill,     section: 'prescriptions' },
+        { label: 'Records',       icon: FileText, section: 'records'       },
     ];
 
     return (
         <div>
-            {/* Hero */}
-            <div style={{ background: isDark ? `linear-gradient(135deg,${roleMeta.accent}22,${roleMeta.accent2}11,transparent)` : `linear-gradient(135deg,${roleMeta.accent}12,${roleMeta.accent2}07,transparent)`, borderRadius: 28, padding: '28px', marginBottom: 24, border: `1px solid ${roleMeta.accent}33`, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: -60, right: -40, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,${roleMeta.accent}18,transparent 70%)`, pointerEvents: 'none' }} />
+            {/* Hero banner — uses role color for accent, Navy for shell */}
+            <div style={{ background: isDark ? `linear-gradient(135deg,${roleMeta.accent}22,${roleMeta.accent2}11,transparent)` : `linear-gradient(135deg,${roleMeta.accent}12,${roleMeta.accent2}07,transparent)`, borderRadius: 24, padding: '28px', marginBottom: 24, border: `1px solid ${roleMeta.accent}33`, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: -60, right: -40, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,${ORANGE}14,transparent 70%)`, pointerEvents: 'none' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: roleMeta.accent, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{greeting} 👋</p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>{greeting} 👋</p>
                         <h1 style={{ fontSize: 'clamp(18px,3.5vw,26px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 6, lineHeight: 1.2 }}>{staff?.fullName || staff?.name || roleMeta.label}</h1>
                         <p style={{ fontSize: 13, color: t.textSub, marginBottom: 14 }}>{roleMeta.label} · {staff?.department || 'Hospital'} · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ background: `${roleMeta.accent}18`, border: `1px solid ${roleMeta.accent}33`, color: roleMeta.accent, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff?.employeeId || `${roleMeta.tag}-0001`}</span>
+                            <span style={{ background: `${ORANGE}18`, border: `1px solid ${ORANGE}33`, color: ORANGE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff?.employeeId || `${roleMeta.tag}-0001`}</span>
                             <span style={{ background: 'rgba(5,150,105,0.1)', border: '1px solid rgba(5,150,105,0.2)', color: EMERALD, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}><CheckCircle size={10} />On Duty</span>
                         </div>
                     </div>
@@ -838,13 +871,12 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                 </div>
             </div>
 
-            {/* Real Stats */}
-            {loading ? <LoadingState t={t} accent={roleMeta.accent} /> : (
+            {loading ? <LoadingState t={t} accent={ORANGE} /> : (
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 24 }}>
                         {statCards.map(({ label, value, icon: Icon, color, section }) => (
                             <div key={label} onClick={() => onNavigate(section)} style={{ background: t.surface, borderRadius: 18, padding: '18px', border: `1px solid ${t.border}`, boxShadow: t.shadow, cursor: 'pointer', transition: 'all 0.2s', position: 'relative', overflow: 'hidden' }}
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = color + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = ORANGE + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; }}>
                                 <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: color + '10', pointerEvents: 'none' }} />
                                 <div style={{ width: 38, height: 38, borderRadius: 11, background: color + '16', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}><Icon size={17} color={color} /></div>
@@ -854,26 +886,24 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                         ))}
                     </div>
 
-                    {/* Quick Actions */}
                     <div style={{ marginBottom: 24 }}>
                         <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text, marginBottom: 14 }}>Quick Actions</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10 }}>
                             {quickActions.map(({ label, icon: Icon, section }) => (
                                 <button key={section} onClick={() => onNavigate(section)} style={{ background: t.surface, borderRadius: 16, padding: '16px 12px', border: `1px solid ${t.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, transition: 'all 0.2s', fontFamily: 'inherit', boxShadow: t.shadow }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = roleMeta.accent + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: roleMeta.accent + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={16} color={roleMeta.accent} /></div>
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = ORANGE + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = t.hover; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = t.surface; }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={16} color={ORANGE} /></div>
                                     <span style={{ fontSize: 12, fontWeight: 700, color: t.text }}>{label}</span>
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Recent Appointments */}
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                             <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Recent Appointments</h2>
-                            <button onClick={() => onNavigate('appointments')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: roleMeta.accent, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View all <ChevronRight size={14} /></button>
+                            <button onClick={() => onNavigate('appointments')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: ORANGE, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View all <ChevronRight size={14} /></button>
                         </div>
                         {recentAppointments.length === 0 ? (
                             <div style={{ padding: 30, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1.5px dashed ${t.border}` }}>No appointments yet</div>
@@ -889,7 +919,7 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                                             </div>
                                             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                                                 <span style={{ fontSize: 12, color: t.textMuted }}>{a.reason}</span>
-                                                <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={11} color={roleMeta.accent} />{new Date(a.appointmentDate).toLocaleDateString()}</span>
+                                                <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={11} color={ORANGE} />{new Date(a.appointmentDate).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -903,28 +933,30 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
     );
 }
 
+/* ─── MyProfile ──────────────────────────────────────────────────────────────── */
 function MyProfile({ t, staff, isDark, roleMeta }) {
     const info = [
-        { label: 'Full Name', value: staff?.fullName || staff?.name || '—', icon: User, color: BLUE },
-        { label: 'Employee ID', value: staff?.employeeId || '—', icon: Shield, color: VIOLET },
-        { label: 'Role', value: roleMeta.label, icon: Stethoscope, color: roleMeta.accent },
-        { label: 'Department', value: staff?.department || '—', icon: BedDouble, color: CYAN },
-        { label: 'Specialty', value: staff?.specialty || '—', icon: Activity, color: EMERALD },
-        { label: 'Phone', value: staff?.phone || '—', icon: Phone, color: AMBER },
-        { label: 'Email', value: staff?.email || '—', icon: Mail, color: BLUE2 },
-        { label: 'Status', value: staff?.status || 'active', icon: CheckCircle, color: EMERALD },
+        { label: 'Full Name',   value: staff?.fullName || staff?.name || '—', icon: User,        color: NAVY    },
+        { label: 'Employee ID', value: staff?.employeeId || '—',              icon: Shield,      color: ORANGE  },
+        { label: 'Role',        value: roleMeta.label,                         icon: Stethoscope, color: roleMeta.accent },
+        { label: 'Department',  value: staff?.department || '—',               icon: BedDouble,   color: CYAN    },
+        { label: 'Specialty',   value: staff?.specialty || '—',                icon: Activity,    color: EMERALD },
+        { label: 'Phone',       value: staff?.phone || '—',                    icon: Phone,       color: AMBER   },
+        { label: 'Email',       value: staff?.email || '—',                    icon: Mail,        color: BLUE    },
+        { label: 'Status',      value: staff?.status || 'active',              icon: CheckCircle, color: EMERALD },
     ];
     return (
         <div>
-            <div style={{ background: isDark ? `linear-gradient(135deg,${roleMeta.accent}20,${BLUE}10,transparent)` : `linear-gradient(135deg,${roleMeta.accent}12,${BLUE}06,transparent)`, borderRadius: 28, padding: '32px', marginBottom: 24, border: `1px solid ${roleMeta.accent}33`, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ background: isDark ? `linear-gradient(135deg,${NAVY},${SOFT_NAVY})` : `linear-gradient(135deg,${NAVY},${SOFT_NAVY})`, borderRadius: 28, padding: '32px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: -60, right: -40, width: 240, height: 240, background: `${ORANGE}14`, borderRadius: '50%', filter: 'blur(40px)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', position: 'relative' }}>
                     <div style={{ width: 90, height: 90, borderRadius: 26, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 30, color: '#fff', boxShadow: `0 12px 36px ${roleMeta.accent}44`, flexShrink: 0 }}>{initials(staff?.fullName || staff?.name)}</div>
                     <div>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: roleMeta.accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Staff Profile · {roleMeta.label}</p>
-                        <h1 style={{ fontSize: 'clamp(18px,3vw,26px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 10 }}>{staff?.fullName || staff?.name || '—'}</h1>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: ORANGE, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Staff Profile · {roleMeta.label}</p>
+                        <h1 style={{ fontSize: 'clamp(18px,3vw,26px)', fontWeight: 800, color: '#F5F7FA', letterSpacing: '-0.5px', marginBottom: 10 }}>{staff?.fullName || staff?.name || '—'}</h1>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            {staff?.employeeId && <span style={{ background: roleMeta.accent + '18', border: `1px solid ${roleMeta.accent}33`, color: roleMeta.accent, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff.employeeId}</span>}
-                            <span style={{ background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)', color: EMERALD, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>Active Staff</span>
+                            {staff?.employeeId && <span style={{ background: `${ORANGE}28`, border: `1px solid ${ORANGE}44`, color: '#ffb399', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff.employeeId}</span>}
+                            <span style={{ background: 'rgba(5,150,105,0.2)', border: '1px solid rgba(5,150,105,0.3)', color: '#6ee7a0', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>Active Staff</span>
                         </div>
                     </div>
                 </div>
@@ -947,10 +979,10 @@ function MyProfile({ t, staff, isDark, roleMeta }) {
 
 /* ─── Nav Config ─────────────────────────────────────────────────────────────── */
 const NAV_BY_ROLE = {
-    doctor: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'prescriptions', label: 'Prescriptions', icon: Pill }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
-    nurse: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
-    pharmacist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
-    lab_staff: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'records', label: 'Records', icon: FileText }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
+    doctor:       [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'prescriptions', label: 'Prescriptions', icon: Pill }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
+    nurse:        [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
+    pharmacist:   [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
+    lab_staff:    [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'records', label: 'Records', icon: FileText }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
     receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
 };
 
@@ -959,12 +991,12 @@ const NAV_BY_ROLE = {
 ══════════════════════════════════════════════════════════════════════════════ */
 export default function StaffDashboard() {
     const navigate = useNavigate();
-    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
-    const [staff, setStaff] = useState(null);
-    const [section, setSection] = useState('home');
-    const [isMobile, setIsMobile] = useState(false);
+    const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
+    const [staff, setStaff]           = useState(null);
+    const [section, setSection]       = useState('home');
+    const [isMobile, setIsMobile]     = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
-    const [headerIn, setHeaderIn] = useState(false);
+    const [headerIn, setHeaderIn]     = useState(false);
     const [navMounted, setNavMounted] = useState(false);
 
     useEffect(() => { setTimeout(() => setHeaderIn(true), 50); setTimeout(() => setNavMounted(true), 150); }, []);
@@ -978,15 +1010,15 @@ export default function StaffDashboard() {
         } catch { navigate('/stafflogin'); }
     }, []);
 
-    const rawRole = (staff?.role || 'doctor').toLowerCase().replace(/\s+/g, '_');
+    const rawRole  = (staff?.role || 'doctor').toLowerCase().replace(/\s+/g, '_');
     const roleMeta = ROLE_META[rawRole] || ROLE_META.doctor;
     const navItems = NAV_BY_ROLE[rawRole] || NAV_BY_ROLE.doctor;
     const BOTTOM_NAV = navItems.slice(0, 4);
-    const MORE_NAV = navItems.slice(4);
+    const MORE_NAV   = navItems.slice(4);
     const t = isDark ? themes.dark : themes.light;
     const hospitalId = staff?.hospital_id;
 
-    const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
+    const toggleTheme  = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
     const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/stafflogin'); };
     const goTo = (id) => { setSection(id); setMobileMenu(false); };
 
@@ -994,53 +1026,68 @@ export default function StaffDashboard() {
 
     const renderSection = () => {
         switch (section) {
-            case 'home': return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients': return <PatientsSection {...sharedProps} />;
-            case 'appointments': return <AppointmentsSection {...sharedProps} />;
+            case 'home':          return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients':      return <PatientsSection {...sharedProps} />;
+            case 'appointments':  return <AppointmentsSection {...sharedProps} />;
             case 'prescriptions': return <PrescriptionsSection {...sharedProps} />;
-            case 'records': return <RecordsSection {...sharedProps} />;
-            case 'profile': return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} />;
-            default: return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'records':       return <RecordsSection {...sharedProps} />;
+            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} />;
+            default:              return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
         }
     };
 
+    /* ── Sidebar ── */
     const SidebarContent = ({ forceFull = false }) => (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${t.border}`, opacity: headerIn ? 1 : 0, transform: headerIn ? 'translateY(0)' : 'translateY(-8px)', transition: 'opacity 0.4s ease,transform 0.4s ease' }}>
+            {/* Logo */}
+            <div style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${t.border}`, opacity: headerIn ? 1 : 0, transform: headerIn ? 'translateY(0)' : 'translateY(-8px)', transition: 'opacity 0.4s,transform 0.4s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px ${roleMeta.accent}44` }}><Activity size={18} color="#fff" /></div>
+                    {/* Orange brand dot */}
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${NAVY},${SOFT_NAVY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px rgba(10,26,63,0.4)`, border: `1px solid ${ORANGE}44` }}>
+                        <Activity size={18} color={ORANGE} />
+                    </div>
                     <div>
-                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>HMS<span style={{ background: `linear-gradient(135deg,${BLUE},${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span></span>
+                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>
+                            Apex<span style={{ color: ORANGE }}>HMS</span>
+                        </span>
                         <span style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{roleMeta.label}</span>
                     </div>
                 </div>
                 {forceFull && <button onClick={() => setMobileMenu(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8 }}><X size={18} /></button>}
             </div>
+
+            {/* User chip */}
             <div style={{ padding: '10px 14px 4px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: roleMeta.accent + '12', border: `1px solid ${roleMeta.accent}22` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: `${ORANGE}10`, border: `1px solid ${ORANGE}22` }}>
                     <div style={{ width: 28, height: 28, borderRadius: 8, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><roleMeta.icon size={14} color="#fff" /></div>
                     <div style={{ minWidth: 0 }}>
                         <p style={{ fontSize: 12, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{staff?.fullName || staff?.name || roleMeta.label}</p>
-                        <p style={{ fontSize: 10, color: roleMeta.accent, fontWeight: 700 }}>{staff?.employeeId || `${roleMeta.tag}-0001`}</p>
+                        <p style={{ fontSize: 10, color: ORANGE, fontWeight: 700 }}>{staff?.employeeId || `${roleMeta.tag}-0001`}</p>
                     </div>
                 </div>
             </div>
+
+            {/* Nav */}
             <nav style={{ flex: 1, padding: '8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
                 {navItems.map(({ id, icon: Icon, label }, idx) => {
                     const isActive = section === id;
                     return (
-                        <button key={id} onClick={() => goTo(id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: 'none', width: '100%', textAlign: 'left', fontFamily: 'inherit', background: isActive ? (isDark ? `${roleMeta.accent}22` : `${roleMeta.accent}11`) : 'transparent', color: isActive ? roleMeta.accent : t.textSub, fontWeight: isActive ? 600 : 400, fontSize: 14, minHeight: 44, opacity: navMounted ? 1 : 0, transform: navMounted ? 'translateX(0)' : 'translateX(-14px)', transition: `opacity 0.35s ease ${idx * 0.04}s,transform 0.35s cubic-bezier(0.34,1.2,0.64,1) ${idx * 0.04}s,background 0.15s,color 0.15s` }}
+                        <button key={id} onClick={() => goTo(id)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: 'none', width: '100%', textAlign: 'left', fontFamily: 'inherit', background: isActive ? `${ORANGE}14` : 'transparent', color: isActive ? ORANGE : t.textSub, fontWeight: isActive ? 700 : 400, fontSize: 14, minHeight: 44, opacity: navMounted ? 1 : 0, transform: navMounted ? 'translateX(0)' : 'translateX(-14px)', transition: `opacity 0.35s ease ${idx * 0.04}s,transform 0.35s cubic-bezier(0.34,1.2,0.64,1) ${idx * 0.04}s,background 0.15s,color 0.15s` }}
                             onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = t.hover; }}
                             onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}>
                             <Icon size={18} style={{ flexShrink: 0 }} />
                             <span style={{ flex: 1 }}>{label}</span>
-                            {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: roleMeta.accent, flexShrink: 0 }} />}
+                            {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: ORANGE, flexShrink: 0 }} />}
                         </button>
                     );
                 })}
             </nav>
+
+            {/* Logout */}
             <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0 }}>
-                <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: ROSE, fontSize: 14, fontWeight: 500, background: 'none', border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
+                <button onClick={handleLogout}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: ROSE, fontSize: 14, fontWeight: 500, background: 'none', border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(225,29,72,0.08)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <LogOut size={18} style={{ flexShrink: 0 }} />
@@ -1057,21 +1104,24 @@ export default function StaffDashboard() {
                 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
                 ::-webkit-scrollbar{width:4px;height:4px;}
                 ::-webkit-scrollbar-track{background:transparent;}
-                ::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.2);border-radius:10px;}
+                ::-webkit-scrollbar-thumb{background:rgba(255,90,31,0.2);border-radius:10px;}
+                ::-webkit-scrollbar-thumb:hover{background:rgba(255,90,31,0.4);}
                 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
                 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
                 @keyframes slideRight{from{transform:translateX(-100%)}to{transform:translateX(0)}}
                 @keyframes headerSlide{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
                 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-                select option{background:#1a1a2e;color:#e6edf3;}
+                select option{background:#1F2A44;color:#F5F7FA;}
             `}</style>
 
+            {/* Desktop Sidebar */}
             {!isMobile && (
-                <aside style={{ width: 240, height: '100dvh', background: t.sidebar, borderRight: `1px solid ${t.border}`, position: 'sticky', top: 0, flexShrink: 0, zIndex: 100, boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.3)' : '2px 0 12px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}>
+                <aside style={{ width: 240, height: '100dvh', background: t.sidebar, borderRight: `1px solid ${t.border}`, position: 'sticky', top: 0, flexShrink: 0, zIndex: 100, boxShadow: isDark ? `2px 0 20px rgba(0,0,0,0.4)` : `2px 0 12px rgba(10,26,63,0.08)`, display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}>
                     <SidebarContent />
                 </aside>
             )}
 
+            {/* Mobile Sidebar Overlay */}
             {isMobile && mobileMenu && (
                 <>
                     <div onClick={() => setMobileMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, animation: 'fadeIn 0.2s ease' }} />
@@ -1081,11 +1131,14 @@ export default function StaffDashboard() {
                 </>
             )}
 
+            {/* Main */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
+
+                {/* Header */}
                 <header style={{ height: isMobile ? 56 : 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 12px' : '0 20px', background: t.sidebar, borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, zIndex: 50, gap: 8, flexShrink: 0, animation: 'headerSlide 0.35s ease both 0.05s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                         <button onClick={() => isMobile && setMobileMenu(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}><Menu size={20} /></button>
-                        {isMobile && <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>HMS<span style={{ background: `linear-gradient(135deg,${BLUE},${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span></span>}
+                        {isMobile && <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>Apex<span style={{ color: ORANGE }}>HMS</span></span>}
                         {!isMobile && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}` }}>
                                 <Search size={14} color={t.textMuted} />
@@ -1094,13 +1147,18 @@ export default function StaffDashboard() {
                         )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
-                        <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>{isDark ? <Sun size={16} /> : <Moon size={16} />}</button>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px', borderRadius: 10, transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = t.hover} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        {/* Theme toggle — orange icon */}
+                        <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}12`, border: `1px solid ${ORANGE}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: ORANGE }}>
+                            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px', borderRadius: 10, transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = t.hover}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                             <div style={{ width: 32, height: 32, borderRadius: 9, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 13 }}>{initials(staff?.fullName || staff?.name)}</div>
                             {!isMobile && <>
                                 <div style={{ minWidth: 0 }}>
                                     <span style={{ fontWeight: 600, fontSize: 13, color: t.text, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{staff?.fullName || staff?.name || roleMeta.label}</span>
-                                    <span style={{ fontSize: 11, color: roleMeta.accent, fontWeight: 700 }}>{roleMeta.label}</span>
+                                    <span style={{ fontSize: 11, color: ORANGE, fontWeight: 700 }}>{roleMeta.label}</span>
                                 </div>
                                 <ChevronDown size={14} color={t.textMuted} />
                             </>}
@@ -1108,20 +1166,22 @@ export default function StaffDashboard() {
                     </div>
                 </header>
 
+                {/* Content */}
                 <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px 12px 80px' : '24px', height: 0 }}>
                     <div style={{ maxWidth: 960, width: '100%', animation: 'fadeUp 0.3s ease' }} key={section}>
                         {renderSection()}
                     </div>
                 </main>
 
+                {/* Mobile bottom nav */}
                 {isMobile && (
                     <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: t.sidebar, borderTop: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingTop: 8, paddingBottom: 12, zIndex: 100, boxShadow: '0 -4px 24px rgba(0,0,0,0.12)' }}>
                         {BOTTOM_NAV.map(({ id, icon: Icon, label }) => {
                             const isActive = section === id;
                             return (
-                                <button key={id} onClick={() => goTo(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 8px', borderRadius: 12, border: 'none', cursor: 'pointer', background: isActive ? (isDark ? `${roleMeta.accent}20` : `${roleMeta.accent}10`) : 'transparent', color: isActive ? roleMeta.accent : t.textMuted, fontFamily: 'inherit', flex: 1, transition: 'color 0.2s', minHeight: 48 }}>
+                                <button key={id} onClick={() => goTo(id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 8px', borderRadius: 12, border: 'none', cursor: 'pointer', background: isActive ? `${ORANGE}14` : 'transparent', color: isActive ? ORANGE : t.textMuted, fontFamily: 'inherit', flex: 1, transition: 'color 0.2s', minHeight: 48 }}>
                                     <Icon size={21} style={{ transform: isActive ? 'scale(1.2)' : 'scale(1)', transition: 'transform 0.2s' }} />
-                                    <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400 }}>{label}</span>
+                                    <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400 }}>{label}</span>
                                 </button>
                             );
                         })}

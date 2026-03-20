@@ -1,65 +1,259 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { ButtonSpinner } from '../Components/LoadingSpinner';
 
+const T = {
+  navy:      '#0A1A3F',
+  softNavy:  '#1F2A44',
+  orange:    '#FF5A1F',
+  lightGray: '#F5F7FA',
+};
 
+const css = {
+  page: {
+    minHeight: '100vh',
+    background: T.navy,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '3rem 1.25rem',
+    fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  bgCircle1: {
+    position: 'absolute',
+    top: '-120px',
+    right: '-120px',
+    width: 420,
+    height: 420,
+    borderRadius: '50%',
+    background: `radial-gradient(circle, ${T.orange}22 0%, transparent 70%)`,
+    pointerEvents: 'none',
+  },
+  bgCircle2: {
+    position: 'absolute',
+    bottom: '-80px',
+    left: '-100px',
+    width: 320,
+    height: 320,
+    borderRadius: '50%',
+    background: `radial-gradient(circle, ${T.softNavy} 0%, transparent 70%)`,
+    pointerEvents: 'none',
+  },
+  wrap: {
+    width: '100%',
+    maxWidth: 420,
+    position: 'relative',
+    zIndex: 1,
+  },
+  logoWrap: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '2rem',
+  },
+  logoIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    background: T.orange,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    boxShadow: `0 8px 32px ${T.orange}55`,
+  },
+  logoTitle: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 900,
+    letterSpacing: '-0.03em',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  logoSub: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    textAlign: 'center',
+    letterSpacing: '0.04em',
+  },
+  warningBanner: {
+    background: 'rgba(255,90,31,0.1)',
+    border: `1px solid ${T.orange}55`,
+    borderRadius: 10,
+    padding: '12px 16px',
+    display: 'flex',
+    gap: 12,
+    alignItems: 'flex-start',
+    marginBottom: '1.5rem',
+  },
+  warningTitle: {
+    color: T.orange,
+    fontSize: 12.5,
+    fontWeight: 700,
+    marginBottom: 2,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+  },
+  warningBody: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 12,
+    lineHeight: 1.5,
+  },
+  card: {
+    background: T.softNavy,
+    borderRadius: 20,
+    border: `1.5px solid rgba(255,255,255,0.07)`,
+    padding: '2rem',
+    boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+  },
+  fieldLabel: {
+    display: 'block',
+    fontSize: 11.5,
+    fontWeight: 700,
+    color: 'rgba(255,255,255,0.55)',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  inputWrap: {
+    position: 'relative',
+    marginBottom: '1.25rem',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 14,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: 'rgba(255,255,255,0.25)',
+    pointerEvents: 'none',
+  },
+  input: (disabled) => ({
+    width: '100%',
+    padding: '12px 14px 12px 44px',
+    background: `${T.navy}cc`,
+    border: `1.5px solid rgba(255,255,255,0.1)`,
+    borderRadius: 10,
+    color: '#fff',
+    fontSize: 14,
+    outline: 'none',
+    transition: 'border-color .18s',
+    boxSizing: 'border-box',
+    opacity: disabled ? 0.5 : 1,
+    cursor: disabled ? 'not-allowed' : 'text',
+  }),
+  eyeBtn: {
+    position: 'absolute',
+    right: 14,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: 'rgba(255,255,255,0.3)',
+    cursor: 'pointer',
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'color .15s',
+  },
+  submitBtn: (loading) => ({
+    width: '100%',
+    padding: '13px',
+    background: loading ? `${T.orange}88` : T.orange,
+    color: '#fff',
+    border: 'none',
+    borderRadius: 10,
+    fontWeight: 800,
+    fontSize: 14.5,
+    letterSpacing: '0.02em',
+    cursor: loading ? 'not-allowed' : 'pointer',
+    marginTop: '0.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    boxShadow: loading ? 'none' : `0 4px 20px ${T.orange}55`,
+    transition: 'all .18s',
+  }),
+  divider: {
+    height: '1.5rem',
+  },
+  backBtn: {
+    display: 'block',
+    textAlign: 'center',
+    marginTop: '1.5rem',
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 13,
+    fontWeight: 600,
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'color .15s',
+    width: '100%',
+  },
+  toast: (type) => ({
+    position: 'fixed',
+    top: 24,
+    right: 24,
+    zIndex: 999,
+    background: type === 'success' ? '#15803d' : '#dc2626',
+    color: '#fff',
+    borderRadius: 10,
+    padding: '12px 20px',
+    fontSize: 13.5,
+    fontWeight: 600,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    maxWidth: 340,
+    animation: 'slideIn .25s ease',
+  }),
+};
 
-
+function Toast({ message, type, onClose, duration = 5000 }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, duration);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div style={css.toast(type)}>
+      {type === 'success' ? '✅' : '❌'}
+      <span>{message}</span>
+      <button onClick={onClose} style={{ marginLeft: 'auto', background:'none', border:'none', color:'#fff', cursor:'pointer', fontSize:16, lineHeight:1 }}>×</button>
+    </div>
+  );
+}
 
 export default function SuperAdminLogin() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
+  const [isLoading, setIsLoading]       = useState(false);
+  const [toast, setToast]               = useState(null);
+  const [formData, setFormData]         = useState({ username: '', password: '' });
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
-
-  const closeToast = () => {
-    setToast(null);
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const showToast  = (message, type = 'success') => setToast({ message, type });
+  const closeToast = () => setToast(null);
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-
       const data = await response.json();
-
       if (response.ok) {
-        // Save Token and User
         localStorage.setItem('token', data.token);
-        const userData = {
-          username: data.user.username,
-          role: 'super_admin'
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user', JSON.stringify({ username: data.user.username, role: 'super_admin' }));
         localStorage.setItem('userRole', 'super_admin');
-
-        showToast('Login successful! Redirecting to dashboard...', 'success');
-
-        setTimeout(() => {
-          navigate('/superadmindashboard');
-        }, 1000);
+        showToast('Login successful! Redirecting…', 'success');
+        setTimeout(() => navigate('/superadmindashboard'), 1000);
       } else {
         showToast(data.error || 'Invalid credentials', 'error');
       }
@@ -72,109 +266,84 @@ export default function SuperAdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Toast Notification */}
-      {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={closeToast}
-          duration={5000}
-        />
-      )}
+    <div style={css.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+        @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+        input:focus { border-color: ${T.orange} !important; box-shadow: 0 0 0 3px ${T.orange}22; }
+        input::placeholder { color: rgba(255,255,255,0.2); }
+      `}</style>
 
-      <div className="max-w-md w-full">
-        {/* Logo & Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-700 shadow-2xl shadow-red-500/50 mb-6">
-            <Shield className="w-10 h-10 text-white" />
-          </div>
-          <h2 className="text-3xl font-black text-white mb-2">
-            Super Admin Access
-          </h2>
-          <p className="text-slate-400">
-            System administrator login only
-          </p>
+      {/* Background accents */}
+      <div style={css.bgCircle1} />
+      <div style={css.bgCircle2} />
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
+
+      <div style={css.wrap}>
+        {/* Logo */}
+        <div style={css.logoWrap}>
+          <div style={css.logoIcon}><Shield size={34} color="#fff" /></div>
+          <h1 style={css.logoTitle}>Super Admin Access</h1>
+          <p style={css.logoSub}>System administrator login only</p>
         </div>
 
-        {/* Warning Banner */}
-        <div className="bg-red-950/50 border border-red-800 rounded-lg p-4 mb-6">
-          <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-red-300 mb-1">
-                Restricted Area
-              </p>
-              <p className="text-xs text-red-400">
-                Unauthorized access attempts are logged and monitored.
-              </p>
-            </div>
+        {/* Warning banner */}
+        <div style={css.warningBanner}>
+          <AlertCircle size={16} color={T.orange} style={{ flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <div style={css.warningTitle}>Restricted Area</div>
+            <div style={css.warningBody}>Unauthorized access attempts are logged and monitored.</div>
           </div>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          <form onSubmit={handleSubmit} className="space-y-6">
-
+        {/* Card */}
+        <div style={css.card}>
+          <form onSubmit={handleSubmit}>
             {/* Username */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Admin Username
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                  placeholder="Enter admin username"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
+            <label style={css.fieldLabel}>Admin Username</label>
+            <div style={css.inputWrap}>
+              <Mail size={16} style={css.inputIcon} />
+              <input
+                style={css.input(isLoading)}
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter admin username"
+                required
+                disabled={isLoading}
+              />
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-11 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-400 disabled:cursor-not-allowed"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+            <label style={css.fieldLabel}>Password</label>
+            <div style={{ ...css.inputWrap, marginBottom: '1.5rem' }}>
+              <Lock size={16} style={css.inputIcon} />
+              <input
+                style={{ ...css.input(isLoading), paddingRight: 44 }}
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                style={css.eyeBtn}
+                onClick={() => setShowPassword(v => !v)}
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-bold hover:from-red-700 hover:to-red-800 transition shadow-lg shadow-red-500/30 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
+            {/* Submit */}
+            <button type="submit" style={css.submitBtn(isLoading)} disabled={isLoading}>
               {isLoading ? (
-                <>
-                  <ButtonSpinner className="text-white" />
-                  <span>Authenticating...</span>
-                </>
+                <><ButtonSpinner className="text-white" /><span>Authenticating…</span></>
               ) : (
                 'Access Admin Panel'
               )}
@@ -182,16 +351,16 @@ export default function SuperAdminLogin() {
           </form>
         </div>
 
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <button
-            onClick={() => navigate('/')}
-            disabled={isLoading}
-            className="text-sm text-slate-400 hover:text-white transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Back to Home
-          </button>
-        </div>
+        {/* Back */}
+        <button
+          style={css.backBtn}
+          onClick={() => navigate('/')}
+          disabled={isLoading}
+          onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.7)'}
+          onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.3)'}
+        >
+          ← Back to Home
+        </button>
       </div>
     </div>
   );

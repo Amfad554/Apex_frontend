@@ -42,123 +42,236 @@ export default function PatientRegister() {
     }
   };
 
-  const inputStyle = "w-full px-5 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all text-sm sm:text-base";
+  const inputStyle = {
+    width: "100%",
+    padding: "14px 20px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: "14px",
+    color: "#F5F7FA",
+    fontSize: "0.9rem",
+    outline: "none",
+    transition: "all 0.2s ease",
+    boxSizing: "border-box",
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-800 flex items-center justify-center px-6 py-12 relative overflow-hidden font-sans">
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0A1A3F 0%, #1F2A44 60%, #0A1A3F 100%)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "48px 24px",
+      position: "relative",
+      overflow: "hidden",
+      fontFamily: "'Georgia', serif",
+    }}>
 
-      {/* Decorative blurred circles */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+      {/* Decorative accents */}
+      <div style={{
+        position: "absolute", top: "-80px", right: "-80px",
+        width: "320px", height: "320px",
+        background: "radial-gradient(circle, rgba(255,90,31,0.15) 0%, transparent 70%)",
+        borderRadius: "50%",
+      }} />
+      <div style={{
+        position: "absolute", bottom: "-60px", left: "-60px",
+        width: "260px", height: "260px",
+        background: "radial-gradient(circle, rgba(255,90,31,0.10) 0%, transparent 70%)",
+        borderRadius: "50%",
+      }} />
 
-      {/* Registration Card */}
-      <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-2xl p-8 sm:p-10">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-black text-white italic tracking-tighter" style={{ fontFamily: 'serif' }}>ApexHMS</h1>
-          <div className="h-1 w-12 bg-white/40 mx-auto my-3 rounded-full"></div>
-          <p className="text-white/80 italic text-sm">Register as a Patient</p>
+      {/* Thin orange top accent line */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0,
+        height: "3px",
+        background: "linear-gradient(90deg, transparent, #FF5A1F, transparent)",
+      }} />
+
+      {/* Card */}
+      <div style={{
+        position: "relative", zIndex: 10,
+        width: "100%", maxWidth: "440px",
+        background: "rgba(31,42,68,0.85)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: "28px",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
+        padding: "40px 36px",
+      }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+            <div style={{
+              width: "8px", height: "8px", borderRadius: "50%",
+              background: "#FF5A1F", flexShrink: 0,
+            }} />
+            <h1 style={{
+              fontSize: "2.4rem",
+              fontWeight: "900",
+              color: "#F5F7FA",
+              margin: 0,
+              letterSpacing: "-1px",
+              fontStyle: "italic",
+            }}>ApexHMS</h1>
+            <div style={{
+              width: "8px", height: "8px", borderRadius: "50%",
+              background: "#FF5A1F", flexShrink: 0,
+            }} />
+          </div>
+          <div style={{
+            height: "2px", width: "48px",
+            background: "#FF5A1F",
+            margin: "10px auto",
+            borderRadius: "2px",
+          }} />
+          <p style={{ color: "rgba(245,247,250,0.55)", fontSize: "0.82rem", margin: 0, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Patient Registration
+          </p>
         </div>
 
+        {/* Message */}
         {message.text && (
-          <div className={`mb-4 p-3 rounded-xl text-center text-sm font-bold ${message.type === 'error' ? 'bg-red-500/20 text-red-200' : 'bg-emerald-500/20 text-emerald-100'}`}>
+          <div style={{
+            marginBottom: "20px",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            textAlign: "center",
+            fontSize: "0.85rem",
+            fontWeight: "700",
+            background: message.type === "error" ? "rgba(220,53,69,0.15)" : "rgba(40,167,69,0.15)",
+            color: message.type === "error" ? "#ff8a95" : "#6ee7a0",
+            border: `1px solid ${message.type === "error" ? "rgba(220,53,69,0.3)" : "rgba(40,167,69,0.3)"}`,
+          }}>
             {message.text}
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleRegister}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            required
-            className={inputStyle}
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            required
-            className={inputStyle}
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone Number"
-            required
-            className={inputStyle}
-            value={formData.phone}
-            onChange={handleChange}
-          />
-          <input
-            type="date"
-            name="dob"
-            required
-            className={inputStyle}
-            value={formData.dob}
-            onChange={handleChange}
-          />
+        {/* Form */}
+        <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
 
-          <div className="relative">
+          {[
+            { type: "text", name: "name", placeholder: "Full Name" },
+            { type: "email", name: "email", placeholder: "Email Address" },
+            { type: "tel", name: "phone", placeholder: "Phone Number" },
+            { type: "date", name: "dob", placeholder: "" },
+          ].map((field) => (
             <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
+              key={field.name}
+              type={field.type}
+              name={field.name}
+              placeholder={field.placeholder}
               required
-              className={`${inputStyle} pr-12`}
-              value={formData.password}
+              style={inputStyle}
+              value={formData[field.name]}
               onChange={handleChange}
+              onFocus={e => {
+                e.target.style.borderColor = "#FF5A1F";
+                e.target.style.background = "rgba(255,90,31,0.07)";
+                e.target.style.boxShadow = "0 0 0 3px rgba(255,90,31,0.12)";
+              }}
+              onBlur={e => {
+                e.target.style.borderColor = "rgba(255,255,255,0.12)";
+                e.target.style.background = "rgba(255,255,255,0.06)";
+                e.target.style.boxShadow = "none";
+              }}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+          ))}
 
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              required
-              className={`${inputStyle} pr-12`}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+          {/* Password fields */}
+          {["password", "confirmPassword"].map((fieldName) => (
+            <div key={fieldName} style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name={fieldName}
+                placeholder={fieldName === "password" ? "Password" : "Confirm Password"}
+                required
+                style={{ ...inputStyle, paddingRight: "48px" }}
+                value={formData[fieldName]}
+                onChange={handleChange}
+                onFocus={e => {
+                  e.target.style.borderColor = "#FF5A1F";
+                  e.target.style.background = "rgba(255,90,31,0.07)";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(255,90,31,0.12)";
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = "rgba(255,255,255,0.12)";
+                  e.target.style.background = "rgba(255,255,255,0.06)";
+                  e.target.style.boxShadow = "none";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute", right: "14px",
+                  top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none",
+                  color: "rgba(245,247,250,0.4)",
+                  cursor: "pointer", padding: 0,
+                  display: "flex", alignItems: "center",
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          ))}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-white text-indigo-700 rounded-2xl font-bold text-lg hover:bg-indigo-50 hover:scale-[1.02] active:scale-95 transition-all shadow-xl mt-4"
+            style={{
+              width: "100%",
+              padding: "15px",
+              marginTop: "6px",
+              background: loading ? "#c74410" : "#FF5A1F",
+              color: "#fff",
+              border: "none",
+              borderRadius: "14px",
+              fontWeight: "800",
+              fontSize: "1rem",
+              cursor: loading ? "not-allowed" : "pointer",
+              letterSpacing: "0.03em",
+              transition: "all 0.2s ease",
+              boxShadow: "0 6px 24px rgba(255,90,31,0.35)",
+            }}
+            onMouseEnter={e => { if (!loading) e.target.style.background = "#e04e18"; }}
+            onMouseLeave={e => { if (!loading) e.target.style.background = "#FF5A1F"; }}
           >
-            {loading ? "Registering..." : "Register Patient"}
+            {loading ? "Registering..." : "Create Account"}
           </button>
         </form>
 
-        <div className="mt-6 text-center border-t border-white/10 pt-4">
-          <p className="text-sm text-white/70">
+        <div style={{
+          marginTop: "24px",
+          paddingTop: "20px",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          textAlign: "center",
+        }}>
+          <p style={{ fontSize: "0.83rem", color: "rgba(245,247,250,0.55)", margin: 0 }}>
             Already have an account?{" "}
-            <Link to="/patientlogin" className="font-bold text-white hover:underline">Login here</Link>
+            <Link
+              to="/patientlogin"
+              style={{ color: "#FF5A1F", fontWeight: "700", textDecoration: "none" }}
+              onMouseEnter={e => e.target.style.textDecoration = "underline"}
+              onMouseLeave={e => e.target.style.textDecoration = "none"}
+            >
+              Login here
+            </Link>
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-4 w-full text-center text-white/60 text-xs sm:text-sm">
+      <div style={{
+        position: "absolute", bottom: "16px",
+        width: "100%", textAlign: "center",
+        color: "rgba(245,247,250,0.35)",
+        fontSize: "0.75rem",
+        letterSpacing: "0.04em",
+      }}>
         Precision in Practice, Excellence in Care • AMT Hospital Systems
       </div>
     </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Home, Users, Calendar, Stethoscope, Pill, FileText,
   Settings, LogOut, Activity, Bell, Search, Sun, Moon,
-  Menu, ChevronDown, X, MoreHorizontal, KeyRound   // ← add KeyRound
+  Menu, ChevronDown, X, MoreHorizontal, KeyRound
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
 
@@ -18,21 +18,21 @@ import CredentialsHistory from './Sections/CredentialsHistory.jsx';
 
 
 const NAV_ITEMS = [
-  { id: 'dashboard', icon: Home, label: 'Dashboard' },
-  { id: 'patients', icon: Users, label: 'Patients' },
-  { id: 'appointments', icon: Calendar, label: 'Appointments' },
-  { id: 'staff', icon: Stethoscope, label: 'Staff' },
-  { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
-  { id: 'records', icon: FileText, label: 'Records' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
-  { id: 'credentials', icon: KeyRound, label: 'Credentials Log' }
+  { id: 'dashboard',   icon: Home,      label: 'Dashboard' },
+  { id: 'patients',    icon: Users,     label: 'Patients' },
+  { id: 'appointments',icon: Calendar,  label: 'Appointments' },
+  { id: 'staff',       icon: Stethoscope, label: 'Staff' },
+  { id: 'pharmacy',    icon: Pill,      label: 'Pharmacy' },
+  { id: 'records',     icon: FileText,  label: 'Records' },
+  { id: 'settings',    icon: Settings,  label: 'Settings' },
+  { id: 'credentials', icon: KeyRound,  label: 'Credentials Log' },
 ];
 
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
-const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
+const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
 
-/* ─── Animated nav item indicator ─────────────────────────────────────────── */
-function ActivePill({ isDark }) {
+/* ── Active pip ─────────────────────────────────────────────────────────────── */
+function ActivePill() {
   return (
     <span style={{
       display: 'inline-block',
@@ -47,21 +47,21 @@ function ActivePill({ isDark }) {
 
 export default function HospitalDashboard() {
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
-  const [activeSection, setActive] = useState('dashboard');
-  const [prevSection, setPrev] = useState(null);
-  const [transitioning, setTrans] = useState(false);
-  const [sidebarOpen, setSidebar] = useState(true);
-  const [mobileSidebar, setMobile] = useState(false);
-  const [moreDrawer, setMoreDrawer] = useState(false);
-  const [hospital, setHospital] = useState(null);
-  const [searchQuery, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [notifications] = useState(3);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const [headerIn, setHeaderIn] = useState(false);
-  const [navMounted, setNavMounted] = useState(false);
+  const [isDark, setIsDark]             = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeSection, setActive]      = useState('dashboard');
+  const [prevSection, setPrev]          = useState(null);
+  const [transitioning, setTrans]       = useState(false);
+  const [sidebarOpen, setSidebar]       = useState(true);
+  const [mobileSidebar, setMobile]      = useState(false);
+  const [moreDrawer, setMoreDrawer]     = useState(false);
+  const [hospital, setHospital]         = useState(null);
+  const [searchQuery, setSearch]        = useState('');
+  const [searchOpen, setSearchOpen]     = useState(false);
+  const [notifications]                 = useState(3);
+  const [isMobile, setIsMobile]         = useState(false);
+  const [isTablet, setIsTablet]         = useState(false);
+  const [headerIn, setHeaderIn]         = useState(false);
+  const [navMounted, setNavMounted]     = useState(false);
 
   const t = isDark ? themes.dark : themes.light;
 
@@ -77,12 +77,9 @@ export default function HospitalDashboard() {
   useEffect(() => {
     const check = () => {
       const w = window.innerWidth;
-      const mobile = w < 768;
-      const tablet = w >= 768 && w < 1024;
-      setIsMobile(mobile);
-      setIsTablet(tablet);
-      if (mobile) setSidebar(false);
-      else if (tablet) setSidebar(false);
+      setIsMobile(w < 768);
+      setIsTablet(w >= 768 && w < 1024);
+      if (w < 1024) setSidebar(false);
     };
     check();
     window.addEventListener('resize', check);
@@ -101,10 +98,7 @@ export default function HospitalDashboard() {
     if (id === activeSection) return;
     setTrans(true);
     setPrev(activeSection);
-    setTimeout(() => {
-      setActive(id);
-      setTrans(false);
-    }, 180);
+    setTimeout(() => { setActive(id); setTrans(false); }, 180);
     setMobile(false);
     setMoreDrawer(false);
   };
@@ -126,25 +120,26 @@ export default function HospitalDashboard() {
 
   const sectionProps = { isDark, t, hospital, isMobile };
 
-const renderSection = () => {
-  switch (activeSection) {
-    case 'dashboard':     return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
-    case 'patients':      return <Patients       {...sectionProps} />;
-    case 'appointments':  return <Appointments   {...sectionProps} />;
-    case 'staff':         return <Staff          {...sectionProps} />;
-    case 'pharmacy':      return <Pharmacy       {...sectionProps} />;
-    case 'records':       return <RecordsSection {...sectionProps} />;
-    case 'settings':      return <DashSettings   {...sectionProps} />;
-    case 'credentials':   return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-    default:              return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
-  }
-};
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'dashboard':    return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients':     return <Patients       {...sectionProps} />;
+      case 'appointments': return <Appointments   {...sectionProps} />;
+      case 'staff':        return <Staff          {...sectionProps} />;
+      case 'pharmacy':     return <Pharmacy       {...sectionProps} />;
+      case 'records':      return <RecordsSection {...sectionProps} />;
+      case 'settings':     return <DashSettings   {...sectionProps} />;
+      case 'credentials':  return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
+      default:             return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+    }
+  };
 
   // ── Sidebar content ──────────────────────────────────────────────────────────
   const SidebarContent = ({ forceFull = false }) => {
     const showLabels = forceFull || sidebarOpen;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
         {/* Logo */}
         <div style={{
           padding: '18px 14px',
@@ -167,12 +162,13 @@ const renderSection = () => {
             </div>
             {showLabels && (
               <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.5px', color: t.text, whiteSpace: 'nowrap' }}>
-                HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
+                HMS<span style={{ color: BLUE }}>Care</span>
               </span>
             )}
           </div>
           {forceFull && (
-            <button onClick={() => setMobile(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8, transition: 'transform 0.2s' }}
+            <button onClick={() => setMobile(false)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8, transition: 'transform 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'rotate(90deg)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg)'}
             >
@@ -181,7 +177,7 @@ const renderSection = () => {
           )}
         </div>
 
-        {/* Nav items — staggered entrance */}
+        {/* Nav items */}
         <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
           {NAV_ITEMS.map(({ id, icon: Icon, label }, idx) => {
             const isActive = activeSection === id;
@@ -196,14 +192,11 @@ const renderSection = () => {
                   justifyContent: showLabels ? 'flex-start' : 'center',
                   padding: showLabels ? '10px 12px' : '11px 0',
                   borderRadius: 10, cursor: 'pointer', border: 'none',
-                  background: isActive
-                    ? (isDark ? 'rgba(59,91,219,0.22)' : 'rgba(59,91,219,0.11)')
-                    : 'transparent',
-                  color: isActive ? '#60a5fa' : t.textSub,
+                  background: isActive ? t.active : 'transparent',
+                  color: isActive ? BLUE : t.textSub,
                   fontWeight: isActive ? 600 : 400, fontSize: 14,
                   width: '100%', textAlign: 'left', fontFamily: 'inherit',
                   minHeight: 44,
-                  // staggered slide-in
                   opacity: navMounted ? 1 : 0,
                   transform: navMounted ? 'translateX(0)' : 'translateX(-14px)',
                   transition: `opacity 0.35s ease ${idx * 0.045}s, transform 0.35s cubic-bezier(0.34,1.2,0.64,1) ${idx * 0.045}s, background 0.15s, color 0.15s`,
@@ -211,13 +204,13 @@ const renderSection = () => {
                 onMouseEnter={e => {
                   if (!isActive) {
                     e.currentTarget.style.background = t.hover;
-                    e.currentTarget.style.paddingLeft = showLabels ? '16px' : undefined;
+                    if (showLabels) e.currentTarget.style.paddingLeft = '16px';
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.paddingLeft = showLabels ? '12px' : undefined;
+                    if (showLabels) e.currentTarget.style.paddingLeft = '12px';
                   }
                 }}
               >
@@ -227,7 +220,7 @@ const renderSection = () => {
                   transform: isActive ? 'scale(1.1)' : 'scale(1)',
                 }} />
                 {showLabels && <span style={{ flex: 1 }}>{label}</span>}
-                {showLabels && isActive && <ActivePill isDark={isDark} />}
+                {showLabels && isActive && <ActivePill />}
               </button>
             );
           })}
@@ -284,8 +277,8 @@ const renderSection = () => {
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '13px 12px', borderRadius: 12,
               border: 'none', cursor: 'pointer', width: '100%',
-              background: isActive ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
-              color: isActive ? '#60a5fa' : t.text,
+              background: isActive ? t.active : 'transparent',
+              color: isActive ? BLUE : t.text,
               fontFamily: 'inherit', fontSize: 15, fontWeight: isActive ? 600 : 400,
               textAlign: 'left', minHeight: 52,
               opacity: 0,
@@ -304,8 +297,7 @@ const renderSection = () => {
             border: 'none', cursor: 'pointer', width: '100%',
             background: 'transparent', color: ACCENT.red,
             fontFamily: 'inherit', fontSize: 15, fontWeight: 500,
-            textAlign: 'left', minHeight: 52,
-            transition: 'background 0.15s',
+            textAlign: 'left', minHeight: 52, transition: 'background 0.15s',
           }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -340,7 +332,7 @@ const renderSection = () => {
               style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 15, flex: 1, fontFamily: 'inherit' }}
             />
           </div>
-          <button onClick={() => setSearchOpen(false)} style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, fontFamily: 'inherit', fontSize: 14, whiteSpace: 'nowrap' }}>
+          <button onClick={() => setSearchOpen(false)} style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: BLUE, fontFamily: 'inherit', fontSize: 14, whiteSpace: 'nowrap', fontWeight: 600 }}>
             Cancel
           </button>
         </div>
@@ -355,48 +347,30 @@ const renderSection = () => {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.25); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,90,31,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,90,31,0.4); }
 
-        @keyframes slideUp   { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp    { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideDown  { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn     { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         @keyframes slideInRow { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* logo spin on mount */
         @keyframes logoSpin {
           from { transform: rotate(-180deg) scale(0.5); opacity: 0; }
           to   { transform: rotate(0deg) scale(1); opacity: 1; }
         }
-        /* active pip pulse */
         @keyframes pulsePip {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(59,91,219,0.5); transform: scale(1); }
-          50%       { box-shadow: 0 0 0 4px rgba(59,91,219,0); transform: scale(1.3); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,90,31,0.5); transform: scale(1); }
+          50%       { box-shadow: 0 0 0 4px rgba(255,90,31,0); transform: scale(1.3); }
         }
-        /* section transitions */
         @keyframes sectionIn  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes sectionOut { from { opacity: 1; transform: translateY(0);    } to { opacity: 0; transform: translateY(-6px); } }
-
-        /* bottom nav tap ripple */
-        @keyframes tapScale {
-          0%   { transform: scale(1); }
-          40%  { transform: scale(0.88); }
-          100% { transform: scale(1); }
-        }
-
-        /* header slide down */
-        @keyframes headerSlide {
-          from { opacity: 0; transform: translateY(-100%); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes tapScale   { 0% { transform: scale(1); } 40% { transform: scale(0.88); } 100% { transform: scale(1); } }
+        @keyframes headerSlide { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes badgePulse  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
 
         .bottom-nav { padding-bottom: max(12px, env(safe-area-inset-bottom)) !important; }
-
-        /* notification badge pulse */
-        @keyframes badgePulse {
-          0%, 100% { transform: scale(1); }
-          50%       { transform: scale(1.4); }
-        }
       `}</style>
 
       {/* ── Desktop Sidebar ─────────────────────────────────────────────────── */}
@@ -410,7 +384,7 @@ const renderSection = () => {
           overflow: 'hidden',
           position: 'sticky', top: 0,
           flexShrink: 0, zIndex: 100,
-          boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.3)' : '2px 0 12px rgba(0,0,0,0.06)',
+          boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.3)' : '2px 0 12px rgba(10,26,63,0.06)',
           display: 'flex', flexDirection: 'column',
         }}>
           <SidebarContent />
@@ -472,13 +446,14 @@ const renderSection = () => {
 
             {isMobile && (
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, whiteSpace: 'nowrap' }}>
-                HMS<span style={{ background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Care</span>
+                HMS<span style={{ color: BLUE }}>Care</span>
               </span>
             )}
 
             {!isMobile && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, transition: 'border-color 0.2s, box-shadow 0.2s' }}
-                onFocusCapture={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(59,91,219,0.15)`; }}
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, transition: 'border-color 0.2s, box-shadow 0.2s' }}
+                onFocusCapture={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(255,90,31,0.15)`; }}
                 onBlurCapture={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 <Search size={14} color={t.textMuted} />
@@ -495,7 +470,8 @@ const renderSection = () => {
           {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
             {isMobile && (
-              <button onClick={() => setSearchOpen(true)} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
+              <button onClick={() => setSearchOpen(true)}
+                style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 aria-label="Search"
@@ -504,7 +480,8 @@ const renderSection = () => {
               </button>
             )}
 
-            <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.3s, background 0.2s' }}
+            <button onClick={toggleTheme}
+              style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.3s, background 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'rotate(20deg) scale(1.08)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg) scale(1)'}
               aria-label="Toggle theme"
@@ -513,7 +490,8 @@ const renderSection = () => {
             </button>
 
             <div style={{ position: 'relative' }}>
-              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
+              <button
+                style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
@@ -529,17 +507,20 @@ const renderSection = () => {
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 4px', borderRadius: 10, transition: 'background 0.15s' }}
+            {/* Avatar + name */}
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 4px', borderRadius: 10, transition: 'background 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.background = t.hover}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{
-                width: 32, height: 32, borderRadius: 9,
-                background: `linear-gradient(135deg, ${BLUE}, #8b5cf6)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, color: '#fff', fontSize: 13, flexShrink: 0,
-                transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
-              }}
+              <div
+                style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: `linear-gradient(135deg, ${BLUE}, ${BLUE2})`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, color: '#fff', fontSize: 13, flexShrink: 0,
+                  transition: 'transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+                }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.12) rotate(-6deg)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
               >
@@ -566,9 +547,7 @@ const renderSection = () => {
           padding: isMobile ? '14px 12px 80px' : '24px',
           height: 0,
         }}>
-          <div style={{
-            animation: transitioning ? 'sectionOut 0.18s ease forwards' : 'sectionIn 0.3s ease both',
-          }}>
+          <div style={{ animation: transitioning ? 'sectionOut 0.18s ease forwards' : 'sectionIn 0.3s ease both' }}>
             {renderSection()}
           </div>
         </main>
@@ -598,8 +577,8 @@ const renderSection = () => {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                     padding: '6px 10px', borderRadius: 12,
                     border: 'none', cursor: 'pointer',
-                    background: isActive ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)') : 'transparent',
-                    color: isActive ? '#60a5fa' : t.textMuted,
+                    background: isActive ? t.active : 'transparent',
+                    color: isActive ? BLUE : t.textMuted,
                     fontFamily: 'inherit', minWidth: 56, flex: 1,
                     transition: 'color 0.2s, background 0.2s',
                   }}
@@ -617,10 +596,8 @@ const renderSection = () => {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                 padding: '6px 10px', borderRadius: 12,
                 border: 'none', cursor: 'pointer',
-                background: MORE_NAV_ITEMS.some(i => i.id === activeSection)
-                  ? (isDark ? 'rgba(59,91,219,0.2)' : 'rgba(59,91,219,0.1)')
-                  : 'transparent',
-                color: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? '#60a5fa' : t.textMuted,
+                background: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? t.active : 'transparent',
+                color: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? BLUE : t.textMuted,
                 fontFamily: 'inherit', minWidth: 56, flex: 1,
                 transition: 'color 0.2s',
               }}

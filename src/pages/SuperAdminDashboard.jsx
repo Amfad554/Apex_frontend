@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Shield, 
-  Building2, 
-  Users, 
-  Activity, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
+import {
+  Shield,
+  Building2,
+  Users,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  Clock,
   LogOut,
   Eye,
   Trash2,
@@ -16,508 +16,676 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-export default function SuperAdminDashboard() {
-  const navigate = useNavigate();
-  
-  const [hospitals, setHospitals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, suspended
-  const [searchQuery, setSearchQuery] = useState('');
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    suspended: 0,
-    totalPatients: 0,
-    totalStaff: 0
-  });
+/* ─── Brand tokens ─────────────────────────────────────────────────────────── */
+const T = {
+  navy:      '#0A1A3F',
+  softNavy:  '#1F2A44',
+  orange:    '#FF5A1F',
+  lightGray: '#F5F7FA',
+};
 
-  // Fetch hospitals on component mount
-  useEffect(() => {
-    fetchHospitals();
-  }, []);
+/* ─── Inline style helpers ──────────────────────────────────────────────────── */
+const css = {
+  page: {
+    minHeight: '100vh',
+    background: T.lightGray,
+    fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+  },
+  header: {
+    background: T.navy,
+    borderBottom: `3px solid ${T.orange}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 50,
+    padding: '0 2rem',
+  },
+  headerInner: {
+    maxWidth: 1280,
+    margin: '0 auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 68,
+  },
+  logoIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    background: T.orange,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  logoTitle: {
+    color: '#fff',
+    fontWeight: 700,
+    fontSize: 17,
+    letterSpacing: '-0.02em',
+    lineHeight: 1.2,
+  },
+  logoSub: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 11,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  },
+  btnRefresh: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '8px 18px',
+    background: T.softNavy,
+    color: 'rgba(255,255,255,0.85)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    fontWeight: 600,
+    fontSize: 13,
+    cursor: 'pointer',
+    transition: 'all .18s',
+  },
+  btnLogout: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '8px 18px',
+    background: T.orange,
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: 'pointer',
+    transition: 'all .18s',
+  },
+  main: {
+    maxWidth: 1280,
+    margin: '0 auto',
+    padding: '2.5rem 2rem',
+  },
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: 800,
+    color: T.navy,
+    letterSpacing: '-0.03em',
+    marginBottom: 4,
+  },
+  pageSub: {
+    color: '#6b7a99',
+    fontSize: 14,
+    marginBottom: '2.5rem',
+  },
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: 16,
+    marginBottom: '2rem',
+  },
+  statCard: (highlight) => ({
+    background: '#fff',
+    borderRadius: 14,
+    padding: '1.25rem 1.5rem',
+    border: `1.5px solid ${highlight ? T.orange : '#e4e9f2'}`,
+    boxShadow: highlight
+      ? `0 0 0 3px ${T.orange}22`
+      : '0 1px 4px rgba(10,26,63,0.06)',
+    transition: 'transform .18s, box-shadow .18s',
+    cursor: 'default',
+  }),
+  statIconBox: (bg, fg) => ({
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    background: bg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: fg,
+    marginBottom: 14,
+  }),
+  statValue: {
+    fontSize: 26,
+    fontWeight: 800,
+    color: T.navy,
+    letterSpacing: '-0.03em',
+    lineHeight: 1,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 11.5,
+    color: '#8694b2',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  filterBar: {
+    background: '#fff',
+    borderRadius: 14,
+    border: '1.5px solid #e4e9f2',
+    padding: '1.1rem 1.5rem',
+    marginBottom: '1.5rem',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 12,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  searchWrap: {
+    position: 'relative',
+    flex: '1 1 260px',
+    maxWidth: 360,
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#8694b2',
+    pointerEvents: 'none',
+  },
+  searchInput: {
+    width: '100%',
+    padding: '9px 14px 9px 40px',
+    border: '1.5px solid #e4e9f2',
+    borderRadius: 9,
+    fontSize: 13.5,
+    color: T.navy,
+    background: T.lightGray,
+    outline: 'none',
+    transition: 'border-color .18s',
+    boxSizing: 'border-box',
+  },
+  filterBtns: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  filterBtn: (active, color) => ({
+    padding: '7px 16px',
+    borderRadius: 8,
+    fontSize: 12.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all .15s',
+    border: 'none',
+    background: active ? (color || T.navy) : '#f0f3f9',
+    color: active ? '#fff' : '#5a6a8a',
+    letterSpacing: '0.02em',
+  }),
+  card: {
+    background: '#fff',
+    borderRadius: 16,
+    border: '1.5px solid #e4e9f2',
+    padding: '1.5rem',
+    marginBottom: 14,
+    boxShadow: '0 1px 4px rgba(10,26,63,0.05)',
+    transition: 'box-shadow .18s, transform .18s',
+  },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 16,
+  },
+  cardIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
+    background: `${T.navy}12`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: T.navy,
+    flexShrink: 0,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: T.navy,
+    letterSpacing: '-0.02em',
+    marginBottom: 2,
+  },
+  cardType: {
+    fontSize: 12,
+    color: '#8694b2',
+    marginBottom: 6,
+    textTransform: 'capitalize',
+    fontWeight: 500,
+  },
+  cardMeta: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 12,
+    fontSize: 12,
+    color: '#6b7a99',
+  },
+  statusBadge: (status) => {
+    const map = {
+      pending:   { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
+      approved:  { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
+      suspended: { bg: '#fff1f2', color: '#9f1239', border: '#fecdd3' },
+    };
+    const s = map[status] || map.pending;
+    return {
+      padding: '4px 12px',
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: 700,
+      letterSpacing: '0.07em',
+      textTransform: 'uppercase',
+      background: s.bg,
+      color: s.color,
+      border: `1px solid ${s.border}`,
+      flexShrink: 0,
+    };
+  },
+  infoGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+    gap: 12,
+    padding: '1rem',
+    background: T.lightGray,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  infoLabel: {
+    fontSize: 10.5,
+    color: '#8694b2',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    marginBottom: 3,
+  },
+  infoValue: {
+    fontSize: 13.5,
+    fontWeight: 700,
+    color: T.navy,
+  },
+  actions: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  btnApprove: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: '#16a34a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  btnReject: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: '#dc2626',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  btnSuspend: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: T.orange,
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  btnReactivate: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: '#16a34a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  btnView: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: 'transparent',
+    color: T.navy,
+    border: `1.5px solid #c8d3e8`,
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  btnDelete: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '8px 16px',
+    background: 'transparent',
+    color: '#dc2626',
+    border: `1.5px solid #fecaca`,
+    borderRadius: 8,
+    fontWeight: 700,
+    fontSize: 12.5,
+    cursor: 'pointer',
+    transition: 'all .15s',
+  },
+  cardFooter: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTop: '1px solid #f0f3f9',
+    fontSize: 11,
+    color: '#a0aec0',
+  },
+  emptyState: {
+    background: '#fff',
+    borderRadius: 16,
+    border: '1.5px solid #e4e9f2',
+    padding: '4rem 2rem',
+    textAlign: 'center',
+  },
+  spinner: {
+    width: 44,
+    height: 44,
+    border: `4px solid ${T.orange}33`,
+    borderTop: `4px solid ${T.orange}`,
+    borderRadius: '50%',
+    animation: 'spin 0.8s linear infinite',
+    margin: '3rem auto 1rem',
+  },
+};
 
-  const fetchHospitals = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        navigate('/admin/login');
-        return;
-      }
+/* ─── Stat palette ──────────────────────────────────────────────────────────── */
+const statColors = {
+  blue:   { bg: '#eff6ff', fg: '#1d4ed8' },
+  yellow: { bg: '#fffbeb', fg: '#b45309' },
+  green:  { bg: '#f0fdf4', fg: '#15803d' },
+  red:    { bg: '#fff1f2', fg: '#be123c' },
+  purple: { bg: '#faf5ff', fg: '#7e22ce' },
+  indigo: { bg: '#eef2ff', fg: '#4338ca' },
+};
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+/* ─── Components ────────────────────────────────────────────────────────────── */
 
-      if (response.ok) {
-        const data = await response.json();
-        setHospitals(data.hospitals);
-        
-        // Calculate stats
-        const stats = {
-          total: data.hospitals.length,
-          pending: data.hospitals.filter(h => h.status === 'pending').length,
-          approved: data.hospitals.filter(h => h.status === 'approved').length,
-          suspended: data.hospitals.filter(h => h.status === 'suspended').length,
-          totalPatients: data.hospitals.reduce((sum, h) => sum + (h.patientCount || 0), 0),
-          totalStaff: data.hospitals.reduce((sum, h) => sum + (h.staffCount || 0), 0)
-        };
-        setStats(stats);
-      } else if (response.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem('token');
-        navigate('/admin/login');
-      } else {
-        console.error('Failed to fetch hospitals');
-      }
-    } catch (error) {
-      console.error('Error fetching hospitals:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApprove = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`✅ ${data.hospital.name} has been approved!`);
-        fetchHospitals(); // Refresh list
-      } else {
-        const data = await response.json();
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error('Error approving hospital:', error);
-      alert('Failed to approve hospital');
-    }
-  };
-
-  const handleReject = async (id) => {
-    if (!window.confirm('Are you sure you want to reject/delete this hospital registration? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`🗑️ ${data.hospital.name} has been deleted`);
-        fetchHospitals(); // Refresh list
-      } else {
-        const data = await response.json();
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error('Error deleting hospital:', error);
-      alert('Failed to delete hospital');
-    }
-  };
-
-  const handleSuspend = async (id) => {
-    if (!window.confirm('Are you sure you want to suspend this hospital? They will not be able to login.')) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/suspend`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`⛔ ${data.hospital.name} has been suspended`);
-        fetchHospitals(); // Refresh list
-      } else {
-        const data = await response.json();
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error('Error suspending hospital:', error);
-      alert('Failed to suspend hospital');
-    }
-  };
-
-  const handleReactivate = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals/${id}/reactivate`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`✅ ${data.hospital.name} has been reactivated`);
-        fetchHospitals(); // Refresh list
-      } else {
-        const data = await response.json();
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error('Error reactivating hospital:', error);
-      alert('Failed to reactivate hospital');
-    }
-  };
-
-  const filteredHospitals = hospitals.filter(hospital => {
-    const matchesFilter = filter === 'all' || hospital.status === filter;
-    const matchesSearch = hospital.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         hospital.email.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userRole');
-    navigate('/admin/login');
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white">Super Admin Panel</h1>
-              <p className="text-xs text-slate-400">Platform Management</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchHospitals}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition font-semibold text-sm"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Hospital Management</h2>
-          <p className="text-slate-600">Review and manage all registered hospitals</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
-          <StatCard
-            icon={<Building2 className="w-6 h-6" />}
-            label="Total Hospitals"
-            value={stats.total}
-            color="blue"
-          />
-          <StatCard
-            icon={<Clock className="w-6 h-6" />}
-            label="Pending Approval"
-            value={stats.pending}
-            color="yellow"
-            highlight={stats.pending > 0}
-          />
-          <StatCard
-            icon={<CheckCircle2 className="w-6 h-6" />}
-            label="Approved"
-            value={stats.approved}
-            color="green"
-          />
-          <StatCard
-            icon={<Ban className="w-6 h-6" />}
-            label="Suspended"
-            value={stats.suspended}
-            color="red"
-          />
-          <StatCard
-            icon={<Users className="w-6 h-6" />}
-            label="Total Patients"
-            value={stats.totalPatients.toLocaleString()}
-            color="purple"
-          />
-          <StatCard
-            icon={<Activity className="w-6 h-6" />}
-            label="Healthcare Staff"
-            value={stats.totalStaff}
-            color="indigo"
-          />
-        </div>
-
-        {/* Filters & Search */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="w-full md:w-96 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search hospitals by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex gap-2 flex-wrap">
-              <FilterButton
-                active={filter === 'all'}
-                onClick={() => setFilter('all')}
-                label="All"
-                count={stats.total}
-              />
-              <FilterButton
-                active={filter === 'pending'}
-                onClick={() => setFilter('pending')}
-                label="Pending"
-                count={stats.pending}
-                color="yellow"
-              />
-              <FilterButton
-                active={filter === 'approved'}
-                onClick={() => setFilter('approved')}
-                label="Approved"
-                count={stats.approved}
-                color="green"
-              />
-              <FilterButton
-                active={filter === 'suspended'}
-                onClick={() => setFilter('suspended')}
-                label="Suspended"
-                count={stats.suspended}
-                color="red"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading hospitals...</p>
-          </div>
-        )}
-
-        {/* Hospitals List */}
-        {!loading && (
-          <div className="space-y-4">
-            {filteredHospitals.length === 0 ? (
-              <div className="bg-white rounded-xl p-12 text-center border border-slate-200">
-                <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-800 mb-2">No hospitals found</h3>
-                <p className="text-slate-600">
-                  {hospitals.length === 0 
-                    ? 'No hospitals have registered yet.' 
-                    : 'Try adjusting your search or filter.'}
-                </p>
-              </div>
-            ) : (
-              filteredHospitals.map(hospital => (
-                <HospitalCard
-                  key={hospital.id}
-                  hospital={hospital}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onSuspend={handleSuspend}
-                  onReactivate={handleReactivate}
-                />
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Stat Card Component
 function StatCard({ icon, label, value, color, highlight }) {
-  const colors = {
-    blue: 'bg-blue-100 text-blue-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600',
-    purple: 'bg-purple-100 text-purple-600',
-    indigo: 'bg-indigo-100 text-indigo-600'
-  };
-
+  const { bg, fg } = statColors[color] || statColors.blue;
   return (
-    <div className={`bg-white rounded-xl p-6 border border-slate-200 ${highlight ? 'ring-2 ring-yellow-400 animate-pulse' : ''}`}>
-      <div className={`w-12 h-12 rounded-lg ${colors[color]} flex items-center justify-center mb-4`}>
-        {icon}
-      </div>
-      <p className="text-2xl font-bold text-slate-800 mb-1">{value}</p>
-      <p className="text-sm text-slate-600">{label}</p>
+    <div style={css.statCard(highlight)}>
+      <div style={css.statIconBox(bg, fg)}>{icon}</div>
+      <div style={css.statValue}>{value}</div>
+      <div style={css.statLabel}>{label}</div>
     </div>
   );
 }
 
-// Filter Button Component
-function FilterButton({ active, onClick, label, count, color = 'indigo' }) {
+function FilterButton({ active, onClick, label, count, colorOverride }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-        active
-          ? 'bg-indigo-600 text-white'
-          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-      }`}
-    >
-      {label} <span className="ml-1">({count})</span>
+    <button style={css.filterBtn(active, colorOverride)} onClick={onClick}>
+      {label} <span style={{ opacity: 0.7 }}>({count})</span>
     </button>
   );
 }
 
-// Hospital Card Component
 function HospitalCard({ hospital, onApprove, onReject, onSuspend, onReactivate }) {
-  const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    approved: 'bg-green-100 text-green-700 border-green-200',
-    suspended: 'bg-red-100 text-red-700 border-red-200'
-  };
-
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-md transition">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-6 h-6" />
+    <div style={css.card}>
+      {/* Header row */}
+      <div style={css.cardHeader}>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+          <div style={css.cardIconBox}>
+            <Building2 size={22} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-800 mb-1">{hospital.name}</h3>
-            <p className="text-sm text-slate-600 mb-2 capitalize">{hospital.type} Hospital</p>
-            <div className="flex flex-wrap gap-3 text-xs text-slate-600">
+            <div style={css.cardTitle}>{hospital.name}</div>
+            <div style={css.cardType}>{hospital.type} Hospital</div>
+            <div style={css.cardMeta}>
               <span>📍 {hospital.address}</span>
               <span>📞 {hospital.phone}</span>
               <span>📧 {hospital.email}</span>
             </div>
           </div>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[hospital.status]}`}>
-          {hospital.status.toUpperCase()}
-        </span>
+        <span style={css.statusBadge(hospital.status)}>{hospital.status}</span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
-        <div>
-          <p className="text-xs text-slate-600 mb-1">Administrator</p>
-          <p className="font-semibold text-slate-800">{hospital.admin}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-600 mb-1">License Number</p>
-          <p className="font-semibold text-slate-800">{hospital.license}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-600 mb-1">Patients</p>
-          <p className="font-semibold text-slate-800">{hospital.patientCount?.toLocaleString() || 0}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-600 mb-1">Staff Members</p>
-          <p className="font-semibold text-slate-800">{hospital.staffCount || 0}</p>
-        </div>
+      {/* Info grid */}
+      <div style={css.infoGrid}>
+        {[
+          { label: 'Administrator', value: hospital.admin },
+          { label: 'License No.', value: hospital.license },
+          { label: 'Patients', value: (hospital.patientCount || 0).toLocaleString() },
+          { label: 'Staff', value: hospital.staffCount || 0 },
+        ].map(({ label, value }) => (
+          <div key={label}>
+            <div style={css.infoLabel}>{label}</div>
+            <div style={css.infoValue}>{value}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Actions */}
+      <div style={css.actions}>
         {hospital.status === 'pending' && (
           <>
-            <button
-              onClick={() => onApprove(hospital.id)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm font-semibold"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Approve
+            <button style={css.btnApprove} onClick={() => onApprove(hospital.id)}>
+              <CheckCircle2 size={14} /> Approve
             </button>
-            <button
-              onClick={() => onReject(hospital.id)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 text-sm font-semibold"
-            >
-              <XCircle className="w-4 h-4" />
-              Reject
+            <button style={css.btnReject} onClick={() => onReject(hospital.id)}>
+              <XCircle size={14} /> Reject
             </button>
           </>
         )}
         {hospital.status === 'approved' && (
-          <button
-            onClick={() => onSuspend(hospital.id)}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 text-sm font-semibold"
-          >
-            <Ban className="w-4 h-4" />
-            Suspend
+          <button style={css.btnSuspend} onClick={() => onSuspend(hospital.id)}>
+            <Ban size={14} /> Suspend
           </button>
         )}
         {hospital.status === 'suspended' && (
-          <button
-            onClick={() => onReactivate(hospital.id)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm font-semibold"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Reactivate
+          <button style={css.btnReactivate} onClick={() => onReactivate(hospital.id)}>
+            <CheckCircle2 size={14} /> Reactivate
           </button>
         )}
-        <button className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-sm font-semibold">
-          <Eye className="w-4 h-4" />
-          View Details
+        <button style={css.btnView}>
+          <Eye size={14} /> View Details
         </button>
         {hospital.status === 'pending' && (
-          <button
-            onClick={() => onReject(hospital.id)}
-            className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition flex items-center gap-2 text-sm font-semibold"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete
+          <button style={css.btnDelete} onClick={() => onReject(hospital.id)}>
+            <Trash2 size={14} /> Delete
           </button>
         )}
       </div>
-      
-      {/* Registration Date */}
-      <div className="mt-4 pt-4 border-t border-slate-100">
-        <p className="text-xs text-slate-500">
-          Registered: {new Date(hospital.createdAt).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
+
+      {/* Footer */}
+      <div style={css.cardFooter}>
+        Registered:{' '}
+        {new Date(hospital.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric', month: 'long', day: 'numeric',
+        })}
       </div>
+    </div>
+  );
+}
+
+/* ─── Main Dashboard ────────────────────────────────────────────────────────── */
+export default function SuperAdminDashboard() {
+  const navigate = useNavigate();
+
+  const [hospitals, setHospitals] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [filter, setFilter]       = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState({
+    total: 0, pending: 0, approved: 0, suspended: 0,
+    totalPatients: 0, totalStaff: 0,
+  });
+
+  useEffect(() => { fetchHospitals(); }, []);
+
+  const fetchHospitals = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) { navigate('/admin/login'); return; }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/hospitals`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHospitals(data.hospitals);
+        setStats({
+          total:         data.hospitals.length,
+          pending:       data.hospitals.filter(h => h.status === 'pending').length,
+          approved:      data.hospitals.filter(h => h.status === 'approved').length,
+          suspended:     data.hospitals.filter(h => h.status === 'suspended').length,
+          totalPatients: data.hospitals.reduce((s, h) => s + (h.patientCount || 0), 0),
+          totalStaff:    data.hospitals.reduce((s, h) => s + (h.staffCount || 0), 0),
+        });
+      } else if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/admin/login');
+      }
+    } catch (err) {
+      console.error('Error fetching hospitals:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const apiAction = async (url, method, successMsg) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res   = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) { alert(successMsg(data)); fetchHospitals(); }
+      else alert(`Error: ${data.error}`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleApprove    = id => apiAction(`/api/admin/hospitals/${id}/approve`,    'PUT',    d => `✅ ${d.hospital.name} approved!`);
+  const handleReject     = id => window.confirm('Delete this registration? This cannot be undone.') && apiAction(`/api/admin/hospitals/${id}`, 'DELETE', d => `🗑️ ${d.hospital.name} deleted`);
+  const handleSuspend    = id => window.confirm('Suspend this hospital?') && apiAction(`/api/admin/hospitals/${id}/suspend`,    'PUT', d => `⛔ ${d.hospital.name} suspended`);
+  const handleReactivate = id => apiAction(`/api/admin/hospitals/${id}/reactivate`, 'PUT',    d => `✅ ${d.hospital.name} reactivated`);
+  const handleLogout     = () => { ['token','user','userRole'].forEach(k => localStorage.removeItem(k)); navigate('/admin/login'); };
+
+  const filtered = hospitals.filter(h => {
+    const matchFilter = filter === 'all' || h.status === filter;
+    const matchSearch = h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        h.email.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  return (
+    <div style={css.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        button:hover { opacity: 0.88; transform: translateY(-1px); }
+      `}</style>
+
+      {/* ── Header ── */}
+      <header style={css.header}>
+        <div style={css.headerInner}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={css.logoIcon}><Shield size={22} color="#fff" /></div>
+            <div>
+              <div style={css.logoTitle}>Super Admin Panel</div>
+              <div style={css.logoSub}>Platform Management</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button style={css.btnRefresh} onClick={fetchHospitals}>
+              <RefreshCw size={14} /> Refresh
+            </button>
+            <button style={css.btnLogout} onClick={handleLogout}>
+              <LogOut size={14} /> Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Main ── */}
+      <main style={css.main}>
+        <h2 style={css.pageTitle}>Hospital Management</h2>
+        <p style={css.pageSub}>Review and manage all registered hospitals on the platform</p>
+
+        {/* Stats */}
+        <div style={css.statsGrid}>
+          <StatCard icon={<Building2 size={20}/>} label="Total Hospitals"   value={stats.total}                       color="blue"   />
+          <StatCard icon={<Clock size={20}/>}      label="Pending Approval" value={stats.pending}                     color="yellow" highlight={stats.pending > 0} />
+          <StatCard icon={<CheckCircle2 size={20}/>} label="Approved"       value={stats.approved}                    color="green"  />
+          <StatCard icon={<Ban size={20}/>}         label="Suspended"       value={stats.suspended}                   color="red"    />
+          <StatCard icon={<Users size={20}/>}       label="Total Patients"  value={stats.totalPatients.toLocaleString()} color="purple" />
+          <StatCard icon={<Activity size={20}/>}    label="Healthcare Staff" value={stats.totalStaff}                 color="indigo" />
+        </div>
+
+        {/* Filter bar */}
+        <div style={css.filterBar}>
+          <div style={css.searchWrap}>
+            <Search size={16} style={css.searchIcon} />
+            <input
+              style={css.searchInput}
+              type="text"
+              placeholder="Search by name or email…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div style={css.filterBtns}>
+            <FilterButton active={filter==='all'}       onClick={()=>setFilter('all')}       label="All"       count={stats.total}     colorOverride={T.navy}   />
+            <FilterButton active={filter==='pending'}   onClick={()=>setFilter('pending')}   label="Pending"   count={stats.pending}   colorOverride="#b45309"  />
+            <FilterButton active={filter==='approved'}  onClick={()=>setFilter('approved')}  label="Approved"  count={stats.approved}  colorOverride="#15803d"  />
+            <FilterButton active={filter==='suspended'} onClick={()=>setFilter('suspended')} label="Suspended" count={stats.suspended} colorOverride="#be123c"  />
+          </div>
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div style={{ textAlign: 'center', paddingBottom: '3rem' }}>
+            <div style={css.spinner} />
+            <p style={{ color: '#8694b2', fontSize: 14 }}>Loading hospitals…</p>
+          </div>
+        )}
+
+        {/* Hospital list */}
+        {!loading && (
+          filtered.length === 0 ? (
+            <div style={css.emptyState}>
+              <Building2 size={52} color="#c8d3e8" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ color: T.navy, fontWeight: 800, fontSize: 20, marginBottom: 6 }}>No hospitals found</h3>
+              <p style={{ color: '#8694b2', fontSize: 14 }}>
+                {hospitals.length === 0 ? 'No hospitals have registered yet.' : 'Try adjusting your search or filter.'}
+              </p>
+            </div>
+          ) : (
+            filtered.map(h => (
+              <HospitalCard
+                key={h.id}
+                hospital={h}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onSuspend={handleSuspend}
+                onReactivate={handleReactivate}
+              />
+            ))
+          )
+        )}
+      </main>
     </div>
   );
 }

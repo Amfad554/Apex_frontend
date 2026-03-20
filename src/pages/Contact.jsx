@@ -2,28 +2,113 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from 'lucide-react';
 import Toast from '../Components/Toast';
 
+const T = {
+  navy:      '#0A1A3F',
+  softNavy:  '#1F2A44',
+  orange:    '#FF5A1F',
+  lightGray: '#F5F7FA',
+};
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+// ─── Info Card ────────────────────────────────────────────────────────────────
+function InfoCard({ icon: Icon, title, lines }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: '#fff',
+        border: `1.5px solid ${hovered ? `${T.orange}44` : '#e8ecf4'}`,
+        borderRadius: 16,
+        padding: '1.25rem 1.5rem',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 14,
+        boxShadow: hovered
+          ? `0 8px 28px rgba(255,90,31,0.1)`
+          : '0 2px 10px rgba(10,26,63,0.05)',
+        transition: 'all .22s',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 0, left: 0,
+        width: hovered ? 50 : 0, height: 3,
+        background: T.orange,
+        transition: 'width .3s ease',
+        borderRadius: '0 0 4px 0',
+      }} />
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+        background: hovered ? T.orange : `${T.orange}18`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background .22s',
+        boxShadow: hovered ? `0 4px 14px ${T.orange}44` : 'none',
+      }}>
+        <Icon size={20} color={hovered ? '#fff' : T.orange} />
+      </div>
+      <div>
+        <div style={{ fontWeight: 800, fontSize: 14, color: T.navy, marginBottom: 4 }}>{title}</div>
+        {lines.map((l, i) => (
+          <div key={i} style={{ fontSize: 13, color: '#6b7a99', lineHeight: 1.6 }}>{l}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Field ────────────────────────────────────────────────────────────────────
+function Field({ label, required, children }) {
+  return (
+    <div>
+      <label style={{
+        display: 'block',
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: '#8694b2',
+        marginBottom: 7,
+      }}>
+        {label}{required && <span style={{ color: T.orange, marginLeft: 3 }}>*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputStyle = {
+  width: '100%',
+  padding: '11px 14px',
+  background: T.lightGray,
+  border: `1.5px solid #e0e7f0`,
+  borderRadius: 10,
+  fontSize: 13.5,
+  color: T.navy,
+  outline: 'none',
+  transition: 'border-color .18s, box-shadow .18s',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+};
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [focused, setFocused] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    hospitalName: '',
-    subject: '',
-    message: ''
+    name: '', email: '', phone: '',
+    hospitalName: '', subject: '', message: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
       const res = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
@@ -37,10 +122,8 @@ export default function Contact() {
           message: formData.message,
         }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Submission failed.');
-
       setToast({ message: "Message sent! We'll get back to you within 24 hours.", type: 'success' });
       setFormData({ name: '', email: '', phone: '', hospitalName: '', subject: '', message: '' });
     } catch (err) {
@@ -50,181 +133,265 @@ export default function Contact() {
     }
   };
 
+  const focusStyle = (name) => focused === name
+    ? { borderColor: T.orange, boxShadow: `0 0 0 3px ${T.orange}22` }
+    : {};
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div style={{
+      minHeight: '100vh',
+      background: T.lightGray,
+      fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        select option { background: #fff; color: #0A1A3F; }
+      `}</style>
+
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      {/* Header Section */}
-      <section className="bg-white border-b border-slate-100 py-16 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl font-black text-slate-900 mb-4">Get in Touch</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Have questions about integrating Apex-HMS into your hospital? Our team is here to help you scale your healthcare operations.
+      {/* ── Hero ── */}
+      <section style={{
+        background: T.navy,
+        borderBottom: `3px solid ${T.orange}`,
+        padding: 'clamp(3.5rem, 7vw, 5.5rem) 1.5rem clamp(3rem, 6vw, 4.5rem)',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: -80, right: -80, width: 320, height: 320,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${T.orange}20 0%, transparent 70%)`,
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -60, left: -60, width: 240, height: 240,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${T.softNavy} 0%, transparent 70%)`,
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ maxWidth: 640, margin: '0 auto', position: 'relative' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: `${T.orange}22`, border: `1px solid ${T.orange}44`,
+            borderRadius: 999, padding: '5px 16px', marginBottom: '1.25rem',
+          }}>
+            <div style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: T.orange, boxShadow: `0 0 8px ${T.orange}`,
+            }} />
+            <span style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: T.orange,
+            }}>We're here to help</span>
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+            fontWeight: 900, color: '#fff',
+            letterSpacing: '-0.04em', lineHeight: 1.1,
+            marginBottom: '1rem',
+          }}>
+            Get in <span style={{ color: T.orange }}>Touch</span>
+          </h1>
+          <p style={{
+            fontSize: 16,
+            color: 'rgba(255,255,255,0.5)',
+            lineHeight: 1.75, maxWidth: 480, margin: '0 auto',
+          }}>
+            Have questions about integrating Apex-HMS into your hospital? Our team is
+            here to help you scale your healthcare operations.
           </p>
         </div>
       </section>
 
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ── Body ── */}
+      <section style={{
+        maxWidth: 1160, margin: '0 auto',
+        padding: 'clamp(2.5rem, 5vw, 4rem) 1.5rem clamp(3rem, 6vw, 5rem)',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0,1fr) minmax(0,2fr)',
+        gap: 24,
+        alignItems: 'start',
+      }}>
 
-          {/* Contact Information Cards */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
-              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Mail className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800">Email Us</h3>
-                <p className="text-slate-600 text-sm mt-1">support@apexhms.com</p>
-                <p className="text-slate-600 text-sm">sales@apexhms.com</p>
-              </div>
-            </div>
+        {/* ── Left: info cards ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <InfoCard icon={Mail}   title="Email Us"       lines={['support@apexhms.com', 'sales@apexhms.com']} />
+          <InfoCard icon={Phone}  title="Call Support"   lines={['+1 (555) 000-1234', 'Mon – Fri, 9am – 6pm EST']} />
+          <InfoCard icon={MapPin} title="Headquarters"   lines={['123 Medical Plaza, Suite 500', 'New York, NY 10001']} />
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
-              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Phone className="w-6 h-6 text-emerald-600" />
+          {/* support highlight card */}
+          <div style={{
+            background: T.navy,
+            borderRadius: 16,
+            padding: '1.5rem',
+            position: 'relative',
+            overflow: 'hidden',
+            border: `1.5px solid ${T.orange}33`,
+            boxShadow: `0 8px 32px rgba(10,26,63,0.15)`,
+          }}>
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: 3, background: T.orange,
+            }} />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+            }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: `${T.orange}22`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Clock size={15} color={T.orange} />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-800">Call Support</h3>
-                <p className="text-slate-600 text-sm mt-1">+1 (555) 000-1234</p>
-                <p className="text-slate-600 text-sm">Mon - Fri, 9am - 6pm EST</p>
-              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: T.orange, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                Quick Response
+              </span>
             </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800">Headquarters</h3>
-                <p className="text-slate-600 text-sm mt-1">123 Medical Plaza, Suite 500</p>
-                <p className="text-slate-600 text-sm">New York, NY 10001</p>
-              </div>
-            </div>
-
-            <div className="bg-indigo-600 p-8 rounded-3xl text-white">
-              <div className="flex items-center gap-2 mb-4">
-                <Clock className="w-5 h-5 text-indigo-200" />
-                <span className="font-semibold text-indigo-100">Quick Response</span>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Technical Support</h3>
-              <p className="text-indigo-100 text-sm leading-relaxed">
-                Registered hospitals get a dedicated account manager and 24/7 technical assistance for critical systems.
-              </p>
-            </div>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 8 }}>
+              Technical Support
+            </h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
+              Registered hospitals get a dedicated account manager and 24/7 technical
+              assistance for critical systems.
+            </p>
           </div>
-
-          {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 md:p-12">
-              <div className="flex items-center gap-3 mb-8">
-                <MessageSquare className="w-6 h-6 text-indigo-600" />
-                <h2 className="text-2xl font-bold text-slate-800">Send us a message</h2>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="John Doe"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="john@hospital.com"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+234 800 000 0000"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Hospital Name</label>
-                    <input
-                      type="text"
-                      name="hospitalName"
-                      value={formData.hospitalName}
-                      onChange={handleChange}
-                      placeholder="Your hospital's name"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Subject *</label>
-                  <select
-                    name="subject"
-                    required
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition text-slate-600"
-                  >
-                    <option value="">Select a topic</option>
-                    <option value="Hospital Registration">Hospital Registration</option>
-                    <option value="Technical Issue">Technical Issue</option>
-                    <option value="Partnership">Partnership</option>
-                    <option value="Billing">Billing</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Message *</label>
-                  <textarea
-                    name="message"
-                    required
-                    rows="5"
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="How can we help you?"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition resize-none"
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full md:w-auto px-10 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70"
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          </div>
-
         </div>
+
+        {/* ── Right: form ── */}
+        <div style={{
+          background: '#fff',
+          borderRadius: 20,
+          border: '1.5px solid #e8ecf4',
+          padding: 'clamp(1.75rem, 4vw, 2.75rem)',
+          boxShadow: '0 4px 32px rgba(10,26,63,0.08)',
+        }}>
+          {/* form header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, marginBottom: '2rem',
+            paddingBottom: '1.25rem',
+            borderBottom: `1px solid #f0f3f9`,
+          }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: `${T.orange}18`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <MessageSquare size={18} color={T.orange} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: T.navy, letterSpacing: '-0.02em' }}>
+                Send us a message
+              </div>
+              <div style={{ fontSize: 12, color: '#a0aec0' }}>We'll respond within 24 hours</div>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* Row 1 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <Field label="Full Name" required>
+                <input
+                  type="text" name="name" required value={formData.name}
+                  onChange={handleChange} placeholder="John Doe"
+                  onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('name') }}
+                />
+              </Field>
+              <Field label="Email Address" required>
+                <input
+                  type="email" name="email" required value={formData.email}
+                  onChange={handleChange} placeholder="john@hospital.com"
+                  onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('email') }}
+                />
+              </Field>
+            </div>
+
+            {/* Row 2 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <Field label="Phone Number">
+                <input
+                  type="tel" name="phone" value={formData.phone}
+                  onChange={handleChange} placeholder="+234 800 000 0000"
+                  onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('phone') }}
+                />
+              </Field>
+              <Field label="Hospital Name">
+                <input
+                  type="text" name="hospitalName" value={formData.hospitalName}
+                  onChange={handleChange} placeholder="Your hospital's name"
+                  onFocus={() => setFocused('hospitalName')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('hospitalName') }}
+                />
+              </Field>
+            </div>
+
+            {/* Subject */}
+            <div style={{ marginBottom: 16 }}>
+              <Field label="Subject" required>
+                <select
+                  name="subject" required value={formData.subject}
+                  onChange={handleChange}
+                  onFocus={() => setFocused('subject')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('subject'), cursor: 'pointer' }}
+                >
+                  <option value="">Select a topic</option>
+                  <option value="Hospital Registration">Hospital Registration</option>
+                  <option value="Technical Issue">Technical Issue</option>
+                  <option value="Partnership">Partnership</option>
+                  <option value="Billing">Billing</option>
+                  <option value="Other">Other</option>
+                </select>
+              </Field>
+            </div>
+
+            {/* Message */}
+            <div style={{ marginBottom: 24 }}>
+              <Field label="Message" required>
+                <textarea
+                  name="message" required rows={5} value={formData.message}
+                  onChange={handleChange} placeholder="How can we help you?"
+                  onFocus={() => setFocused('message')} onBlur={() => setFocused(null)}
+                  style={{ ...inputStyle, ...focusStyle('message'), resize: 'none' }}
+                />
+              </Field>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '12px 32px',
+                background: isSubmitting ? `${T.orange}88` : T.orange,
+                color: '#fff',
+                border: 'none',
+                borderRadius: 10,
+                fontWeight: 800, fontSize: 14,
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+                boxShadow: isSubmitting ? 'none' : `0 4px 20px ${T.orange}44`,
+                transition: 'all .18s',
+                letterSpacing: '0.01em',
+              }}
+              onMouseEnter={e => { if (!isSubmitting) { e.currentTarget.style.opacity='.88'; e.currentTarget.style.transform='translateY(-1px)'; }}}
+              onMouseLeave={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='translateY(0)'; }}
+            >
+              {isSubmitting ? 'Sending…' : 'Send Message'}
+              <Send size={15} />
+            </button>
+          </form>
+        </div>
+
       </section>
     </div>
   );

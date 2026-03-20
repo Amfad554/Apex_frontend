@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import {
-  Check, HelpCircle, Zap, Building2, Globe,
+  Check, HelpCircle, Zap, Building2,
   X, Loader2, AlertCircle, CheckCheck, Send, Mail,
   Copy, CopyCheck, Landmark, Upload,
 } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const C = {
+  navy:      '#0A1A3F',
+  softNavy:  '#1F2A44',
+  orange:    '#FF5A1F',
+  lightGray: '#F5F7FA',
+};
 
 const BANK = {
   name:    'OPay',
@@ -17,30 +24,47 @@ const PROFESSIONAL = {
   tier: 'Professional', planKey: 'professional', price: '19,900', rawPrice: 19900, currency: '₦',
   description: 'Comprehensive solution for mid-sized hospitals.',
   icon: Building2,
-  features: ['Unlimited Medical Staff', 'Unlimited Patient Records', 'Advanced Pharmacy & Lab Sync', '24/7 Priority Support', 'Role-Based Access Control', 'Inventory Management'],
+  features: [
+    'Unlimited Medical Staff', 'Unlimited Patient Records',
+    'Advanced Pharmacy & Lab Sync', '24/7 Priority Support',
+    'Role-Based Access Control', 'Inventory Management',
+  ],
 };
+
+/* ── helpers ── */
+const inputStyle = {
+  width: '100%', padding: '12px 16px', borderRadius: '12px',
+  border: '1px solid rgba(10,26,63,0.15)', outline: 'none',
+  fontSize: '0.875rem', color: C.navy, background: '#fff',
+  boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s',
+  fontFamily: 'inherit',
+};
+const focusInput  = e => { e.target.style.borderColor = C.orange; e.target.style.boxShadow = `0 0 0 3px ${C.orange}22`; };
+const blurInput   = e => { e.target.style.borderColor = 'rgba(10,26,63,0.15)'; e.target.style.boxShadow = 'none'; };
+
+function Label({ children }) {
+  return <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6b7a99', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{children}</p>;
+}
 
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
-  const copy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
-    <button onClick={copy} className="ml-2 p-1.5 rounded-lg hover:bg-white/20 text-white/70 hover:text-white transition flex-shrink-0">
-      {copied ? <CopyCheck size={14} className="text-green-300" /> : <Copy size={14} />}
+    <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: copied ? '#6ee7a0' : 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', flexShrink: 0, transition: 'color 0.2s' }}>
+      {copied ? <CopyCheck size={14} /> : <Copy size={14} />}
     </button>
   );
 }
 
+/* ── Payment Modal ── */
 function PaymentModal({ plan, onClose }) {
   const [step, setStep] = useState(1);
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } })();
-  const [form, setForm] = useState({
-    name: storedUser?.adminName || '', email: storedUser?.email || '',
-    hospital: storedUser?.hospitalName || '', phone: '', reference: '', screenshot: null,
-  });
+  const [form, setForm] = useState({ name: storedUser?.adminName || '', email: storedUser?.email || '', hospital: storedUser?.hospitalName || '', phone: '', reference: '', screenshot: null });
   const [preview, setPreview] = useState(null);
-  const [submitting, setSub]  = useState(false);
-  const [status, setStatus]   = useState('idle');
-  const [errMsg, setErrMsg]   = useState('');
+  const [submitting, setSub] = useState(false);
+  const [status, setStatus] = useState('idle');
+  const [errMsg, setErrMsg] = useState('');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleFile = (e) => {
@@ -65,177 +89,140 @@ function PaymentModal({ plan, onClose }) {
         reader.readAsDataURL(form.screenshot);
       });
       const res = await fetch(`${API_BASE}/api/payments/proof`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan: plan.tier, planKey: plan.planKey,
-          amount: `${plan.currency}${plan.price}`,
-          name: form.name, email: form.email,
-          hospital: form.hospital || 'Not specified',
-          phone: form.phone, reference: form.reference,
-          screenshotBase64: base64, screenshotName: form.screenshot.name,
-        }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: plan.tier, planKey: plan.planKey, amount: `${plan.currency}${plan.price}`, name: form.name, email: form.email, hospital: form.hospital || 'Not specified', phone: form.phone, reference: form.reference, screenshotBase64: base64, screenshotName: form.screenshot.name }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Submission failed.');
       setStatus('success');
-    } catch (err) {
-      setErrMsg(err.message || 'Something went wrong. Please try again.');
-      setStatus('error');
-    } finally { setSub(false); }
+    } catch (err) { setErrMsg(err.message || 'Something went wrong. Please try again.'); setStatus('error'); }
+    finally { setSub(false); }
   };
 
-  const inputCls = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 text-slate-800 placeholder-slate-400 text-sm transition bg-white";
+  const overlay = { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', overflowY: 'auto' };
+  const card    = { background: '#fff', borderRadius: 28, boxShadow: '0 32px 80px rgba(0,0,0,0.25)', width: '100%', maxWidth: 480, padding: '36px 32px', position: 'relative', margin: '0 auto 32px' };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative my-8">
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 transition">
-          <X size={18} />
-        </button>
+    <div style={overlay}>
+      <div style={card}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: '50%', border: 'none', background: C.lightGray, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7a99' }}><X size={16} /></button>
 
         {status === 'success' ? (
-          <div className="flex flex-col items-center py-8 text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCheck className="w-8 h-8 text-green-600" />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', textAlign: 'center', gap: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: `${C.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCheck size={28} color={C.orange} />
             </div>
-            <h3 className="text-xl font-bold text-slate-800">Proof Submitted!</h3>
-            <p className="text-slate-500 text-sm max-w-xs">
-              We've received your payment proof for the <span className="font-semibold text-indigo-600">{plan.tier} plan</span>.
-              Your account will be activated within <span className="font-semibold">24 hours</span>.
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: C.navy, margin: 0 }}>Proof Submitted!</h3>
+            <p style={{ color: '#6b7a99', fontSize: '0.875rem', maxWidth: 280, margin: 0 }}>
+              We've received your payment proof for the <strong style={{ color: C.orange }}>{plan.tier} plan</strong>. Your account will be activated within <strong>24 hours</strong>.
             </p>
-            <div className="w-full bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-2">
-              <p className="font-semibold text-slate-800 mb-1">What happens next?</p>
-              <p>✅ We verify your payment</p>
-              <p>✅ We activate your hospital account</p>
-              <p>✅ You receive a confirmation email within 24 hours</p>
-              <p>✅ Login and start managing your hospital</p>
+            <div style={{ width: '100%', background: C.lightGray, border: `1px solid rgba(10,26,63,0.08)`, borderRadius: 16, padding: '16px 20px', textAlign: 'left', fontSize: '0.84rem', color: '#4b5563', lineHeight: 1.8, borderLeft: `3px solid ${C.orange}` }}>
+              <p style={{ fontWeight: 700, color: C.navy, marginBottom: 8 }}>What happens next?</p>
+              {['We verify your payment', 'We activate your hospital account', 'You receive a confirmation email within 24 hours', 'Login and start managing your hospital'].map((s, i) => (
+                <p key={i} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Check size={13} color={C.orange} /> {s}</p>
+              ))}
             </div>
-            <button onClick={onClose} className="mt-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition text-sm">Done</button>
+            <button onClick={onClose} style={{ padding: '12px 32px', background: C.orange, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Done</button>
           </div>
 
         ) : step === 1 ? (
           <>
-            <div className="mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 bg-indigo-100 text-indigo-700">
+            <div style={{ marginBottom: 24 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, background: `${C.orange}18`, color: C.orange, fontSize: '0.75rem', fontWeight: 700, marginBottom: 10 }}>
                 {plan.tier} Plan · {plan.currency}{plan.price}/month
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900">Make Your Transfer</h2>
-              <p className="text-slate-500 text-sm mt-1">
-                Send exactly <span className="font-bold text-slate-800">{plan.currency}{plan.price}</span> to the account below,
-                then click "I've Paid" to submit your proof.
+              </span>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.navy, margin: '0 0 6px' }}>Make Your Transfer</h2>
+              <p style={{ color: '#6b7a99', fontSize: '0.875rem', margin: 0 }}>
+                Send exactly <strong style={{ color: C.navy }}>{plan.currency}{plan.price}</strong> to the account below, then click "I've Paid".
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-indigo-600 to-blue-600 rounded-2xl p-6 text-white mb-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Landmark size={20} />
+            {/* Bank card */}
+            <div style={{ background: `linear-gradient(135deg, ${C.navy} 0%, ${C.softNavy} 100%)`, borderRadius: 20, padding: 24, color: '#fff', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                <div style={{ width: 40, height: 40, background: 'rgba(255,255,255,0.12)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Landmark size={18} />
                 </div>
                 <div>
-                  <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Bank Details</p>
-                  <p className="font-bold text-lg">{BANK.name}</p>
+                  <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Bank Details</p>
+                  <p style={{ fontWeight: 800, fontSize: '1rem', margin: 0 }}>{BANK.name}</p>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="bg-white/10 rounded-xl p-4">
-                  <p className="text-indigo-200 text-xs mb-1">Account Number</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-2xl font-black tracking-widest">{BANK.number}</p>
-                    <CopyButton text={BANK.number} />
+              {[
+                { label: 'Account Number', value: BANK.number, large: true },
+                { label: 'Account Name', value: BANK.account },
+                { label: 'Amount to Transfer', value: `${plan.currency}${plan.price}`, large: true, copyVal: String(plan.rawPrice) },
+              ].map(({ label, value, large, copyVal }) => (
+                <div key={label} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '12px 16px', marginBottom: 10 }}>
+                  <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <p style={{ fontWeight: 800, fontSize: large ? '1.4rem' : '1rem', margin: 0, letterSpacing: large ? '0.08em' : 0 }}>{value}</p>
+                    <CopyButton text={copyVal || value} />
                   </div>
                 </div>
-                <div className="bg-white/10 rounded-xl p-4">
-                  <p className="text-indigo-200 text-xs mb-1">Account Name</p>
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-lg">{BANK.account}</p>
-                    <CopyButton text={BANK.account} />
-                  </div>
-                </div>
-                <div className="bg-white/10 rounded-xl p-4">
-                  <p className="text-indigo-200 text-xs mb-1">Amount to Transfer</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-2xl font-black">{plan.currency}{plan.price}</p>
-                    <CopyButton text={String(plan.rawPrice)} />
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 mb-6">
+            <div style={{ background: '#fff8f5', border: `1px solid ${C.orange}40`, borderRadius: 12, padding: '12px 16px', fontSize: '0.82rem', color: '#92400e', marginBottom: 20 }}>
               ⚠️ After transferring, take a <strong>screenshot of your receipt</strong> — you'll need it in the next step.
             </div>
 
-            <button onClick={() => setStep(2)}
-              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+            <button onClick={() => setStep(2)} style={{ width: '100%', padding: '14px', background: C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: `0 6px 20px ${C.orange}40` }}>
               I've Paid — Submit Proof <Check size={16} />
             </button>
           </>
 
         ) : (
           <>
-            <div className="mb-6">
-              <button onClick={() => setStep(1)} className="text-xs text-indigo-600 font-semibold mb-3 flex items-center gap-1 hover:underline">
-                ← Back to bank details
-              </button>
-              <h2 className="text-2xl font-bold text-slate-900">Submit Payment Proof</h2>
-              <p className="text-slate-500 text-sm mt-1">Fill in your details and upload your screenshot so we can verify and activate your account.</p>
-            </div>
+            <button onClick={() => setStep(1)} style={{ fontSize: '0.78rem', color: C.orange, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 12 }}>← Back to bank details</button>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.navy, margin: '0 0 6px' }}>Submit Payment Proof</h2>
+            <p style={{ color: '#6b7a99', fontSize: '0.875rem', margin: '0 0 20px' }}>Fill in your details and upload your screenshot.</p>
 
             {status === 'error' && (
-              <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-4">
-                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" /><span>{errMsg}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '10px 14px', fontSize: '0.82rem', color: '#b91c1c', marginBottom: 16 }}>
+                <AlertCircle size={15} /> {errMsg}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="text-xs font-semibold text-slate-500 mb-1 block">Full Name *</label>
-                  <input required placeholder="Administrator name" value={form.name} onChange={e => set('name', e.target.value)} className={inputCls} />
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <Label>Full Name *</Label>
+                  <input required placeholder="Administrator name" value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
                 </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="text-xs font-semibold text-slate-500 mb-1 block">Phone Number *</label>
-                  <input required type="tel" placeholder="+234 800 000 0000" value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls} />
+                <div>
+                  <Label>Phone Number *</Label>
+                  <input required type="tel" placeholder="+234 800 000 0000" value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
                 </div>
               </div>
+              <div><Label>Email Address *</Label><input required type="email" placeholder="admin@yourhospital.com" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+              <div><Label>Hospital Name</Label><input placeholder="Your hospital's name" value={form.hospital} onChange={e => set('hospital', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+              <div><Label>Payment Reference / Transaction ID *</Label><input required placeholder="e.g. OPY20240315123456" value={form.reference} onChange={e => set('reference', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Email Address *</label>
-                <input required type="email" placeholder="admin@yourhospital.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Hospital Name</label>
-                <input placeholder="Your hospital's name" value={form.hospital} onChange={e => set('hospital', e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Payment Reference / Transaction ID *</label>
-                <input required placeholder="e.g. OPY20240315123456" value={form.reference} onChange={e => set('reference', e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Payment Screenshot *</label>
-                <label className={`flex flex-col items-center justify-center w-full border-2 border-dashed rounded-xl cursor-pointer transition
-                  ${preview ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-slate-50 hover:border-indigo-300 hover:bg-indigo-50'}`}>
+                <Label>Payment Screenshot *</Label>
+                <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', border: `2px dashed ${preview ? C.orange : 'rgba(10,26,63,0.15)'}`, borderRadius: 14, cursor: 'pointer', background: preview ? `${C.orange}08` : C.lightGray, transition: 'all 0.2s', overflow: 'hidden' }}>
                   {preview ? (
-                    <div className="relative w-full">
-                      <img src={preview} alt="Payment screenshot" className="w-full max-h-48 object-contain rounded-xl p-2" />
-                      <div className="absolute bottom-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <img src={preview} alt="Payment screenshot" style={{ width: '100%', maxHeight: 160, objectFit: 'contain', borderRadius: 12, padding: 8 }} />
+                      <span style={{ position: 'absolute', bottom: 10, right: 10, background: '#16a34a', color: '#fff', fontSize: '0.7rem', padding: '3px 10px', borderRadius: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Check size={10} /> Uploaded
-                      </div>
+                      </span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center py-6 text-slate-400">
-                      <Upload size={28} className="mb-2" />
-                      <p className="text-sm font-semibold">Click to upload screenshot</p>
-                      <p className="text-xs mt-1">PNG, JPG, JPEG (max 5MB)</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px', color: '#94a3b8' }}>
+                      <Upload size={26} style={{ marginBottom: 8 }} />
+                      <p style={{ fontSize: '0.84rem', fontWeight: 700, margin: '0 0 4px' }}>Click to upload screenshot</p>
+                      <p style={{ fontSize: '0.72rem', margin: 0 }}>PNG, JPG, JPEG (max 5MB)</p>
                     </div>
                   )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
                 </label>
               </div>
-              <button type="submit" disabled={submitting}
-                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 mt-2">
-                {submitting ? <><Loader2 size={16} className="animate-spin" /> Submitting…</> : <><Send size={14} /> Submit Payment Proof</>}
+
+              <button type="submit" disabled={submitting} style={{ width: '100%', padding: '14px', background: submitting ? '#c74410' : C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '0.95rem', cursor: submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: `0 6px 20px ${C.orange}40`, marginTop: 4 }}>
+                {submitting ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Submitting…</> : <><Send size={14} /> Submit Payment Proof</>}
               </button>
-              <p className="text-xs text-slate-400 text-center">We'll verify your payment and activate your account within 24 hours.</p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', textAlign: 'center', margin: 0 }}>We'll verify your payment and activate your account within 24 hours.</p>
             </form>
           </>
         )}
@@ -244,13 +231,13 @@ function PaymentModal({ plan, onClose }) {
   );
 }
 
+/* ── Contact Modal ── */
 function ContactModal({ onClose }) {
   const [form, setForm] = useState({ name: '', email: '', hospital: '', phone: '', message: "I'm interested in a custom plan for my facility." });
   const [submitting, setSub] = useState(false);
-  const [status, setStatus]  = useState('idle');
-  const [errMsg, setErrMsg]  = useState('');
+  const [status, setStatus] = useState('idle');
+  const [errMsg, setErrMsg] = useState('');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const inputCls = "w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 text-slate-800 placeholder-slate-400 text-sm transition bg-white";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -267,32 +254,36 @@ function ContactModal({ onClose }) {
     finally { setSub(false); }
   };
 
+  const overlay = { position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', overflowY: 'auto' };
+  const card    = { background: '#fff', borderRadius: 28, boxShadow: '0 32px 80px rgba(0,0,0,0.25)', width: '100%', maxWidth: 480, padding: '36px 32px', position: 'relative', margin: '0 auto 32px' };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative my-8">
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 transition"><X size={18} /></button>
+    <div style={overlay}>
+      <div style={card}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: '50%', border: 'none', background: C.lightGray, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7a99' }}><X size={16} /></button>
+
         {status === 'success' ? (
-          <div className="flex flex-col items-center py-8 text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center"><CheckCheck className="w-8 h-8 text-green-600" /></div>
-            <h3 className="text-xl font-bold text-slate-800">Message Sent!</h3>
-            <p className="text-slate-500 text-sm max-w-xs">Our sales team will reach out within 24 hours.</p>
-            <button onClick={onClose} className="mt-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition text-sm">Done</button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', textAlign: 'center', gap: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: `${C.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCheck size={28} color={C.orange} /></div>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: C.navy, margin: 0 }}>Message Sent!</h3>
+            <p style={{ color: '#6b7a99', fontSize: '0.875rem', margin: 0 }}>Our sales team will reach out within 24 hours.</p>
+            <button onClick={onClose} style={{ padding: '12px 32px', background: C.orange, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer' }}>Done</button>
           </div>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">Contact Sales</h2>
-            <p className="text-slate-500 text-sm mb-6">Need a custom plan? Tell us about your facility.</p>
-            {status === 'error' && <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-4"><AlertCircle size={16} /><span>{errMsg}</span></div>}
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 sm:col-span-1"><label className="text-xs font-semibold text-slate-500 mb-1 block">Full Name *</label><input required placeholder="Your name" value={form.name} onChange={e => set('name', e.target.value)} className={inputCls} /></div>
-                <div className="col-span-2 sm:col-span-1"><label className="text-xs font-semibold text-slate-500 mb-1 block">Phone *</label><input required type="tel" placeholder="+234 800 000 0000" value={form.phone} onChange={e => set('phone', e.target.value)} className={inputCls} /></div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.navy, margin: '0 0 4px' }}>Contact Sales</h2>
+            <p style={{ color: '#6b7a99', fontSize: '0.875rem', margin: '0 0 24px' }}>Need a custom plan? Tell us about your facility.</p>
+            {status === 'error' && <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '10px 14px', fontSize: '0.82rem', color: '#b91c1c', marginBottom: 16 }}><AlertCircle size={15} /> {errMsg}</div>}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><Label>Full Name *</Label><input required placeholder="Your name" value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+                <div><Label>Phone *</Label><input required type="tel" placeholder="+234 800 000 0000" value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
               </div>
-              <div><label className="text-xs font-semibold text-slate-500 mb-1 block">Email *</label><input required type="email" placeholder="admin@yourhospital.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls} /></div>
-              <div><label className="text-xs font-semibold text-slate-500 mb-1 block">Hospital Name</label><input placeholder="Your hospital's name" value={form.hospital} onChange={e => set('hospital', e.target.value)} className={inputCls} /></div>
-              <div><label className="text-xs font-semibold text-slate-500 mb-1 block">Message</label><textarea rows={3} value={form.message} onChange={e => set('message', e.target.value)} className={inputCls} /></div>
-              <button type="submit" disabled={submitting} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-60 transition flex items-center justify-center gap-2">
-                {submitting ? <><Loader2 size={16} className="animate-spin" /> Sending…</> : <><Send size={14} /> Send Message</>}
+              <div><Label>Email *</Label><input required type="email" placeholder="admin@yourhospital.com" value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+              <div><Label>Hospital Name</Label><input placeholder="Your hospital's name" value={form.hospital} onChange={e => set('hospital', e.target.value)} style={inputStyle} onFocus={focusInput} onBlur={blurInput} /></div>
+              <div><Label>Message</Label><textarea rows={3} value={form.message} onChange={e => set('message', e.target.value)} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} onFocus={focusInput} onBlur={blurInput} /></div>
+              <button type="submit" disabled={submitting} style={{ width: '100%', padding: '14px', background: submitting ? '#c74410' : C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '0.95rem', cursor: submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: `0 6px 20px ${C.orange}40` }}>
+                {submitting ? <><Loader2 size={16} /> Sending…</> : <><Send size={14} /> Send Message</>}
               </button>
             </form>
           </>
@@ -302,93 +293,138 @@ function ContactModal({ onClose }) {
   );
 }
 
+/* ── Main Pricing Page ── */
 export default function Pricing() {
-  const [selectedPlan, setSelectedPlan]         = useState(null);
-  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedPlan, setSelectedPlan]     = useState(null);
+  const [showContactModal, setShowContact]  = useState(false);
   const plan = PROFESSIONAL;
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Georgia', serif" }}>
+
       {/* Hero */}
-      <section className="py-20 px-4 bg-gradient-to-b from-slate-50 to-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-indigo-600 font-bold uppercase tracking-widest text-sm mb-4">Pricing Plan</h2>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">
-            One powerful plan for <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">every healthcare facility.</span>
-          </h1>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">Transparent pricing with no hidden fees. Pay via bank transfer and get activated within 24 hours.</p>
-          <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm text-slate-600">
-            {[{ step: '1', label: 'Choose your plan' }, { step: '2', label: 'Transfer to our account' }, { step: '3', label: 'Submit payment proof' }, { step: '4', label: 'Activated within 24h' }].map(({ step, label }) => (
-              <div key={step} className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{step}</div>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
+      <section style={{ padding: '80px 24px 60px', background: `linear-gradient(180deg, ${C.lightGray} 0%, #fff 100%)`, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        {/* Top orange accent */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${C.orange}, transparent)` }} />
+
+        <p style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.orange, marginBottom: 16 }}>Pricing Plan</p>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, color: C.navy, margin: '0 0 20px', lineHeight: 1.15, letterSpacing: '-1px' }}>
+          One powerful plan for<br />
+          <span style={{ color: C.orange }}>every healthcare facility.</span>
+        </h1>
+        <p style={{ color: '#6b7a99', maxWidth: 520, margin: '0 auto 40px', fontSize: '1rem', lineHeight: 1.7 }}>
+          Transparent pricing with no hidden fees. Pay via bank transfer and get activated within 24 hours.
+        </p>
+
+        {/* Steps */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px 28px' }}>
+          {[
+            { step: '1', label: 'Choose your plan' },
+            { step: '2', label: 'Transfer to our account' },
+            { step: '3', label: 'Submit payment proof' },
+            { step: '4', label: 'Activated within 24h' },
+          ].map(({ step, label }) => (
+            <div key={step} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.875rem', color: '#4b5563' }}>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: C.navy, color: '#fff', fontSize: '0.72rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{step}</div>
+              {label}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Single Plan Card — centered */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex justify-center">
-        <div className="relative p-8 rounded-3xl border bg-white border-indigo-600 shadow-xl shadow-indigo-100 w-full max-w-sm flex flex-col">
-          <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap">Most Popular</span>
-          <div className="mb-6">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-indigo-600 text-white">
-              <Building2 size={24} />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900">{plan.tier}</h3>
-            <p className="text-slate-500 mt-2 text-sm">{plan.description}</p>
+      {/* Plan Card */}
+      <section style={{ padding: '48px 24px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{
+          position: 'relative', width: '100%', maxWidth: 380,
+          background: '#fff',
+          border: `2px solid ${C.navy}`,
+          borderRadius: 28,
+          padding: 36,
+          boxShadow: `0 20px 60px rgba(10,26,63,0.12)`,
+          display: 'flex', flexDirection: 'column',
+        }}>
+          {/* Badge */}
+          <div style={{ position: 'absolute', top: -16, left: '50%', transform: 'translateX(-50%)', background: C.orange, color: '#fff', padding: '5px 20px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap', boxShadow: `0 4px 14px ${C.orange}50` }}>
+            Most Popular
           </div>
-          <div className="mb-6">
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-slate-400">{plan.currency}</span>
-              <span className="text-4xl font-black text-slate-900">{plan.price}</span>
-              <span className="text-slate-500 font-medium">/month</span>
+
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ width: 48, height: 48, background: C.navy, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Building2 size={22} color="#fff" />
             </div>
-            <p className="text-xs text-slate-400 mt-1">Pay via bank transfer · Activated within 24h</p>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.navy, margin: '0 0 8px' }}>{plan.tier}</h3>
+            <p style={{ color: '#6b7a99', fontSize: '0.875rem', margin: 0 }}>{plan.description}</p>
           </div>
-          <ul className="space-y-3 mb-8 flex-1">
+
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#94a3b8' }}>{plan.currency}</span>
+              <span style={{ fontSize: '2.8rem', fontWeight: 900, color: C.navy, lineHeight: 1 }}>{plan.price}</span>
+              <span style={{ color: '#94a3b8', fontWeight: 500 }}>/month</span>
+            </div>
+            <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '6px 0 0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Pay via bank transfer · Activated within 24h</p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: `${C.navy}10`, marginBottom: 24 }} />
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
             {plan.features.map((f, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
-                <div className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"><Check size={12} className="text-emerald-600" /></div>
+              <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.875rem', color: '#374151' }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${C.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Check size={11} color={C.orange} />
+                </div>
                 {f}
               </li>
             ))}
           </ul>
+
           <button
             onClick={() => setSelectedPlan({ tier: plan.tier, planKey: plan.planKey, price: plan.price, rawPrice: plan.rawPrice, currency: plan.currency })}
-            className="w-full py-3 rounded-xl font-bold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+            style={{ width: '100%', padding: '15px', background: C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: `0 8px 24px ${C.orange}45`, transition: 'background 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#e04e18'}
+            onMouseLeave={e => e.currentTarget.style.background = C.orange}
+          >
             Get Started
           </button>
         </div>
       </section>
 
-      {/* Custom plan CTA */}
-      <section className="py-20 px-4 max-w-4xl mx-auto">
-        <div className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl font-bold mb-4 flex items-center justify-center md:justify-start gap-2"><HelpCircle className="text-indigo-400" /> Need a custom plan?</h2>
-              <p className="text-slate-400">Non-profit or government-run facility? Contact us for specialized subsidized pricing.</p>
-            </div>
-            <button onClick={() => setShowContactModal(true)} className="px-8 py-3 bg-indigo-500 hover:bg-indigo-400 transition rounded-xl font-bold flex-shrink-0">Contact Sales</button>
+      {/* Custom CTA */}
+      <section style={{ padding: '0 24px 80px', maxWidth: 860, margin: '0 auto' }}>
+        <div style={{ background: `linear-gradient(135deg, ${C.navy} 0%, ${C.softNavy} 100%)`, borderRadius: 28, padding: '40px 48px', color: '#fff', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 32, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -60, right: -60, width: 220, height: 220, background: `${C.orange}15`, borderRadius: '50%', filter: 'blur(40px)' }} />
+          <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <HelpCircle size={20} color={C.orange} /> Need a custom plan?
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', margin: 0, lineHeight: 1.6 }}>
+              Non-profit or government-run facility? Contact us for specialized subsidized pricing.
+            </p>
           </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
+          <button onClick={() => setShowContact(true)}
+            style={{ padding: '12px 28px', background: C.orange, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', flexShrink: 0, boxShadow: `0 6px 20px ${C.orange}50`, position: 'relative' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#e04e18'}
+            onMouseLeave={e => e.currentTarget.style.background = C.orange}
+          >
+            Contact Sales
+          </button>
         </div>
       </section>
 
       {/* Trust bar */}
-      <section className="py-12 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center gap-8 md:gap-16 opacity-40">
-          {[{ icon: <Zap size={18} />, label: 'Reliable' }, { icon: <Check size={18} />, label: 'Secure' }, { icon: <Building2 size={18} />, label: 'Scalable' }, { icon: <Mail size={18} />, label: '24h Activation' }].map(({ icon, label }) => (
-            <div key={label} className="flex items-center gap-2 font-bold text-slate-400 uppercase tracking-widest text-sm">{icon} {label}</div>
+      <section style={{ padding: '28px 24px', borderTop: '1px solid rgba(10,26,63,0.08)' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px 40px' }}>
+          {[{ icon: <Zap size={16} />, label: 'Reliable' }, { icon: <Check size={16} />, label: 'Secure' }, { icon: <Building2 size={16} />, label: 'Scalable' }, { icon: <Mail size={16} />, label: '24h Activation' }].map(({ icon, label }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', fontWeight: 800, color: 'rgba(10,26,63,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              {icon} {label}
+            </div>
           ))}
         </div>
       </section>
 
       {selectedPlan && <PaymentModal plan={selectedPlan} onClose={() => setSelectedPlan(null)} />}
-      {showContactModal && <ContactModal onClose={() => setShowContactModal(false)} />}
+      {showContactModal && <ContactModal onClose={() => setShowContact(false)} />}
     </div>
   );
 }
