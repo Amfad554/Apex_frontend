@@ -65,26 +65,25 @@ export default function Navbar() {
     };
   }, [isLoggedIn]);
 
-  // ── Theme tokens — blue accent matching dashboard gradient #3b5bdb → #228be6 ──
+  // ── Theme tokens — Updated to Navy & Orange palette ──
   const D = isDark;
 
-  // ── Exact dashboard dark tokens: bg #0a0d14, sidebar #0f1117, border rgba(59,91,219,0.18) ──
-  const headerBg    = D ? 'bg-[#0f1117] border-[#3b5bdb]/[0.18]' : 'bg-white border-slate-200';
-  const logoText    = D ? 'text-[#f0f4ff]'                        : 'text-slate-900';
-  const accentSpan  = D ? 'text-[#60a5fa]'                        : 'text-blue-600';
-  const linkBase    = D ? 'text-[rgba(255,255,255,0.45)] hover:text-[#60a5fa]' : 'text-slate-600 hover:text-blue-600';
-  const linkActive  = D ? 'text-[#60a5fa] font-bold'              : 'text-blue-600 font-bold';
-  const underline   = D ? 'after:bg-[#3b5bdb]'                    : 'after:bg-blue-600';
-  const mobileMenuBg     = D ? 'bg-[#0f1117] border-[#3b5bdb]/[0.18]' : 'bg-white border-slate-100';
-  const mobileNavBase    = D ? 'text-[rgba(255,255,255,0.45)]'        : 'text-slate-600';
-  const mobileNavActive  = D ? 'text-[#60a5fa] border-[#3b5bdb]'     : 'text-blue-600 border-blue-600';
-  const logoutBtnStyle   = D
-    ? 'border-[#3b5bdb]/[0.18] text-[rgba(255,255,255,0.25)] hover:text-[#60a5fa] hover:bg-[#3b5bdb]/10'
-    : 'border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50';
-  const mobileLogoutStyle = D
-    ? 'bg-[#3b5bdb]/10 text-[#60a5fa] border-[#3b5bdb]/[0.18]'
-    : 'bg-blue-50 text-blue-600 border-blue-100';
-  const mobileToggleColor = D ? 'text-[rgba(255,255,255,0.45)]' : 'text-slate-700';
+  const headerBg       = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-white border-slate-200';
+  const logoText       = D ? 'text-[#F5F7FA]'                 : 'text-[#0A1A3F]';
+  const accentSpan     = 'text-[#FF5A1F]'; // Orange remains consistent for brand pop
+  const linkBase       = D ? 'text-slate-400 hover:text-[#FF5A1F]' : 'text-slate-600 hover:text-[#0A1A3F]';
+  const linkActive     = D ? 'text-[#FF5A1F] font-bold'       : 'text-[#0A1A3F] font-bold';
+  const underline      = D ? 'after:bg-[#FF5A1F]'             : 'after:bg-[#0A1A3F]';
+  
+  const mobileMenuBg   = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-[#F5F7FA] border-slate-200';
+  const mobileNavBase   = D ? 'text-slate-400'                 : 'text-slate-600';
+  const mobileNavActive = D ? 'text-[#FF5A1F] border-[#FF5A1F]' : 'text-[#0A1A3F] border-[#0A1A3F]';
+  
+  const logoutBtnStyle  = D
+    ? 'border-[#1F2A44] text-slate-400 hover:text-[#FF5A1F] hover:bg-[#1F2A44]'
+    : 'border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50';
+
+  const mobileToggleColor = D ? 'text-slate-300' : 'text-[#0A1A3F]';
 
   const navLinkStyle = ({ isActive }) =>
     `relative py-2 transition-all duration-300 font-medium
@@ -98,8 +97,8 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3b5bdb] to-[#228be6] flex items-center justify-center shadow-lg shadow-blue-900/40 group-hover:scale-105 transition">
-            <Activity size={22} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-[#0A1A3F] flex items-center justify-center shadow-lg shadow-black/20 group-hover:scale-105 transition border border-[#1F2A44]">
+            <Activity size={22} className="text-[#FF5A1F]" />
           </div>
           <span className={`text-xl font-black tracking-tight ${logoText}`}>
             HMS<span className={accentSpan}>Care</span>
@@ -121,7 +120,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <Link
                 to="/hospitaldashboard"
-                className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#3b5bdb] to-[#228be6] text-white text-sm font-semibold hover:opacity-90 transition flex items-center gap-2 shadow-lg shadow-blue-900/30"
+                className="px-5 py-2.5 rounded-lg bg-[#FF5A1F] text-white text-sm font-semibold hover:bg-[#e04e1a] transition flex items-center gap-2 shadow-lg shadow-orange-900/20"
               >
                 <LayoutDashboard size={16} />
                 Dashboard
@@ -137,7 +136,7 @@ export default function Navbar() {
           ) : (
             <Link
               to="/hospital/auth"
-              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#3b5bdb] to-[#228be6] text-white text-sm font-semibold hover:opacity-90 transition shadow-lg shadow-blue-900/20 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-lg bg-[#0A1A3F] text-white text-sm font-semibold hover:bg-[#1F2A44] transition shadow-lg shadow-black/20 flex items-center gap-2 border border-[#1F2A44]"
             >
               <Building2 size={18} />
               Hospital Portal
@@ -184,21 +183,23 @@ export default function Navbar() {
 
           <div
             className="pt-6 border-t space-y-3"
-            style={{ borderColor: D ? 'rgba(59,91,219,0.2)' : undefined }}
+            style={{ borderColor: D ? '#1F2A44' : '#e2e8f0' }}
           >
             {isLoggedIn ? (
               <>
                 <Link
                   to="/hospitaldashboard"
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#3b5bdb] to-[#228be6] text-white font-bold w-full"
+                  className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FF5A1F] text-white font-bold w-full"
                 >
                   <LayoutDashboard size={20} />
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold w-full border transition ${mobileLogoutStyle}`}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold w-full border transition ${
+                    D ? 'bg-[#1F2A44] text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200'
+                  }`}
                 >
                   <LogOut size={20} />
                   Sign Out
@@ -208,7 +209,7 @@ export default function Navbar() {
               <Link
                 to="/hospital/auth"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#3b5bdb] to-[#228be6] text-white font-bold w-full"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#0A1A3F] text-white font-bold w-full"
               >
                 <Building2 size={20} />
                 Hospital Portal
