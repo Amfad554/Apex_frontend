@@ -137,11 +137,14 @@ export default function PatientManagement() {
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const filteredPatients = patients.filter(p =>
-        p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.patient_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.phone && p.phone.includes(searchQuery))
-    );
+    const filteredPatients = patients.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return (
+            (p.full_name ?? '').toLowerCase().includes(q) ||
+            (p.patient_number ?? '').toLowerCase().includes(q) ||
+            (p.phone ?? '').includes(q)
+        );
+    });
 
     /* ── Loading spinner ── */
     if (loading) return (
