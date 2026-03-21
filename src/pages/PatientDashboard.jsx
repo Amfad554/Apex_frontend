@@ -1,18 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Heart, Calendar, FileText, Pill, LogOut, Sun, Moon,
+  Heart, Calendar, FileText, Pill, LogOut, Sun, Moon, Lock,
   Activity, User, X, Clock, Droplets, Phone, Mail,
   MapPin, AlertCircle, CheckCircle, Home, Menu,
-  RefreshCw, Eye, Zap, Bell, Download, Plus,
-  Shield, Thermometer, Wind, ChevronRight, Loader
+  Eye, Zap, Bell, Shield, Thermometer, Wind, ChevronRight
 } from 'lucide-react';
+import ChangePasswordModal from '../Components/ChangePasswordModal';
 
-/* ─── API ────────────────────────────────────────────────────────────────────── */
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
 const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` });
-
 const handle = async (res) => {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
@@ -30,77 +28,50 @@ const patientApi = {
     fetch(`${BASE_URL}/api/patients/detail/${patientId}`, { headers: authHeaders() }).then(handle),
 };
 
-/* ─── Brand Tokens ───────────────────────────────────────────────────────────── */
-// Primary accent — orange replaces all blue/indigo references
 const ORANGE  = '#FF5A1F';
 const ORANGE2 = '#e64d15';
-
-// Semantic colours — kept as-is since they serve meaning not branding
 const EMERALD = '#059669';
 const AMBER   = '#d97706';
 const ROSE    = '#e11d48';
 const CYAN    = '#0891b2';
-const INDIGO  = '#4f46e5'; // used for record types only
+const INDIGO  = '#4f46e5';
 
-/* ─── Theme ──────────────────────────────────────────────────────────────────── */
 const T = {
   dark: {
-    bg:           '#0A1A3F',
-    bgAlt:        '#1F2A44',
-    surface:      '#1F2A44',
-    surfaceAlt:   '#0A1A3F',
-    glass:        'rgba(255,90,31,0.06)',
-    border:       'rgba(255,255,255,0.07)',
-    borderStrong: 'rgba(255,90,31,0.28)',
-    text:         '#F5F7FA',
-    textSub:      'rgba(245,247,250,0.65)',
-    textMuted:    'rgba(245,247,250,0.35)',
-    shadow:       '0 4px 24px rgba(0,0,0,0.4)',
-    shadowLg:     '0 16px 48px rgba(0,0,0,0.55)',
-    card:         '#1F2A44',
-    accentBg:     'rgba(255,90,31,0.1)',
-    sidebar:      '#1F2A44',
-    hover:        'rgba(255,90,31,0.1)',
-    input:        'rgba(255,255,255,0.05)',
+    bg: '#0A1A3F', bgAlt: '#1F2A44', surface: '#1F2A44', surfaceAlt: '#0A1A3F',
+    glass: 'rgba(255,90,31,0.06)', border: 'rgba(255,255,255,0.07)',
+    borderStrong: 'rgba(255,90,31,0.28)', text: '#F5F7FA',
+    textSub: 'rgba(245,247,250,0.65)', textMuted: 'rgba(245,247,250,0.35)',
+    shadow: '0 4px 24px rgba(0,0,0,0.4)', shadowLg: '0 16px 48px rgba(0,0,0,0.55)',
+    card: '#1F2A44', accentBg: 'rgba(255,90,31,0.1)', sidebar: '#1F2A44',
+    hover: 'rgba(255,90,31,0.1)', input: 'rgba(255,255,255,0.05)', active: 'rgba(255,90,31,0.14)',
   },
   light: {
-    bg:           '#F5F7FA',
-    bgAlt:        '#eef0f5',
-    surface:      '#ffffff',
-    surfaceAlt:   '#F5F7FA',
-    glass:        'rgba(255,90,31,0.04)',
-    border:       'rgba(10,26,63,0.08)',
-    borderStrong: 'rgba(255,90,31,0.22)',
-    text:         '#0A1A3F',
-    textSub:      'rgba(10,26,63,0.65)',
-    textMuted:    'rgba(10,26,63,0.38)',
-    shadow:       '0 4px 24px rgba(10,26,63,0.07)',
-    shadowLg:     '0 16px 48px rgba(10,26,63,0.1)',
-    card:         '#ffffff',
-    accentBg:     'rgba(255,90,31,0.07)',
-    sidebar:      '#ffffff',
-    hover:        'rgba(255,90,31,0.07)',
-    input:        'rgba(10,26,63,0.04)',
+    bg: '#F5F7FA', bgAlt: '#eef0f5', surface: '#ffffff', surfaceAlt: '#F5F7FA',
+    glass: 'rgba(255,90,31,0.04)', border: 'rgba(10,26,63,0.08)',
+    borderStrong: 'rgba(255,90,31,0.22)', text: '#0A1A3F',
+    textSub: 'rgba(10,26,63,0.65)', textMuted: 'rgba(10,26,63,0.38)',
+    shadow: '0 4px 24px rgba(10,26,63,0.07)', shadowLg: '0 16px 48px rgba(10,26,63,0.1)',
+    card: '#ffffff', accentBg: 'rgba(255,90,31,0.07)', sidebar: '#ffffff',
+    hover: 'rgba(255,90,31,0.07)', input: 'rgba(10,26,63,0.04)', active: 'rgba(255,90,31,0.1)',
   },
 };
 
-/* ─── Status / Record maps ───────────────────────────────────────────────────── */
 const STATUS_MAP = {
   scheduled: { bg: 'rgba(217,119,6,0.12)',  text: AMBER,   dot: AMBER,   label: 'Scheduled' },
   completed: { bg: 'rgba(5,150,105,0.12)',   text: EMERALD, dot: EMERALD, label: 'Completed' },
   cancelled: { bg: 'rgba(225,29,72,0.12)',   text: ROSE,    dot: ROSE,    label: 'Cancelled' },
-  active:    { bg: 'rgba(5,150,105,0.12)',   text: EMERALD, dot: EMERALD, label: 'Active' },
+  active:    { bg: 'rgba(5,150,105,0.12)',   text: EMERALD, dot: EMERALD, label: 'Active'    },
   no_show:   { bg: 'rgba(107,114,128,0.12)', text: '#6b7280', dot: '#6b7280', label: 'No Show' },
 };
 
 const RECORD_TYPES = {
-  lab_results:  { label: 'Lab Results',  color: CYAN },
-  consultation: { label: 'Consultation', color: ORANGE },
-  imaging:      { label: 'Imaging',      color: INDIGO },
+  lab_results:  { label: 'Lab Results',  color: CYAN   },
+  consultation: { label: 'Consultation', color: ORANGE  },
+  imaging:      { label: 'Imaging',      color: INDIGO  },
   other:        { label: 'Other',        color: '#6b7280' },
 };
 
-/* ─── Helpers ────────────────────────────────────────────────────────────────── */
 const initials = (name) =>
   !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -144,12 +115,12 @@ function Err({ msg, t }) {
   );
 }
 
-/* ─── Overview / Home ────────────────────────────────────────────────────────── */
+/* ─── Overview ── */
 function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
-  const [stats, setStats]         = useState({ appointments: 0, prescriptions: 0, records: 0 });
-  const [recentAppts, setRecent]  = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const hour    = new Date().getHours();
+  const [stats, setStats]        = useState({ appointments: 0, prescriptions: 0, records: 0 });
+  const [recentAppts, setRecent] = useState([]);
+  const [loading, setLoading]    = useState(true);
+  const hour     = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   useEffect(() => {
@@ -160,74 +131,46 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
       patientApi.records(hospitalId, patient.id),
     ]).then(([aRes, rxRes, rRes]) => {
       const appts = aRes.appointments || [];
-      setStats({
-        appointments: appts.length,
-        prescriptions: (rxRes.prescriptions || []).filter(r => r.status === 'active').length,
-        records: (rRes.records || []).length,
-      });
+      setStats({ appointments: appts.length, prescriptions: (rxRes.prescriptions || []).filter(r => r.status === 'active').length, records: (rRes.records || []).length });
       setRecent(appts.slice(0, 3));
     }).catch(console.error).finally(() => setLoading(false));
   }, [hospitalId, patient?.id]);
 
   const vitals = [
-    { label: 'Heart Rate',     value: '—', unit: 'bpm',  icon: Heart,       color: ROSE    },
-    { label: 'Blood Pressure', value: '—', unit: 'mmHg', icon: Activity,    color: ORANGE  },
-    { label: 'Temperature',    value: '—', unit: '°C',   icon: Thermometer, color: AMBER   },
-    { label: 'O₂ Saturation',  value: '—', unit: '%',    icon: Wind,        color: INDIGO  },
+    { label: 'Heart Rate',     value: '—', unit: 'bpm',  icon: Heart,       color: ROSE   },
+    { label: 'Blood Pressure', value: '—', unit: 'mmHg', icon: Activity,    color: ORANGE },
+    { label: 'Temperature',    value: '—', unit: '°C',   icon: Thermometer, color: AMBER  },
+    { label: 'O₂ Saturation',  value: '—', unit: '%',    icon: Wind,        color: INDIGO },
   ];
 
   const quickActions = [
-    { label: 'Appointments',   icon: Calendar, color: ORANGE,  section: 'appointments', count: stats.appointments  },
-    { label: 'Medical Records', icon: FileText, color: INDIGO,  section: 'records',      count: stats.records       },
+    { label: 'Appointments',   icon: Calendar, color: ORANGE, section: 'appointments', count: stats.appointments  },
+    { label: 'Medical Records', icon: FileText, color: INDIGO, section: 'records',     count: stats.records       },
     { label: 'Prescriptions',  icon: Pill,     color: EMERALD, section: 'prescriptions', count: stats.prescriptions },
-    { label: 'My Profile',     icon: User,     color: AMBER,   section: 'profile',       count: null               },
+    { label: 'My Profile',     icon: User,     color: AMBER,  section: 'profile',      count: null               },
   ];
 
   return (
     <div>
-      {/* Hero */}
-      <div style={{
-        background: isDark
-          ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(230,77,21,0.07),transparent)`
-          : `linear-gradient(135deg,rgba(255,90,31,0.1),rgba(230,77,21,0.05),transparent)`,
-        borderRadius: 28, padding: 32, border: `1px solid ${t.borderStrong}`,
-        marginBottom: 24, position: 'relative', overflow: 'hidden',
-      }}>
+      <div style={{ background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(230,77,21,0.07),transparent)` : `linear-gradient(135deg,rgba(255,90,31,0.1),rgba(230,77,21,0.05),transparent)`, borderRadius: 28, padding: 32, border: `1px solid ${t.borderStrong}`, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,rgba(255,90,31,0.15),transparent 70%)`, pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>{greeting} 👋</p>
-            <h1 style={{ fontSize: 'clamp(20px,4vw,30px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 8, lineHeight: 1.2 }}>
-              {patient?.fullName?.split(' ')[0] || 'Patient'}
-            </h1>
-            <p style={{ fontSize: 13, color: t.textSub, marginBottom: 16, lineHeight: 1.6 }}>
-              Welcome to your health portal. All your records, appointments and prescriptions in one place.
-            </p>
+            <h1 style={{ fontSize: 'clamp(20px,4vw,30px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 8, lineHeight: 1.2 }}>{patient?.fullName?.split(' ')[0] || 'Patient'}</h1>
+            <p style={{ fontSize: 13, color: t.textSub, marginBottom: 16, lineHeight: 1.6 }}>Welcome to your health portal. All your records, appointments and prescriptions in one place.</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {patient?.patientNumber && (
-                <span style={{ background: t.accentBg, border: `1px solid ${t.borderStrong}`, color: ORANGE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
-                  ID: {patient.patientNumber}
-                </span>
-              )}
-              {patient?.bloodGroup && (
-                <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
-                  {patient.bloodGroup} Blood Type
-                </span>
-              )}
-              <span style={{ background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)', color: EMERALD, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <CheckCircle size={10} />Active Patient
-              </span>
+              {patient?.patientNumber && <span style={{ background: t.accentBg, border: `1px solid ${t.borderStrong}`, color: ORANGE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>ID: {patient.patientNumber}</span>}
+              {patient?.bloodGroup && <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.bloodGroup} Blood Type</span>}
+              <span style={{ background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.18)', color: EMERALD, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5 }}><CheckCircle size={10} />Active Patient</span>
             </div>
           </div>
-          <div style={{ width: 84, height: 84, borderRadius: 24, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26, color: '#fff', boxShadow: `0 8px 32px rgba(255,90,31,0.35)`, flexShrink: 0 }}>
-            {initials(patient?.fullName)}
-          </div>
+          <div style={{ width: 84, height: 84, borderRadius: 24, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26, color: '#fff', boxShadow: `0 8px 32px rgba(255,90,31,0.35)`, flexShrink: 0 }}>{initials(patient?.fullName)}</div>
         </div>
       </div>
 
       {loading ? <Spinner t={t} /> : (
         <>
-          {/* Quick actions */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 12, marginBottom: 24 }}>
             {quickActions.map(({ label, icon: Icon, color, section, count }, i) => (
               <div key={section} onClick={() => onNavigate(section)}
@@ -235,24 +178,18 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = color + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; }}>
                 <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: color + '10', pointerEvents: 'none' }} />
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: color + '16', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                  <Icon size={17} color={color} />
-                </div>
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: color + '16', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}><Icon size={17} color={color} /></div>
                 {count !== null && <p style={{ fontSize: 26, fontWeight: 800, color: t.text, fontFamily: 'monospace', marginBottom: 3 }}>{count}</p>}
                 <p style={{ fontWeight: 700, color: t.textMuted, textTransform: count !== null ? 'uppercase' : 'none', letterSpacing: count !== null ? '0.04em' : 0, fontSize: count !== null ? 11 : 13 }}>{label}</p>
               </div>
             ))}
           </div>
 
-          {/* Recent appointments */}
           {recentAppts.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Recent Appointments</h2>
-                <button onClick={() => onNavigate('appointments')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: ORANGE, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  View all <ChevronRight size={14} />
-                </button>
+                <button onClick={() => onNavigate('appointments')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: ORANGE, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View all <ChevronRight size={14} /></button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {recentAppts.map((a, i) => (
@@ -276,21 +213,16 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
         </>
       )}
 
-      {/* Vitals */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Health Vitals</h2>
-          <span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, background: t.surfaceAlt, padding: '3px 10px', borderRadius: 20, border: `1px solid ${t.border}` }}>
-            Update at clinic visit
-          </span>
+          <span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, background: t.surfaceAlt, padding: '3px 10px', borderRadius: 20, border: `1px solid ${t.border}` }}>Update at clinic visit</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12 }}>
           {vitals.map(({ label, value, unit, icon: Icon, color }, i) => (
             <div key={label} style={{ background: t.surface, borderRadius: 18, padding: 16, border: `1px solid ${t.border}`, boxShadow: t.shadow, position: 'relative', overflow: 'hidden', animation: `fadeUp 0.3s ease ${i * 0.06}s both` }}>
               <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: color + '10', pointerEvents: 'none' }} />
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-                <Icon size={15} color={color} />
-              </div>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}><Icon size={15} color={color} /></div>
               <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                 <span style={{ fontSize: 20, fontWeight: 800, color: t.textMuted, fontFamily: 'monospace' }}>{value}</span>
@@ -301,14 +233,8 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
         </div>
       </div>
 
-      {/* Health tip */}
-      <div style={{
-        background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(230,77,21,0.08))` : `linear-gradient(135deg,rgba(255,90,31,0.08),rgba(230,77,21,0.04))`,
-        border: `1px solid ${t.borderStrong}`, borderRadius: 20, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16,
-      }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Zap size={20} color="#fff" strokeWidth={2.5} />
-        </div>
+      <div style={{ background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(230,77,21,0.08))` : `linear-gradient(135deg,rgba(255,90,31,0.08),rgba(230,77,21,0.04))`, border: `1px solid ${t.borderStrong}`, borderRadius: 20, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Zap size={20} color="#fff" strokeWidth={2.5} /></div>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 800, color: t.text, marginBottom: 3 }}>Daily Health Tip</p>
           <p style={{ fontSize: 13, color: t.textSub, lineHeight: 1.5 }}>Drink at least 8 glasses of water daily. Staying hydrated improves energy and cognitive function.</p>
@@ -318,12 +244,12 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
   );
 }
 
-/* ─── Appointments ───────────────────────────────────────────────────────────── */
+/* ─── Appointments ── */
 function MyAppointments({ t, patient, hospitalId }) {
-  const [items, setItems]   = useState([]);
+  const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState('');
-  const [filter, setFilter] = useState('all');
+  const [error, setError]     = useState('');
+  const [filter, setFilter]   = useState('all');
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -345,7 +271,6 @@ function MyAppointments({ t, patient, hospitalId }) {
           <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total appointments</p>
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
         {[{ label: 'Scheduled', count: counts.scheduled, color: AMBER }, { label: 'Completed', count: counts.completed, color: EMERALD }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
           <div key={label} style={{ background: t.surface, borderRadius: 14, padding: 16, border: `1px solid ${t.border}` }}>
@@ -354,16 +279,13 @@ function MyAppointments({ t, patient, hospitalId }) {
           </div>
         ))}
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
         {['all', 'scheduled', 'completed', 'cancelled'].map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            style={{ padding: '7px 16px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
+          <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 16px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
             {f === 'all' ? `All (${items.length})` : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
-
       {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {filtered.map((a, i) => (
@@ -382,10 +304,7 @@ function MyAppointments({ t, patient, hospitalId }) {
                   {(a.doctor?.specialty || a.doctor?.department) && <span style={{ color: t.textMuted }}> · {a.doctor?.specialty || a.doctor?.department}</span>}
                 </p>
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500 }}>
-                    <Clock size={12} color={ORANGE} />
-                    {new Date(a.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                  </span>
+                  <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500 }}><Clock size={12} color={ORANGE} />{new Date(a.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
                   {a.appointmentTime && <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 500 }}>{a.appointmentTime}</span>}
                 </div>
                 {a.notes && <p style={{ fontSize: 12, color: t.textMuted, marginTop: 8, fontStyle: 'italic' }}>{a.notes}</p>}
@@ -398,13 +317,13 @@ function MyAppointments({ t, patient, hospitalId }) {
   );
 }
 
-/* ─── Medical Records ────────────────────────────────────────────────────────── */
+/* ─── Medical Records ── */
 function MyRecords({ t, patient, hospitalId }) {
-  const [items, setItems]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
   const [selected, setSelected] = useState(null);
-  const [filter, setFilter]   = useState('All');
+  const [filter, setFilter]     = useState('All');
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -413,7 +332,6 @@ function MyRecords({ t, patient, hospitalId }) {
   }, [hospitalId, patient?.id]);
 
   useEffect(() => { load(); }, [load]);
-
   const filtered = filter === 'All' ? items : items.filter(r => r.recordType === filter);
 
   return (
@@ -424,16 +342,13 @@ function MyRecords({ t, patient, hospitalId }) {
           <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} records on file</p>
         </div>
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {['All', ...Object.keys(RECORD_TYPES)].map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            style={{ padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
+          <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
             {f === 'All' ? 'All' : RECORD_TYPES[f]?.label}
           </button>
         ))}
       </div>
-
       {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={FileText} label="records" t={t} /> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
           {filtered.map((r, i) => {
@@ -461,7 +376,6 @@ function MyRecords({ t, patient, hospitalId }) {
           })}
         </div>
       )}
-
       {selected && (
         <div onClick={e => e.target === e.currentTarget && setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }}>
           <div style={{ background: t.surface, borderRadius: 26, width: '100%', maxWidth: 480, maxHeight: '88vh', overflowY: 'auto', border: `1px solid ${t.borderStrong}`, boxShadow: '0 32px 80px rgba(0,0,0,0.5)', animation: 'fadeUp 0.22s ease' }}>
@@ -473,13 +387,7 @@ function MyRecords({ t, patient, hospitalId }) {
               <button onClick={() => setSelected(null)} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.15)', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[
-                ['Type', (RECORD_TYPES[selected.recordType] || RECORD_TYPES.other).label],
-                ['Attending Doctor', selected.doctor?.fullName || '—'],
-                ['Record Date', new Date(selected.recordDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })],
-                ['Diagnosis', selected.diagnosis || '—'],
-                ['Clinical Findings', selected.findings || '—'],
-              ].map(([label, val]) => (
+              {[['Type', (RECORD_TYPES[selected.recordType] || RECORD_TYPES.other).label], ['Attending Doctor', selected.doctor?.fullName || '—'], ['Record Date', new Date(selected.recordDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })], ['Diagnosis', selected.diagnosis || '—'], ['Clinical Findings', selected.findings || '—']].map(([label, val]) => (
                 <div key={label} style={{ background: t.surfaceAlt, borderRadius: 14, padding: '14px 16px', border: `1px solid ${t.border}` }}>
                   <p style={{ fontSize: 11, color: t.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{label}</p>
                   <p style={{ fontSize: 14, fontWeight: 600, color: t.text, lineHeight: 1.5 }}>{val}</p>
@@ -499,7 +407,7 @@ function MyRecords({ t, patient, hospitalId }) {
   );
 }
 
-/* ─── Prescriptions ──────────────────────────────────────────────────────────── */
+/* ─── Prescriptions ── */
 function MyPrescriptions({ t, patient, hospitalId }) {
   const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
@@ -520,9 +428,7 @@ function MyPrescriptions({ t, patient, hospitalId }) {
     <div style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, minWidth: 0 }}>
-          <div style={{ width: 46, height: 46, borderRadius: 14, background: `${EMERALD}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Pill size={20} color={EMERALD} strokeWidth={1.8} />
-          </div>
+          <div style={{ width: 46, height: 46, borderRadius: 14, background: `${EMERALD}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Pill size={20} color={EMERALD} strokeWidth={1.8} /></div>
           <div style={{ minWidth: 0 }}>
             <p style={{ fontWeight: 800, fontSize: 15, color: t.text, marginBottom: 3 }}>{rx.medication}</p>
             <p style={{ fontSize: 12, color: ORANGE, fontWeight: 600 }}>{rx.dosage}</p>
@@ -538,9 +444,7 @@ function MyPrescriptions({ t, patient, hospitalId }) {
       <div style={{ display: 'flex', gap: 16, paddingTop: 12, borderTop: `1px solid ${t.border}`, flexWrap: 'wrap', alignItems: 'center' }}>
         <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 600 }}>Dr. {rx.doctor?.fullName || '—'}</span>
         {rx.duration && <span style={{ fontSize: 12, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={11} />{rx.duration}</span>}
-        <span style={{ fontSize: 12, color: t.textMuted, marginLeft: 'auto' }}>
-          {rx.prescribedDate ? new Date(rx.prescribedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
-        </span>
+        <span style={{ fontSize: 12, color: t.textMuted, marginLeft: 'auto' }}>{rx.prescribedDate ? new Date(rx.prescribedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</span>
       </div>
     </div>
   );
@@ -551,7 +455,6 @@ function MyPrescriptions({ t, patient, hospitalId }) {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: t.text, letterSpacing: '-0.4px', marginBottom: 3 }}>Prescriptions</h1>
         <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total · {activeRx.length} active</p>
       </div>
-
       {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : items.length === 0 ? <Empty icon={Pill} label="prescriptions" t={t} /> : (
         <>
           {activeRx.length > 0 && (
@@ -561,9 +464,7 @@ function MyPrescriptions({ t, patient, hospitalId }) {
                 <h2 style={{ fontSize: 14, fontWeight: 800, color: t.text }}>Active Prescriptions</h2>
                 <span style={{ fontSize: 11, color: EMERALD, fontWeight: 700, background: 'rgba(5,150,105,0.1)', padding: '2px 8px', borderRadius: 20 }}>{activeRx.length}</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {activeRx.map((rx, i) => <RxCard key={rx.id} rx={rx} i={i} />)}
-              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{activeRx.map((rx, i) => <RxCard key={rx.id} rx={rx} i={i} />)}</div>
             </div>
           )}
           {otherRx.length > 0 && (
@@ -572,9 +473,7 @@ function MyPrescriptions({ t, patient, hospitalId }) {
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.textMuted }} />
                 <h2 style={{ fontSize: 14, fontWeight: 800, color: t.text }}>Past Prescriptions</h2>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {otherRx.map((rx, i) => <RxCard key={rx.id} rx={rx} i={activeRx.length + i} />)}
-              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{otherRx.map((rx, i) => <RxCard key={rx.id} rx={rx} i={activeRx.length + i} />)}</div>
             </div>
           )}
         </>
@@ -583,33 +482,28 @@ function MyPrescriptions({ t, patient, hospitalId }) {
   );
 }
 
-/* ─── Profile ────────────────────────────────────────────────────────────────── */
-function MyProfile({ t, patient, isDark }) {
+/* ─── Profile ── */
+function MyProfile({ t, patient, isDark, onChangePw }) {
   const info = [
-    { label: 'Full Name',           value: patient?.fullName || '—',        icon: User,     color: ORANGE  },
-    { label: 'Patient ID',          value: patient?.patientNumber || '—',   icon: Shield,   color: INDIGO  },
-    { label: 'Blood Group',         value: patient?.bloodGroup || '—',      icon: Droplets, color: ROSE    },
-    { label: 'Gender',              value: patient?.gender || '—',          icon: User,     color: ORANGE2 },
-    { label: 'Date of Birth',       value: patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—', icon: Activity, color: AMBER },
-    { label: 'Phone',               value: patient?.phone || '—',           icon: Phone,    color: EMERALD },
-    { label: 'Email',               value: patient?.email || '—',           icon: Mail,     color: INDIGO  },
-    { label: 'Address',             value: patient?.address || '—',         icon: MapPin,   color: AMBER   },
-    { label: 'Medical Conditions',  value: patient?.medicalConditions || 'None listed', icon: Activity, color: ROSE },
-    { label: 'Next of Kin',         value: patient?.nextOfKinName || '—',   icon: User,     color: CYAN    },
-    { label: 'Kin Phone',           value: patient?.nextOfKinPhone || '—',  icon: Phone,    color: CYAN    },
+    { label: 'Full Name',          value: patient?.fullName || '—',          icon: User,     color: ORANGE  },
+    { label: 'Patient ID',         value: patient?.patientNumber || '—',     icon: Shield,   color: INDIGO  },
+    { label: 'Blood Group',        value: patient?.bloodGroup || '—',        icon: Droplets, color: ROSE    },
+    { label: 'Gender',             value: patient?.gender || '—',            icon: User,     color: ORANGE2 },
+    { label: 'Date of Birth',      value: patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—', icon: Activity, color: AMBER },
+    { label: 'Phone',              value: patient?.phone || '—',             icon: Phone,    color: EMERALD },
+    { label: 'Email',              value: patient?.email || '—',             icon: Mail,     color: INDIGO  },
+    { label: 'Address',            value: patient?.address || '—',           icon: MapPin,   color: AMBER   },
+    { label: 'Medical Conditions', value: patient?.medicalConditions || 'None listed', icon: Activity, color: ROSE },
+    { label: 'Next of Kin',        value: patient?.nextOfKinName || '—',     icon: User,     color: CYAN    },
+    { label: 'Kin Phone',          value: patient?.nextOfKinPhone || '—',    icon: Phone,    color: CYAN    },
   ];
 
   return (
     <div>
-      <div style={{
-        background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(79,70,229,0.08),transparent)` : `linear-gradient(135deg,rgba(255,90,31,0.1),rgba(79,70,229,0.05),transparent)`,
-        borderRadius: 28, padding: 32, marginBottom: 24, border: `1px solid ${t.borderStrong}`, position: 'relative', overflow: 'hidden',
-      }}>
+      <div style={{ background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(79,70,229,0.08),transparent)` : `linear-gradient(135deg,rgba(255,90,31,0.1),rgba(79,70,229,0.05),transparent)`, borderRadius: 28, padding: 32, marginBottom: 24, border: `1px solid ${t.borderStrong}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(circle,rgba(255,90,31,0.15),transparent 70%)`, pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-          <div style={{ width: 92, height: 92, borderRadius: 26, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 30, color: '#fff', boxShadow: `0 12px 36px rgba(255,90,31,0.35)`, flexShrink: 0 }}>
-            {initials(patient?.fullName)}
-          </div>
+          <div style={{ width: 92, height: 92, borderRadius: 26, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 30, color: '#fff', boxShadow: `0 12px 36px rgba(255,90,31,0.35)`, flexShrink: 0 }}>{initials(patient?.fullName)}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: ORANGE, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Patient Profile</p>
             <h1 style={{ fontSize: 'clamp(18px,3vw,26px)', fontWeight: 800, color: t.text, letterSpacing: '-0.5px', marginBottom: 10 }}>{patient?.fullName || '—'}</h1>
@@ -618,6 +512,13 @@ function MyProfile({ t, patient, isDark }) {
               {patient?.bloodGroup && <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.bloodGroup}</span>}
               {patient?.gender && <span style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, color: t.textSub, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, textTransform: 'capitalize' }}>{patient.gender}</span>}
             </div>
+            {/* Change Password button inside profile */}
+            <button onClick={onChangePw}
+              style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid rgba(255,90,31,0.3)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.08)'}>
+              <Lock size={14} /> Change Password
+            </button>
           </div>
         </div>
       </div>
@@ -626,9 +527,7 @@ function MyProfile({ t, patient, isDark }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 12 }}>
         {info.map(({ label, value, icon: Icon, color }, i) => (
           <div key={label} style={{ background: t.surface, borderRadius: 18, padding: '16px 18px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', alignItems: 'flex-start', gap: 12, animation: `fadeUp 0.3s ease ${i * 0.04}s both` }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '14', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon size={15} color={color} />
-            </div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '14', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon size={15} color={color} /></div>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>{label}</p>
               <p style={{ fontSize: 13, fontWeight: 700, color: t.text, wordBreak: 'break-word', textTransform: label === 'Gender' ? 'capitalize' : 'none', lineHeight: 1.4 }}>{value}</p>
@@ -640,16 +539,14 @@ function MyProfile({ t, patient, isDark }) {
   );
 }
 
-/* ─── Nav ────────────────────────────────────────────────────────────────────── */
 const NAV = [
-  { id: 'overview',      label: 'Home',         icon: Home },
-  { id: 'appointments',  label: 'Appointments', icon: Calendar },
-  { id: 'records',       label: 'Records',      icon: FileText },
-  { id: 'prescriptions', label: 'Prescriptions', icon: Pill },
-  { id: 'profile',       label: 'Profile',      icon: User },
+  { id: 'overview',      label: 'Home',          icon: Home     },
+  { id: 'appointments',  label: 'Appointments',  icon: Calendar },
+  { id: 'records',       label: 'Records',       icon: FileText },
+  { id: 'prescriptions', label: 'Prescriptions', icon: Pill     },
+  { id: 'profile',       label: 'Profile',       icon: User     },
 ];
 
-/* ─── Main Export ────────────────────────────────────────────────────────────── */
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
@@ -657,8 +554,9 @@ export default function PatientDashboard() {
   const [section, setSection]       = useState('overview');
   const [isMobile, setIsMobile]     = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [showChangePw, setShowChangePw] = useState(false);
 
-  const t = isDark ? T.dark : T.light;
+  const t          = isDark ? T.dark : T.light;
   const hospitalId = patient?.hospital_id;
 
   useEffect(() => { const fn = () => setIsDark(localStorage.getItem('theme') === 'dark'); window.addEventListener('themeChange', fn); return () => window.removeEventListener('themeChange', fn); }, []);
@@ -676,12 +574,12 @@ export default function PatientDashboard() {
 
   const renderSection = () => {
     switch (section) {
-      case 'overview':      return <Overview      {...sectionProps} onNavigate={goTo} />;
-      case 'appointments':  return <MyAppointments {...sectionProps} />;
-      case 'records':       return <MyRecords      {...sectionProps} />;
-      case 'prescriptions': return <MyPrescriptions {...sectionProps} />;
-      case 'profile':       return <MyProfile      {...sectionProps} />;
-      default:              return <Overview       {...sectionProps} onNavigate={goTo} />;
+      case 'overview':      return <Overview         {...sectionProps} onNavigate={goTo} />;
+      case 'appointments':  return <MyAppointments   {...sectionProps} />;
+      case 'records':       return <MyRecords        {...sectionProps} />;
+      case 'prescriptions': return <MyPrescriptions  {...sectionProps} />;
+      case 'profile':       return <MyProfile        {...sectionProps} onChangePw={() => setShowChangePw(true)} />;
+      default:              return <Overview         {...sectionProps} onNavigate={goTo} />;
     }
   };
 
@@ -697,15 +595,12 @@ export default function PatientDashboard() {
             <Heart size={18} color="#fff" strokeWidth={2.2} />
           </div>
           <div>
-            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>
-              HMS<span style={{ color: ORANGE }}>Care</span>
-            </span>
+            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>HMS<span style={{ color: ORANGE }}>Care</span></span>
             <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Patient Portal</p>
           </div>
         </div>
         {forceFull && (
-          <button onClick={() => setMobileMenu(false)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 4, borderRadius: 8, transition: 'transform 0.2s' }}
+          <button onClick={() => setMobileMenu(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 4, borderRadius: 8, transition: 'transform 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'rotate(90deg)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'rotate(0deg)'}>
             <X size={18} />
@@ -734,7 +629,7 @@ export default function PatientDashboard() {
       </nav>
 
       {/* User footer */}
-      <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: t.accentBg, border: `1px solid ${t.borderStrong}` }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{av}</div>
           <div style={{ minWidth: 0 }}>
@@ -742,6 +637,13 @@ export default function PatientDashboard() {
             <p style={{ fontSize: 11, color: t.textMuted }}>{patient?.patientNumber || '—'}</p>
           </div>
         </div>
+        {/* Change Password button */}
+        <button onClick={() => setShowChangePw(true)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 9, borderRadius: 10, border: `1px solid rgba(255,90,31,0.3)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.08)'}>
+          <Lock size={13} /> Change Password
+        </button>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={toggleTheme}
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 9, borderRadius: 10, border: `1px solid ${t.border}`, cursor: 'pointer', fontFamily: 'inherit', background: t.input, color: t.textSub, fontWeight: 600, fontSize: 12 }}>
@@ -851,6 +753,14 @@ export default function PatientDashboard() {
           </nav>
         )}
       </div>
+
+      {/* Change Password Modal — correctly placed at root level */}
+      {showChangePw && (
+        <ChangePasswordModal
+          onClose={() => setShowChangePw(false)}
+          isDark={isDark}
+        />
+      )}
     </div>
   );
 }

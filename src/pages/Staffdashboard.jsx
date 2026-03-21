@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import {
     Activity, AlertCircle, Bell, Calendar, ChevronDown,
     ClipboardList, Clock, Eye, FileText, Heart,
-    Home, LogOut, Menu, Moon, Pill,
+    Home, LogOut, Menu, Moon, Pill, Lock,
     Search, Stethoscope, Sun,
     User, Users, X, Plus, CheckCircle,
-    FlaskConical, Microscope, BedDouble,
-    PhoneCall, Shield, Loader,
-    ChevronRight, MessageSquare,
-    BarChart2, Package, UserCheck,
+    Microscope, BedDouble,
+    PhoneCall, Shield,
+    ChevronRight,
     Droplets, Phone, Mail, MoreHorizontal,
-    Trash2, AlertTriangle
+    Trash2
 } from 'lucide-react';
+import ChangePasswordModal from '../Components/ChangePasswordModal';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
@@ -64,55 +64,33 @@ const api = {
     },
 };
 
-/* ─── Brand Palette ──────────────────────────────────────────────────────────── */
-const NAVY      = '#0A1A3F';
-const SOFT_NAVY = '#1F2A44';
-const ORANGE    = '#FF5A1F';
+const NAVY       = '#0A1A3F';
+const SOFT_NAVY  = '#1F2A44';
+const ORANGE     = '#FF5A1F';
 const LIGHT_GRAY = '#F5F7FA';
-
-/* ─── Role accent colors kept for UX differentiation ────────────────────────── */
 const BLUE = '#3b5bdb', BLUE2 = '#4c6ef5', EMERALD = '#059669', AMBER = '#d97706',
     ROSE = '#e11d48', CYAN = '#0891b2', VIOLET = '#7c3aed';
 
 const ROLE_META = {
-    doctor:       { label: 'Doctor',       accent: BLUE,    accent2: BLUE2,      icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR'  },
-    nurse:        { label: 'Nurse',        accent: EMERALD, accent2: '#10b981',  icon: Heart,       gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN'  },
-    pharmacist:   { label: 'Pharmacist',   accent: VIOLET,  accent2: '#8b5cf6',  icon: Pill,        gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
-    lab_staff:    { label: 'Lab Staff',    accent: CYAN,    accent2: '#06b6d4',  icon: Microscope,  gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
-    receptionist: { label: 'Receptionist', accent: AMBER,   accent2: '#f59e0b',  icon: PhoneCall,   gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
+    doctor:       { label: 'Doctor',       accent: BLUE,    accent2: BLUE2,     icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR'  },
+    nurse:        { label: 'Nurse',        accent: EMERALD, accent2: '#10b981', icon: Heart,       gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN'  },
+    pharmacist:   { label: 'Pharmacist',   accent: VIOLET,  accent2: '#8b5cf6', icon: Pill,        gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
+    lab_staff:    { label: 'Lab Staff',    accent: CYAN,    accent2: '#06b6d4', icon: Microscope,  gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
+    receptionist: { label: 'Receptionist', accent: AMBER,   accent2: '#f59e0b', icon: PhoneCall,   gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
 };
 
-/* ─── Themes — Navy/Orange shell ─────────────────────────────────────────────── */
 const themes = {
     dark: {
-        bg:        NAVY,
-        surface:   SOFT_NAVY,
-        surfaceAlt:'#162035',
-        border:    'rgba(255,255,255,0.07)',
-        text:      '#F5F7FA',
-        textSub:   'rgba(245,247,250,0.6)',
-        textMuted: 'rgba(245,247,250,0.32)',
-        shadow:    `0 4px 24px rgba(0,0,0,0.45)`,
-        sidebar:   NAVY,
-        hover:     `rgba(255,90,31,0.08)`,
-        input:     'rgba(255,255,255,0.06)',
-        card:      SOFT_NAVY,
-        cardAlt:   '#162035',
+        bg: NAVY, surface: SOFT_NAVY, surfaceAlt: '#162035', border: 'rgba(255,255,255,0.07)',
+        text: '#F5F7FA', textSub: 'rgba(245,247,250,0.6)', textMuted: 'rgba(245,247,250,0.32)',
+        shadow: `0 4px 24px rgba(0,0,0,0.45)`, sidebar: NAVY, hover: `rgba(255,90,31,0.08)`,
+        input: 'rgba(255,255,255,0.06)', card: SOFT_NAVY, cardAlt: '#162035',
     },
     light: {
-        bg:        LIGHT_GRAY,
-        surface:   '#ffffff',
-        surfaceAlt:LIGHT_GRAY,
-        border:    'rgba(10,26,63,0.09)',
-        text:      NAVY,
-        textSub:   'rgba(10,26,63,0.58)',
-        textMuted: 'rgba(10,26,63,0.36)',
-        shadow:    `0 4px 20px rgba(10,26,63,0.07)`,
-        sidebar:   '#ffffff',
-        hover:     `rgba(255,90,31,0.06)`,
-        input:     'rgba(10,26,63,0.04)',
-        card:      '#ffffff',
-        cardAlt:   LIGHT_GRAY,
+        bg: LIGHT_GRAY, surface: '#ffffff', surfaceAlt: LIGHT_GRAY, border: 'rgba(10,26,63,0.09)',
+        text: NAVY, textSub: 'rgba(10,26,63,0.58)', textMuted: 'rgba(10,26,63,0.36)',
+        shadow: `0 4px 20px rgba(10,26,63,0.07)`, sidebar: '#ffffff', hover: `rgba(255,90,31,0.06)`,
+        input: 'rgba(10,26,63,0.04)', card: '#ffffff', cardAlt: LIGHT_GRAY,
     },
 };
 
@@ -132,9 +110,7 @@ const TYPE_COLORS = {
 };
 
 const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#7c3aed','#059669'];
-const DEPARTMENTS   = ['Cardiology','Emergency','General','ICU','Laboratory','Maternity','Neurology','Oncology','Orthopedics','Pediatrics','Pharmacy','Radiology','Surgery'];
 
-/* ─── Helpers ───────────────────────────────────────────────────────────────── */
 const initials = (name) => !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 function Badge({ status }) {
@@ -144,9 +120,7 @@ function Badge({ status }) {
 
 function Toast({ message, type = 'success', onClose }) {
     useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
-    const c = type === 'error'
-        ? { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' }
-        : { bg: '#f0fdf4', border: '#86efac', text: '#166534' };
+    const c = type === 'error' ? { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' } : { bg: '#f0fdf4', border: '#86efac', text: '#166534' };
     return (
         <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: 10, animation: 'toastIn 0.3s ease forwards' }}>
             <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
@@ -166,27 +140,21 @@ function LoadingState({ t, accent }) {
     );
 }
 
-/* ─── PatientsSection ────────────────────────────────────────────────────────── */
-function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
-    const [patients, setPatients]     = useState([]);
-    const [loading, setLoading]       = useState(true);
-    const [search, setSearch]         = useState('');
+/* ─── PatientsSection ── */
+function PatientsSection({ t, hospitalId, accent }) {
+    const [patients, setPatients]       = useState([]);
+    const [loading, setLoading]         = useState(true);
+    const [search, setSearch]           = useState('');
     const [viewPatient, setViewPatient] = useState(null);
-    const [error, setError]           = useState('');
+    const [error, setError]             = useState('');
 
     const load = useCallback(async (q = '') => {
-        try {
-            setLoading(true); setError('');
-            const res = await api.patients.list(hospitalId, q ? { search: q } : {});
-            setPatients(res.patients || []);
-        } catch (err) { setError(err.message); }
-        finally { setLoading(false); }
+        try { setLoading(true); setError(''); const res = await api.patients.list(hospitalId, q ? { search: q } : {}); setPatients(res.patients || []); }
+        catch (err) { setError(err.message); } finally { setLoading(false); }
     }, [hospitalId]);
 
     useEffect(() => { load(); }, [load]);
     useEffect(() => { const id = setTimeout(() => load(search), 400); return () => clearTimeout(id); }, [search]);
-
-    const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' };
 
     return (
         <div>
@@ -228,17 +196,13 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
                     })}
                 </div>
             )}
-
             {viewPatient && (
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 460, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
                         <div style={{ padding: '18px 20px', background: ORANGE + '14', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div style={{ width: 46, height: 46, borderRadius: 12, background: ORANGE + '28', color: ORANGE, fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(viewPatient.fullName)}</div>
-                                <div>
-                                    <h2 style={{ fontWeight: 800, fontSize: 16 }}>{viewPatient.fullName}</h2>
-                                    <p style={{ fontSize: 12, color: t.textSub }}>{viewPatient.patientNumber}</p>
-                                </div>
+                                <div><h2 style={{ fontWeight: 800, fontSize: 16 }}>{viewPatient.fullName}</h2><p style={{ fontSize: 12, color: t.textSub }}>{viewPatient.patientNumber}</p></div>
                             </div>
                             <button onClick={() => setViewPatient(null)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
                         </div>
@@ -269,8 +233,8 @@ function PatientsSection({ t, hospitalId, isDark, accent, isMobile }) {
     );
 }
 
-/* ─── AppointmentsSection ────────────────────────────────────────────────────── */
-function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile, role }) {
+/* ─── AppointmentsSection ── */
+function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
     const [appointments, setAppointments] = useState([]);
     const [patients, setPatients]         = useState([]);
     const [doctors, setDoctors]           = useState([]);
@@ -289,16 +253,9 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
         try {
             setLoading(true);
             const params = filter !== 'All' ? { status: filter.toLowerCase() } : {};
-            const [aRes, sRes, pRes] = await Promise.all([
-                api.appointments.list(hospitalId, params),
-                api.staff.list(hospitalId, { role: 'doctor' }),
-                api.patients.list(hospitalId),
-            ]);
-            setAppointments(aRes.appointments || []);
-            setDoctors(sRes.staff || []);
-            setPatients(pRes.patients || []);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+            const [aRes, sRes, pRes] = await Promise.all([api.appointments.list(hospitalId, params), api.staff.list(hospitalId, { role: 'doctor' }), api.patients.list(hospitalId)]);
+            setAppointments(aRes.appointments || []); setDoctors(sRes.staff || []); setPatients(pRes.patients || []);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     }, [hospitalId, filter]);
 
     useEffect(() => { load(); }, [load]);
@@ -306,40 +263,22 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!form.patientId || !form.doctorId || !form.appointmentDate || !form.appointmentTime || !form.reason) { setFormError('All fields except notes are required.'); return; }
-        try {
-            setSubmitting(true); setFormError('');
-            await api.appointments.create(form);
-            setShowAdd(false);
-            setForm({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
-            setToast({ message: 'Appointment booked!', type: 'success' });
-            load();
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmitting(false); }
+        try { setSubmitting(true); setFormError(''); await api.appointments.create(form); setShowAdd(false); setForm({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' }); setToast({ message: 'Appointment booked!', type: 'success' }); load(); }
+        catch (err) { setFormError(err.message); } finally { setSubmitting(false); }
     };
 
     const updateStatus = async (id, status) => {
-        try {
-            await api.appointments.updateStatus(id, status);
-            setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-            setToast({ message: `Marked as ${status}`, type: 'success' });
-        } catch (err) { setToast({ message: err.message, type: 'error' }); }
+        try { await api.appointments.updateStatus(id, status); setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a)); setToast({ message: `Marked as ${status}`, type: 'success' }); }
+        catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this appointment?')) return;
-        try {
-            await api.appointments.delete(id);
-            setAppointments(prev => prev.filter(a => a.id !== id));
-            setToast({ message: 'Appointment deleted.', type: 'success' });
-        } catch (err) { setToast({ message: err.message, type: 'error' }); }
+        try { await api.appointments.delete(id); setAppointments(prev => prev.filter(a => a.id !== id)); setToast({ message: 'Appointment deleted.', type: 'success' }); }
+        catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = appointments.filter(a =>
-        a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        a.reason?.toLowerCase().includes(search.toLowerCase())
-    );
-
+    const filtered = appointments.filter(a => a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase()) || a.reason?.toLowerCase().includes(search.toLowerCase()));
     const counts = { scheduled: 0, completed: 0, cancelled: 0 };
     appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
@@ -350,17 +289,9 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
         <div>
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Appointments</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{appointments.length} total appointments</p>
-                </div>
-                {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
-                        <Plus size={15} /> Book Appointment
-                    </button>
-                )}
+                <div><h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Appointments</h1><p style={{ color: t.textSub, fontSize: 13 }}>{appointments.length} total appointments</p></div>
+                {canCreate && <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}><Plus size={15} /> Book Appointment</button>}
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                 {[{ label: 'Scheduled', count: counts.scheduled, color: AMBER }, { label: 'Completed', count: counts.completed, color: EMERALD }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
                     <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}`, borderLeft: `3px solid ${color}` }}>
@@ -369,7 +300,6 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                     </div>
                 ))}
             </div>
-
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
                     <Search size={14} color={t.textMuted} />
@@ -381,22 +311,17 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                     ))}
                 </div>
             </div>
-
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(340px,1fr))', gap: 14 }}>
-                    {filtered.length === 0 ? (
-                        <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No appointments found</div>
-                    ) : filtered.map((a, i) => {
+                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No appointments found</div>
+                    : filtered.map((a, i) => {
                         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         return (
                             <div key={a.id} style={{ background: t.surface, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                         <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '22', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(a.patient?.fullName)}</div>
-                                        <div>
-                                            <p style={{ fontWeight: 700, fontSize: 14 }}>{a.patient?.fullName}</p>
-                                            <p style={{ fontSize: 11, color: t.textMuted }}>{a.patient?.patientNumber}</p>
-                                        </div>
+                                        <div><p style={{ fontWeight: 700, fontSize: 14 }}>{a.patient?.fullName}</p><p style={{ fontSize: 11, color: t.textMuted }}>{a.patient?.patientNumber}</p></div>
                                     </div>
                                     <Badge status={a.status} />
                                 </div>
@@ -410,21 +335,16 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
                                 </div>
                                 <div style={{ display: 'flex', gap: 6 }}>
                                     {a.status === 'scheduled' && canCreate && (
-                                        <>
-                                            <button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '7px', background: 'rgba(5,150,105,0.12)', border: 'none', borderRadius: 8, color: EMERALD, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
-                                            <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '7px', background: 'rgba(225,29,72,0.1)', border: 'none', borderRadius: 8, color: ROSE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
-                                        </>
+                                        <><button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '7px', background: 'rgba(5,150,105,0.12)', border: 'none', borderRadius: 8, color: EMERALD, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
+                                        <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '7px', background: 'rgba(225,29,72,0.1)', border: 'none', borderRadius: 8, color: ROSE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button></>
                                     )}
-                                    {canCreate && (
-                                        <button onClick={() => handleDelete(a.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>
-                                    )}
+                                    {canCreate && <button onClick={() => handleDelete(a.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
                                 </div>
                             </div>
                         );
                     })}
                 </div>
             )}
-
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
@@ -454,8 +374,8 @@ function AppointmentsSection({ t, hospitalId, staffId, isDark, accent, isMobile,
     );
 }
 
-/* ─── PrescriptionsSection ───────────────────────────────────────────────────── */
-function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
+/* ─── PrescriptionsSection ── */
+function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
     const [prescriptions, setPrescriptions] = useState([]);
     const [patients, setPatients]           = useState([]);
     const [doctors, setDoctors]             = useState([]);
@@ -474,16 +394,9 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
         try {
             setLoading(true);
             const params = filter !== 'All' ? { status: filter.toLowerCase() } : {};
-            const [rRes, sRes, pRes] = await Promise.all([
-                api.prescriptions.list(hospitalId, params),
-                api.staff.list(hospitalId, { role: 'doctor' }),
-                api.patients.list(hospitalId),
-            ]);
-            setPrescriptions(rRes.prescriptions || []);
-            setDoctors(sRes.staff || []);
-            setPatients(pRes.patients || []);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+            const [rRes, sRes, pRes] = await Promise.all([api.prescriptions.list(hospitalId, params), api.staff.list(hospitalId, { role: 'doctor' }), api.patients.list(hospitalId)]);
+            setPrescriptions(rRes.prescriptions || []); setDoctors(sRes.staff || []); setPatients(pRes.patients || []);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     }, [hospitalId, filter]);
 
     useEffect(() => { load(); }, [load]);
@@ -491,39 +404,22 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!form.patientId || !form.doctorId || !form.medication || !form.dosage) { setFormError('Patient, doctor, medication and dosage are required.'); return; }
-        try {
-            setSubmitting(true); setFormError('');
-            await api.prescriptions.create(form);
-            setShowAdd(false);
-            setForm({ patientId: '', doctorId: '', medication: '', dosage: '', duration: '', instructions: '' });
-            setToast({ message: 'Prescription issued!', type: 'success' });
-            load();
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmitting(false); }
+        try { setSubmitting(true); setFormError(''); await api.prescriptions.create(form); setShowAdd(false); setForm({ patientId: '', doctorId: '', medication: '', dosage: '', duration: '', instructions: '' }); setToast({ message: 'Prescription issued!', type: 'success' }); load(); }
+        catch (err) { setFormError(err.message); } finally { setSubmitting(false); }
     };
 
     const updateStatus = async (id, status) => {
-        try {
-            await api.prescriptions.updateStatus(id, status);
-            setPrescriptions(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-            setToast({ message: `Prescription ${status}`, type: 'success' });
-        } catch (err) { setToast({ message: err.message, type: 'error' }); }
+        try { await api.prescriptions.updateStatus(id, status); setPrescriptions(prev => prev.map(r => r.id === id ? { ...r, status } : r)); setToast({ message: `Prescription ${status}`, type: 'success' }); }
+        catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this prescription?')) return;
-        try {
-            await api.prescriptions.delete(id);
-            setPrescriptions(prev => prev.filter(r => r.id !== id));
-            setToast({ message: 'Deleted.', type: 'success' });
-        } catch (err) { setToast({ message: err.message, type: 'error' }); }
+        try { await api.prescriptions.delete(id); setPrescriptions(prev => prev.filter(r => r.id !== id)); setToast({ message: 'Deleted.', type: 'success' }); }
+        catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = prescriptions.filter(rx =>
-        rx.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        rx.medication?.toLowerCase().includes(search.toLowerCase())
-    );
-
+    const filtered = prescriptions.filter(rx => rx.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || rx.medication?.toLowerCase().includes(search.toLowerCase()));
     const counts = { active: 0, completed: 0, cancelled: 0 };
     prescriptions.forEach(rx => { if (counts[rx.status] !== undefined) counts[rx.status]++; });
 
@@ -534,17 +430,9 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
         <div>
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Prescriptions</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{prescriptions.length} total prescriptions</p>
-                </div>
-                {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
-                        <Plus size={15} /> Issue Prescription
-                    </button>
-                )}
+                <div><h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Prescriptions</h1><p style={{ color: t.textSub, fontSize: 13 }}>{prescriptions.length} total prescriptions</p></div>
+                {canCreate && <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}><Plus size={15} /> Issue Prescription</button>}
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 20 }}>
                 {[{ label: 'Active', count: counts.active, color: EMERALD }, { label: 'Completed', count: counts.completed, color: BLUE }, { label: 'Cancelled', count: counts.cancelled, color: ROSE }].map(({ label, count, color }) => (
                     <div key={label} style={{ background: t.surface, borderRadius: 14, padding: '16px', border: `1px solid ${t.border}`, borderLeft: `3px solid ${color}` }}>
@@ -553,7 +441,6 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                     </div>
                 ))}
             </div>
-
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
                     <Search size={14} color={t.textMuted} />
@@ -565,41 +452,22 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                     ))}
                 </div>
             </div>
-
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ background: t.surface, borderRadius: 18, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead><tr style={{ background: t.cardAlt }}>{['Patient', 'Drug', 'Dosage', 'Doctor', 'Status', 'Actions'].map(h => <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
                         <tbody>
-                            {filtered.length === 0 ? (
-                                <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted }}>No prescriptions found</td></tr>
-                            ) : filtered.map((rx, i) => {
+                            {filtered.length === 0 ? <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted }}>No prescriptions found</td></tr>
+                            : filtered.map((rx, i) => {
                                 const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                                 return (
                                     <tr key={rx.id} style={{ borderBottom: `1px solid ${t.border}` }} onMouseEnter={e => e.currentTarget.style.background = t.hover} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                <div style={{ width: 30, height: 30, borderRadius: 8, background: color + '22', color, fontWeight: 700, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(rx.patient?.fullName)}</div>
-                                                <p style={{ fontWeight: 600, fontSize: 13 }}>{rx.patient?.fullName}</p>
-                                            </div>
-                                        </td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                <Pill size={13} color={ORANGE} />
-                                                <span style={{ fontSize: 13, fontWeight: 600 }}>{rx.medication}</span>
-                                            </div>
-                                        </td>
+                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: 8, background: color + '22', color, fontWeight: 700, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(rx.patient?.fullName)}</div><p style={{ fontWeight: 600, fontSize: 13 }}>{rx.patient?.fullName}</p></div></td>
+                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Pill size={13} color={ORANGE} /><span style={{ fontSize: 13, fontWeight: 600 }}>{rx.medication}</span></div></td>
                                         <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.dosage}</td>
                                         <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.doctor?.fullName}</td>
                                         <td style={{ padding: '12px 16px' }}><Badge status={rx.status} /></td>
-                                        <td style={{ padding: '12px 16px' }}>
-                                            <div style={{ display: 'flex', gap: 6 }}>
-                                                {rx.status === 'active' && canCreate && (
-                                                    <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: `${ORANGE}15`, border: 'none', borderRadius: 7, color: ORANGE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>
-                                                )}
-                                                {canCreate && <button onClick={() => handleDelete(rx.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>}
-                                            </div>
-                                        </td>
+                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', gap: 6 }}>{rx.status === 'active' && canCreate && <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: `${ORANGE}15`, border: 'none', borderRadius: 7, color: ORANGE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>}{canCreate && <button onClick={() => handleDelete(rx.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>}</div></td>
                                     </tr>
                                 );
                             })}
@@ -607,7 +475,6 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
                     </table>
                 </div>
             )}
-
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
@@ -637,8 +504,8 @@ function PrescriptionsSection({ t, hospitalId, isDark, accent, isMobile, role })
     );
 }
 
-/* ─── RecordsSection ─────────────────────────────────────────────────────────── */
-function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
+/* ─── RecordsSection ── */
+function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
     const [records, setRecords]   = useState([]);
     const [patients, setPatients] = useState([]);
     const [doctors, setDoctors]   = useState([]);
@@ -658,16 +525,9 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
         try {
             setLoading(true);
             const params = filter !== 'All' ? { recordType: filter } : {};
-            const [rRes, sRes, pRes] = await Promise.all([
-                api.records.list(hospitalId, params),
-                api.staff.list(hospitalId, { role: 'doctor' }),
-                api.patients.list(hospitalId),
-            ]);
-            setRecords(rRes.records || []);
-            setDoctors(sRes.staff || []);
-            setPatients(pRes.patients || []);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+            const [rRes, sRes, pRes] = await Promise.all([api.records.list(hospitalId, params), api.staff.list(hospitalId, { role: 'doctor' }), api.patients.list(hospitalId)]);
+            setRecords(rRes.records || []); setDoctors(sRes.staff || []); setPatients(pRes.patients || []);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     }, [hospitalId, filter]);
 
     useEffect(() => { load(); }, [load]);
@@ -675,31 +535,17 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
     const handleAdd = async (e) => {
         e.preventDefault();
         if (!form.patientId || !form.doctorId || !form.title) { setFormError('Patient, doctor and title are required.'); return; }
-        try {
-            setSubmitting(true); setFormError('');
-            await api.records.create(form);
-            setShowAdd(false);
-            setForm({ patientId: '', doctorId: '', recordType: 'lab_results', title: '', diagnosis: '', findings: '', notes: '' });
-            setToast({ message: 'Record saved!', type: 'success' });
-            load();
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmitting(false); }
+        try { setSubmitting(true); setFormError(''); await api.records.create(form); setShowAdd(false); setForm({ patientId: '', doctorId: '', recordType: 'lab_results', title: '', diagnosis: '', findings: '', notes: '' }); setToast({ message: 'Record saved!', type: 'success' }); load(); }
+        catch (err) { setFormError(err.message); } finally { setSubmitting(false); }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this record?')) return;
-        try {
-            await api.records.delete(id);
-            setRecords(prev => prev.filter(r => r.id !== id));
-            setToast({ message: 'Deleted.', type: 'success' });
-        } catch (err) { setToast({ message: err.message, type: 'error' }); }
+        try { await api.records.delete(id); setRecords(prev => prev.filter(r => r.id !== id)); setToast({ message: 'Deleted.', type: 'success' }); }
+        catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = records.filter(r =>
-        r.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        r.title?.toLowerCase().includes(search.toLowerCase())
-    );
-
+    const filtered = records.filter(r => r.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || r.title?.toLowerCase().includes(search.toLowerCase()));
     const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' };
     const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
@@ -707,17 +553,9 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
         <div>
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Medical Records</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records on file</p>
-                </div>
-                {canCreate && (
-                    <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}>
-                        <Plus size={15} /> Add Record
-                    </button>
-                )}
+                <div><h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Medical Records</h1><p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records on file</p></div>
+                {canCreate && <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}><Plus size={15} /> Add Record</button>}
             </div>
-
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
                     <Search size={14} color={t.textMuted} />
@@ -731,12 +569,10 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                     ))}
                 </div>
             </div>
-
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
-                    {filtered.length === 0 ? (
-                        <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No records found</div>
-                    ) : filtered.map((r, i) => {
+                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No records found</div>
+                    : filtered.map((r, i) => {
                         const tc = TYPE_COLORS[r.recordType] || TYPE_COLORS.other;
                         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         return (
@@ -763,7 +599,6 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                     })}
                 </div>
             )}
-
             {viewRec && (
                 <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
@@ -786,7 +621,6 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
                     </div>
                 </div>
             )}
-
             {showAdd && (
                 <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
@@ -817,44 +651,32 @@ function RecordsSection({ t, hospitalId, isDark, accent, isMobile, role }) {
     );
 }
 
-/* ─── HomeDashboard ──────────────────────────────────────────────────────────── */
+/* ─── HomeDashboard ── */
 function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isMobile }) {
-    const [stats, setStats]                   = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
-    const [recentAppointments, setRecent]     = useState([]);
-    const [loading, setLoading]               = useState(true);
+    const [stats, setStats]             = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
+    const [recentAppointments, setRecent] = useState([]);
+    const [loading, setLoading]         = useState(true);
     const hour     = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     useEffect(() => {
         if (!hospitalId) return;
-        Promise.all([
-            api.patients.list(hospitalId),
-            api.appointments.list(hospitalId, { limit: 5 }),
-            api.prescriptions.list(hospitalId),
-            api.records.list(hospitalId),
-        ]).then(([pRes, aRes, rxRes, rRes]) => {
-            setStats({ patients: (pRes.patients || []).length, appointments: (aRes.appointments || []).length, prescriptions: (rxRes.prescriptions || []).length, records: (rRes.records || []).length });
-            setRecent((aRes.appointments || []).slice(0, 4));
-        }).catch(console.error).finally(() => setLoading(false));
+        Promise.all([api.patients.list(hospitalId), api.appointments.list(hospitalId, { limit: 5 }), api.prescriptions.list(hospitalId), api.records.list(hospitalId)])
+            .then(([pRes, aRes, rxRes, rRes]) => {
+                setStats({ patients: (pRes.patients || []).length, appointments: (aRes.appointments || []).length, prescriptions: (rxRes.prescriptions || []).length, records: (rRes.records || []).length });
+                setRecent((aRes.appointments || []).slice(0, 4));
+            }).catch(console.error).finally(() => setLoading(false));
     }, [hospitalId]);
 
     const statCards = [
-        { label: 'Patients',      value: stats.patients,      icon: Users,    color: BLUE,    section: 'patients'      },
-        { label: 'Appointments',  value: stats.appointments,  icon: Calendar, color: EMERALD, section: 'appointments'  },
-        { label: 'Prescriptions', value: stats.prescriptions, icon: Pill,     color: VIOLET,  section: 'prescriptions' },
-        { label: 'Records',       value: stats.records,       icon: FileText, color: AMBER,   section: 'records'       },
-    ];
-
-    const quickActions = [
-        { label: 'Patients',      icon: Users,    section: 'patients'      },
-        { label: 'Appointments',  icon: Calendar, section: 'appointments'  },
-        { label: 'Prescriptions', icon: Pill,     section: 'prescriptions' },
-        { label: 'Records',       icon: FileText, section: 'records'       },
+        { label: 'Patients', value: stats.patients, icon: Users, color: BLUE, section: 'patients' },
+        { label: 'Appointments', value: stats.appointments, icon: Calendar, color: EMERALD, section: 'appointments' },
+        { label: 'Prescriptions', value: stats.prescriptions, icon: Pill, color: VIOLET, section: 'prescriptions' },
+        { label: 'Records', value: stats.records, icon: FileText, color: AMBER, section: 'records' },
     ];
 
     return (
         <div>
-            {/* Hero banner — uses role color for accent, Navy for shell */}
             <div style={{ background: isDark ? `linear-gradient(135deg,${roleMeta.accent}22,${roleMeta.accent2}11,transparent)` : `linear-gradient(135deg,${roleMeta.accent}12,${roleMeta.accent2}07,transparent)`, borderRadius: 24, padding: '28px', marginBottom: 24, border: `1px solid ${roleMeta.accent}33`, position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: -60, right: -40, width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,${ORANGE}14,transparent 70%)`, pointerEvents: 'none' }} />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
@@ -870,7 +692,6 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                     <div style={{ width: 76, height: 76, borderRadius: 22, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, color: '#fff', boxShadow: `0 8px 28px ${roleMeta.accent}44`, flexShrink: 0 }}>{initials(staff?.fullName || staff?.name)}</div>
                 </div>
             </div>
-
             {loading ? <LoadingState t={t} accent={ORANGE} /> : (
                 <>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12, marginBottom: 24 }}>
@@ -885,11 +706,10 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                             </div>
                         ))}
                     </div>
-
                     <div style={{ marginBottom: 24 }}>
                         <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text, marginBottom: 14 }}>Quick Actions</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10 }}>
-                            {quickActions.map(({ label, icon: Icon, section }) => (
+                            {statCards.map(({ label, icon: Icon, section }) => (
                                 <button key={section} onClick={() => onNavigate(section)} style={{ background: t.surface, borderRadius: 16, padding: '16px 12px', border: `1px solid ${t.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, transition: 'all 0.2s', fontFamily: 'inherit', boxShadow: t.shadow }}
                                     onMouseEnter={e => { e.currentTarget.style.borderColor = ORANGE + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = t.hover; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = t.surface; }}>
@@ -899,15 +719,12 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                             ))}
                         </div>
                     </div>
-
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                             <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Recent Appointments</h2>
                             <button onClick={() => onNavigate('appointments')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: ORANGE, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View all <ChevronRight size={14} /></button>
                         </div>
-                        {recentAppointments.length === 0 ? (
-                            <div style={{ padding: 30, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1.5px dashed ${t.border}` }}>No appointments yet</div>
-                        ) : (
+                        {recentAppointments.length === 0 ? <div style={{ padding: 30, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1.5px dashed ${t.border}` }}>No appointments yet</div> : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 {recentAppointments.map((a, i) => (
                                     <div key={a.id} style={{ background: t.surface, borderRadius: 14, padding: '14px 16px', border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -933,17 +750,17 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
     );
 }
 
-/* ─── MyProfile ──────────────────────────────────────────────────────────────── */
-function MyProfile({ t, staff, isDark, roleMeta }) {
+/* ─── MyProfile ── */
+function MyProfile({ t, staff, isDark, roleMeta, onChangePw }) {
     const info = [
-        { label: 'Full Name',   value: staff?.fullName || staff?.name || '—', icon: User,        color: NAVY    },
-        { label: 'Employee ID', value: staff?.employeeId || '—',              icon: Shield,      color: ORANGE  },
-        { label: 'Role',        value: roleMeta.label,                         icon: Stethoscope, color: roleMeta.accent },
-        { label: 'Department',  value: staff?.department || '—',               icon: BedDouble,   color: CYAN    },
-        { label: 'Specialty',   value: staff?.specialty || '—',                icon: Activity,    color: EMERALD },
-        { label: 'Phone',       value: staff?.phone || '—',                    icon: Phone,       color: AMBER   },
-        { label: 'Email',       value: staff?.email || '—',                    icon: Mail,        color: BLUE    },
-        { label: 'Status',      value: staff?.status || 'active',              icon: CheckCircle, color: EMERALD },
+        { label: 'Full Name',  value: staff?.fullName || staff?.name || '—', icon: User,        color: NAVY          },
+        { label: 'Employee ID',value: staff?.employeeId || '—',              icon: Shield,      color: ORANGE        },
+        { label: 'Role',       value: roleMeta.label,                         icon: Stethoscope, color: roleMeta.accent },
+        { label: 'Department', value: staff?.department || '—',               icon: BedDouble,   color: CYAN          },
+        { label: 'Specialty',  value: staff?.specialty || '—',                icon: Activity,    color: EMERALD       },
+        { label: 'Phone',      value: staff?.phone || '—',                    icon: Phone,       color: AMBER         },
+        { label: 'Email',      value: staff?.email || '—',                    icon: Mail,        color: BLUE          },
+        { label: 'Status',     value: staff?.status || 'active',              icon: CheckCircle, color: EMERALD       },
     ];
     return (
         <div>
@@ -954,10 +771,16 @@ function MyProfile({ t, staff, isDark, roleMeta }) {
                     <div>
                         <p style={{ fontSize: 11, fontWeight: 700, color: ORANGE, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Staff Profile · {roleMeta.label}</p>
                         <h1 style={{ fontSize: 'clamp(18px,3vw,26px)', fontWeight: 800, color: '#F5F7FA', letterSpacing: '-0.5px', marginBottom: 10 }}>{staff?.fullName || staff?.name || '—'}</h1>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                             {staff?.employeeId && <span style={{ background: `${ORANGE}28`, border: `1px solid ${ORANGE}44`, color: '#ffb399', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff.employeeId}</span>}
                             <span style={{ background: 'rgba(5,150,105,0.2)', border: '1px solid rgba(5,150,105,0.3)', color: '#6ee7a0', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>Active Staff</span>
                         </div>
+                        <button onClick={onChangePw}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid rgba(255,90,31,0.4)`, background: 'rgba(255,90,31,0.12)', color: ORANGE, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.2)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.12)'}>
+                            <Lock size={14} /> Change Password
+                        </button>
                     </div>
                 </div>
             </div>
@@ -977,7 +800,6 @@ function MyProfile({ t, staff, isDark, roleMeta }) {
     );
 }
 
-/* ─── Nav Config ─────────────────────────────────────────────────────────────── */
 const NAV_BY_ROLE = {
     doctor:       [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'prescriptions', label: 'Prescriptions', icon: Pill }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
     nurse:        [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
@@ -986,9 +808,6 @@ const NAV_BY_ROLE = {
     receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
 };
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   MAIN EXPORT
-══════════════════════════════════════════════════════════════════════════════ */
 export default function StaffDashboard() {
     const navigate = useNavigate();
     const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
@@ -998,16 +817,14 @@ export default function StaffDashboard() {
     const [mobileMenu, setMobileMenu] = useState(false);
     const [headerIn, setHeaderIn]     = useState(false);
     const [navMounted, setNavMounted] = useState(false);
+    const [showChangePw, setShowChangePw] = useState(false);
 
     useEffect(() => { setTimeout(() => setHeaderIn(true), 50); setTimeout(() => setNavMounted(true), 150); }, []);
     useEffect(() => { const check = () => setIsMobile(window.innerWidth < 768); check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check); }, []);
     useEffect(() => { const fn = () => setIsDark(localStorage.getItem('theme') === 'dark'); window.addEventListener('themeChange', fn); return () => window.removeEventListener('themeChange', fn); }, []);
     useEffect(() => {
-        try {
-            const raw = localStorage.getItem('user');
-            if (!raw) { navigate('/stafflogin'); return; }
-            setStaff(JSON.parse(raw));
-        } catch { navigate('/stafflogin'); }
+        try { const raw = localStorage.getItem('user'); if (!raw) { navigate('/stafflogin'); return; } setStaff(JSON.parse(raw)); }
+        catch { navigate('/stafflogin'); }
     }, []);
 
     const rawRole  = (staff?.role || 'doctor').toLowerCase().replace(/\s+/g, '_');
@@ -1015,41 +832,37 @@ export default function StaffDashboard() {
     const navItems = NAV_BY_ROLE[rawRole] || NAV_BY_ROLE.doctor;
     const BOTTOM_NAV = navItems.slice(0, 4);
     const MORE_NAV   = navItems.slice(4);
-    const t = isDark ? themes.dark : themes.light;
+    const t          = isDark ? themes.dark : themes.light;
     const hospitalId = staff?.hospital_id;
 
     const toggleTheme  = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
     const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/stafflogin'); };
-    const goTo = (id) => { setSection(id); setMobileMenu(false); };
+    const goTo         = (id) => { setSection(id); setMobileMenu(false); };
 
     const sharedProps = { t, isDark, accent: roleMeta.accent, roleMeta, hospitalId, isMobile, role: rawRole };
 
     const renderSection = () => {
         switch (section) {
-            case 'home':          return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients':      return <PatientsSection {...sharedProps} />;
+            case 'home':          return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients':      return <PatientsSection  {...sharedProps} />;
             case 'appointments':  return <AppointmentsSection {...sharedProps} />;
             case 'prescriptions': return <PrescriptionsSection {...sharedProps} />;
-            case 'records':       return <RecordsSection {...sharedProps} />;
-            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} />;
-            default:              return <HomeDashboard {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'records':       return <RecordsSection   {...sharedProps} />;
+            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
+            default:              return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
         }
     };
 
-    /* ── Sidebar ── */
     const SidebarContent = ({ forceFull = false }) => (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Logo */}
             <div style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${t.border}`, opacity: headerIn ? 1 : 0, transform: headerIn ? 'translateY(0)' : 'translateY(-8px)', transition: 'opacity 0.4s,transform 0.4s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {/* Orange brand dot */}
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${NAVY},${SOFT_NAVY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px rgba(10,26,63,0.4)`, border: `1px solid ${ORANGE}44` }}>
                         <Activity size={18} color={ORANGE} />
                     </div>
                     <div>
-                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>
-                            Apex<span style={{ color: ORANGE }}>HMS</span>
-                        </span>
+                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>Apex<span style={{ color: ORANGE }}>HMS</span></span>
                         <span style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{roleMeta.label}</span>
                     </div>
                 </div>
@@ -1084,8 +897,15 @@ export default function StaffDashboard() {
                 })}
             </nav>
 
-            {/* Logout */}
-            <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0 }}>
+            {/* Footer: Change Password + Logout */}
+            <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <button onClick={() => setShowChangePw(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid rgba(255,90,31,0.25)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontSize: 14, fontWeight: 600, width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.08)'}>
+                    <Lock size={18} style={{ flexShrink: 0 }} />
+                    <span>Change Password</span>
+                </button>
                 <button onClick={handleLogout}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: ROSE, fontSize: 14, fontWeight: 500, background: 'none', border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(225,29,72,0.08)'}
@@ -1131,9 +951,7 @@ export default function StaffDashboard() {
                 </>
             )}
 
-            {/* Main */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
-
                 {/* Header */}
                 <header style={{ height: isMobile ? 56 : 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 12px' : '0 20px', background: t.sidebar, borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, zIndex: 50, gap: 8, flexShrink: 0, animation: 'headerSlide 0.35s ease both 0.05s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -1147,7 +965,6 @@ export default function StaffDashboard() {
                         )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
-                        {/* Theme toggle — orange icon */}
                         <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}12`, border: `1px solid ${ORANGE}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: ORANGE }}>
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
                         </button>
@@ -1194,6 +1011,14 @@ export default function StaffDashboard() {
                     </nav>
                 )}
             </div>
+
+            {/* Change Password Modal — correctly at root level */}
+            {showChangePw && (
+                <ChangePasswordModal
+                    onClose={() => setShowChangePw(false)}
+                    isDark={isDark}
+                />
+            )}
         </div>
     );
 }
