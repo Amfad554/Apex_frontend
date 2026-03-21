@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, X, Eye, Trash2, Droplets, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
+import { UserPlus, Search, X, Eye, Trash2, Droplets, Loader, AlertCircle, Copy, CopyCheck, KeyRound, Phone, Mail, User, Heart, MapPin, Users } from 'lucide-react';
 import { patientsAPI } from '../../Services/api.js';
 import { saveCredential } from './CredentialsHistory.jsx';
 
@@ -51,7 +51,7 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
 
     const CopyBtn = ({ text, field, accent }) => (
         <button onClick={() => copy(text, field)}
-            style={{ background: copiedField === field ? 'rgba(16,185,129,0.15)' : `${accent}18`, border: `1px solid ${copiedField === field ? 'rgba(16,185,129,0.3)' : `${accent}44`}`, borderRadius: 8, cursor: 'pointer', color: copiedField === field ? '#10b981' : accent, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, transition: 'all .18s' }}>
+            style={{ background: copiedField === field ? 'rgba(16,185,129,0.15)' : `${accent}18`, border: `1px solid ${copiedField === field ? 'rgba(16,185,129,0.3)' : `${accent}44`}`, borderRadius: 8, cursor: 'pointer', color: copiedField === field ? '#10b981' : accent, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, transition: 'all .18s', whiteSpace: 'nowrap' }}>
             {copiedField === field ? <><CopyCheck size={13} />Copied</> : <><Copy size={13} />Copy</>}
         </button>
     );
@@ -66,7 +66,6 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
             <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-                {/* Header */}
                 <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -78,41 +77,34 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
                         </div>
                     </div>
                 </div>
-
                 <div style={{ padding: '20px 24px' }}>
                     <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
                         ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
                     </p>
-
                     <Row label="Patient Name">
                         <p style={{ fontSize: 14, fontWeight: 800, color: t.text }}>{credentials.fullName}</p>
                     </Row>
-
                     <Row label="Patient Number (Login ID)" accent={T.orange}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <p style={{ fontSize: 20, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
                             <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
                         </div>
                     </Row>
-
                     <Row label="Temporary Password" accent="#f59e0b">
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                            <p style={{ fontSize: 20, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
                             <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
                         </div>
                     </Row>
-
                     {credentials.email && (
                         <Row label="Email">
                             <p style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{credentials.email}</p>
                         </Row>
                     )}
-
                     <div style={{ background: `${T.navy}14`, border: `1px solid ${T.navy}28`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub, lineHeight: 1.8 }}>
                         <strong style={{ color: t.text }}>How to log in:</strong><br />
                         Go to <strong>/patientlogin</strong> → use <strong>email</strong> + password, or <strong>patient number</strong> as identifier.
                     </div>
-
                     <button onClick={onClose}
                         style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44` }}
                         onMouseEnter={e => { e.currentTarget.style.opacity='.88'; e.currentTarget.style.transform='translateY(-1px)'; }}
@@ -132,6 +124,135 @@ function CloseBtn({ onClick }) {
             onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,0.2)'; e.currentTarget.style.transform='rotate(90deg)'; }}
             onMouseLeave={e => { e.currentTarget.style.background='rgba(239,68,68,0.1)'; e.currentTarget.style.transform=''; }}
         ><X size={16} /></button>
+    );
+}
+
+// ─── View Patient Modal ───────────────────────────────────────────────────────
+function ViewPatientModal({ patient: p, t, isMobile, onClose }) {
+    if (!p) return null;
+
+    const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const avatarColor = AVATAR_COLORS[0]; // consistent orange for the viewed patient
+
+    // Info row — icon + label + value in a single horizontal band
+    const InfoRow = ({ icon: Icon, label, value, accent, mono }) => (
+        <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 14px',
+            background: accent ? `${accent}0d` : 'rgba(255,255,255,0.03)',
+            borderRadius: 12,
+            border: `1px solid ${accent ? `${accent}28` : t.border}`,
+        }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: accent ? `${accent}18` : 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={14} color={accent || 'rgba(255,255,255,0.4)'} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 10, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700, marginBottom: 2 }}>{label}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: accent || t.text, fontFamily: mono ? 'monospace' : 'inherit', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value || '—'}</p>
+            </div>
+        </div>
+    );
+
+    return (
+        <div
+            onClick={e => e.target === e.currentTarget && onClose()}
+            style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(0,0,0,0.72)',
+                zIndex: 9999,
+                overflowY: 'auto',
+                display: 'flex',
+                alignItems: isMobile ? 'flex-end' : 'center',   // slides up from bottom on mobile
+                justifyContent: 'center',
+                padding: isMobile ? 0 : 24,
+            }}
+        >
+            <div style={{
+                background: t.card,
+                borderRadius: isMobile ? '20px 20px 0 0' : 20,
+                width: '100%',
+                maxWidth: isMobile ? '100%' : 480,
+                border: `1.5px solid ${t.border}`,
+                boxShadow: '0 -8px 60px rgba(0,0,0,0.5)',
+                overflow: 'hidden',
+                // on mobile animate up from bottom
+                animation: isMobile ? 'slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both' : 'none',
+                maxHeight: isMobile ? '92vh' : 'none',
+                display: 'flex',
+                flexDirection: 'column',
+            }}>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }`}</style>
+
+                {/* ── Hero header ── */}
+                <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: isMobile ? '20px 20px 24px' : '22px 24px', flexShrink: 0 }}>
+                    {/* drag handle on mobile */}
+                    {isMobile && (
+                        <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.2)', margin: '0 auto 16px' }} />
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                            {/* Avatar */}
+                            <div style={{ width: isMobile ? 52 : 56, height: isMobile ? 52 : 56, borderRadius: 15, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `2px solid ${T.orange}44` }}>
+                                {avatar}
+                            </div>
+                            <div>
+                                <h2 style={{ fontWeight: 800, fontSize: isMobile ? 16 : 18, color: '#fff', marginBottom: 3 }}>{p.fullName}</h2>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: 12, color: T.orange, fontFamily: 'monospace', fontWeight: 700 }}>{p.patientNumber}</span>
+                                    <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
+                                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'capitalize' }}>{p.gender}</span>
+                                    {p.bloodGroup && (
+                                        <>
+                                            <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
+                                            <span style={{ fontSize: 12, color: T.orange, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                <Droplets size={11} />{p.bloodGroup}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <CloseBtn onClick={onClose} />
+                    </div>
+                </div>
+
+                {/* ── Scrollable body ── */}
+                <div style={{ padding: isMobile ? '16px' : '20px 24px', overflowY: 'auto', flex: 1 }}>
+
+                    {/* Contact section */}
+                    <p style={{ fontSize: 10, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Contact</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                        <InfoRow icon={Phone} label="Phone"  value={p.phone} />
+                        <InfoRow icon={Mail}  label="Email"  value={p.email || '—'} />
+                        <InfoRow icon={MapPin} label="Address" value={p.address} />
+                    </div>
+
+                    {/* Personal section */}
+                    <p style={{ fontSize: 10, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Personal</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                        <InfoRow icon={User}   label="Date of Birth" value={p.dateOfBirth ? new Date(p.dateOfBirth).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '—'} />
+                        <InfoRow icon={Heart}  label="Medical Conditions" value={p.medicalConditions || 'None recorded'} accent={p.medicalConditions ? '#f59e0b' : undefined} />
+                    </div>
+
+                    {/* Next of kin section */}
+                    {(p.nextOfKinName || p.nextOfKinPhone) && (
+                        <>
+                            <p style={{ fontSize: 10, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Next of Kin</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                                {p.nextOfKinName  && <InfoRow icon={Users} label="Name"  value={p.nextOfKinName} />}
+                                {p.nextOfKinPhone && <InfoRow icon={Phone} label="Phone" value={p.nextOfKinPhone} />}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Close button pinned at bottom */}
+                    <button onClick={onClose} style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44`, marginTop: 4 }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity='.88'; e.currentTarget.style.transform='translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.transform=''; }}
+                    >Close</button>
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -251,6 +372,11 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
             {credentials && (
                 <CredentialsModal credentials={credentials} t={t} isMobile={isMobile}
                     onClose={() => { setCredentials(null); showToast('Patient registered successfully!'); }} />
+            )}
+
+            {/* ── View Patient Modal (new component) ── */}
+            {viewPatient && (
+                <ViewPatientModal patient={viewPatient} t={t} isMobile={isMobile} onClose={() => setViewPatient(null)} />
             )}
 
             {/* ── Header ── */}
@@ -475,47 +601,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                                 >{submitting ? 'Registering…' : 'Register Patient'}</button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            )}
-
-            {/* ── View Patient Modal ── */}
-            {viewPatient && (
-                <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={modalOverlay}>
-                    <div style={modalBox(480)}>
-                        {/* header with navy bg */}
-                        <div style={{ padding:20, background:T.navy, borderBottom:`3px solid ${T.orange}`, display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderRadius:'20px 20px 0 0' }}>
-                            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                                <div style={{ width:50, height:50, borderRadius:14, background:`${T.orange}28`, color:T.orange, fontWeight:900, fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                                    {viewPatient.fullName?.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()}
-                                </div>
-                                <div>
-                                    <h2 style={{ fontWeight:800, fontSize:17, color:'#fff' }}>{viewPatient.fullName}</h2>
-                                    <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)' }}>{viewPatient.patientNumber}</p>
-                                </div>
-                            </div>
-                            <CloseBtn onClick={() => setViewPatient(null)} />
-                        </div>
-                        <div style={{ padding:20 }}>
-                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                                {[
-                                    { label:'Phone',       value:viewPatient.phone },
-                                    { label:'Email',       value:viewPatient.email || '—' },
-                                    { label:'Gender',      value:viewPatient.gender, cap:true },
-                                    { label:'Blood Group', value:viewPatient.bloodGroup || '—' },
-                                    { label:'Date of Birth', value:new Date(viewPatient.dateOfBirth).toLocaleDateString() },
-                                    { label:'Next of Kin', value:viewPatient.nextOfKinName || '—' },
-                                    { label:'Kin Phone',   value:viewPatient.nextOfKinPhone || '—' },
-                                    { label:'Conditions',  value:viewPatient.medicalConditions || '—' },
-                                    { label:'Address',     value:viewPatient.address, full:true },
-                                ].map(({ label, value, full, cap }) => (
-                                    <div key={label} style={{ gridColumn: full ? '1/-1' : 'auto', background:t.cardAlt, borderRadius:10, padding:'11px 13px', border:`1px solid ${t.border}` }}>
-                                        <p style={{ fontSize:10.5, color:t.textMuted, marginBottom:4, textTransform:'uppercase', letterSpacing:'0.07em', fontWeight:700 }}>{label}</p>
-                                        <p style={{ fontSize:13, fontWeight:700, color:t.text, textTransform: cap ? 'capitalize' : 'none' }}>{value}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}
