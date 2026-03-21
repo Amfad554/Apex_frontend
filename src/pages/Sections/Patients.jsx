@@ -5,17 +5,17 @@ import {
 } from 'lucide-react';
 
 /* ─── Brand Tokens ─────────────────────────────────────────────────────────── */
-const ORANGE  = '#FF5A1F';
+const ORANGE = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 
 const C = {
-    pageBg:    '#F5F7FA',
-    card:      '#ffffff',
-    border:    'rgba(10,26,63,0.08)',
-    text:      '#0A1A3F',
-    textSub:   '#374151',
+    pageBg: '#F5F7FA',
+    card: '#ffffff',
+    border: 'rgba(10,26,63,0.08)',
+    text: '#0A1A3F',
+    textSub: '#374151',
     textMuted: '#6B7280',
-    shadow:    '0 2px 12px rgba(10,26,63,0.06)',
+    shadow: '0 2px 12px rgba(10,26,63,0.06)',
 };
 
 /* Shared input class */
@@ -27,13 +27,13 @@ const INPUT_CLS =
 const LBL = { fontSize: 12, fontWeight: 600, color: C.text, display: 'block', marginBottom: 5 };
 
 export default function PatientManagement() {
-    const [patients, setPatients]               = useState([]);
-    const [loading, setLoading]                 = useState(true);
-    const [searchQuery, setSearchQuery]         = useState('');
-    const [showModal, setShowModal]             = useState(false);
-    const [modalMode, setModalMode]             = useState('add');
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [isMobile, setIsMobile]               = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '', dateOfBirth: '', gender: '', phone: '', email: '',
         address: '', bloodGroup: '', medicalConditions: '',
@@ -52,7 +52,7 @@ export default function PatientManagement() {
     const fetchPatients = async () => {
         try {
             const token = localStorage.getItem('token');
-            const user  = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('user'));
             const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
 
             if (!hospitalId) {
@@ -103,7 +103,7 @@ export default function PatientManagement() {
         if (!window.confirm(`Delete ${patientName}? This cannot be undone.`)) return;
         try {
             const token = localStorage.getItem('token');
-            const res   = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) { alert('Patient deleted'); fetchPatients(); }
@@ -113,17 +113,18 @@ export default function PatientManagement() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Submitting formData:', formData);
         try {
             const token = localStorage.getItem('token');
-            const user  = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('user'));
             const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
-            const url   = modalMode === 'add'
+            const url = modalMode === 'add'
                 ? `${import.meta.env.VITE_API_URL}/api/patients`
                 : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
             const res = await fetch(url, {
-                method:  modalMode === 'add' ? 'POST' : 'PUT',
+                method: modalMode === 'add' ? 'POST' : 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body:    JSON.stringify(formData)
+                body: JSON.stringify(formData)
             });
             if (res.ok) {
                 alert(modalMode === 'add' ? 'Patient registered!' : 'Patient updated!');
@@ -477,7 +478,7 @@ export default function PatientManagement() {
                                         <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange}
                                             className={`${INPUT_CLS} pl-8 pr-2`} style={{ color: formData.bloodGroup ? C.text : '#9CA3AF' }}>
                                             <option value="">Select</option>
-                                            {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g} value={g}>{g}</option>)}
+                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
                                         </select>
                                     </div>
                                 </div>
