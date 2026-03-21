@@ -1,38 +1,36 @@
 import { useState, useEffect } from 'react';
-import { Copy, CopyCheck, KeyRound, Search, X, Trash2, ChevronDown, Clock, Share2, RefreshCw } from 'lucide-react';
+import { CopyCheck, KeyRound, Search, X, Trash2, ChevronDown, Clock, Share2, RefreshCw } from 'lucide-react';
 
-/* ─── Brand Tokens ─────────────────────────────────────────────────────────────
-   Matches theme.js, HospitalDashboard, PatientDashboard exactly
-───────────────────────────────────────────────────────────────────────────── */
+/* ─── Brand Tokens — light surface, dark text ──────────────────────────────── */
 const ORANGE  = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 
-const T = {
-    bg:        '#0A1A3F',
-    card:      '#1F2A44',
-    cardAlt:   'rgba(255,255,255,0.03)',
-    border:    'rgba(255,255,255,0.07)',
-    shadow:    '0 4px 24px rgba(0,0,0,0.35)',
-    text:      '#F5F7FA',
-    textSub:   'rgba(245,247,250,0.80)',
-    textMuted: 'rgba(245,247,250,0.45)',
-    input:     'rgba(255,255,255,0.05)',
-    hover:     'rgba(255,255,255,0.06)',
+const C = {
+    pageBg:    '#F5F7FA',
+    card:      '#ffffff',
+    cardAlt:   '#F5F7FA',
+    border:    'rgba(10,26,63,0.08)',
+    shadow:    '0 2px 12px rgba(10,26,63,0.06)',
+    text:      '#0A1A3F',
+    textSub:   '#374151',
+    textMuted: '#6B7280',
+    input:     '#F5F7FA',
+    hover:     'rgba(255,90,31,0.04)',
 };
 
-/* ─── Semantic accent colours (non-brand, carry meaning) ───────────────────── */
+/* ─── Semantic role colours ────────────────────────────────────────────────── */
 const ROLE_COLOR = {
-    doctor:       '#18A8B5',
-    nurse:        '#34d399',
-    pharmacist:   '#a78bfa',
-    lab_staff:    '#fbbf24',
-    receptionist: '#f472b6',
+    doctor:       '#0E6E77',
+    nurse:        '#059669',
+    pharmacist:   '#6847C2',
+    lab_staff:    '#B45309',
+    receptionist: '#be185d',
     patient:      ORANGE,
 };
 
 const TYPE_STYLE = {
-    patient: { bg: 'rgba(255,90,31,0.12)',  text: ORANGE,     label: 'Patient' },
-    staff:   { bg: 'rgba(24,168,181,0.12)', text: '#18A8B5',  label: 'Staff'   },
+    patient: { bg: 'rgba(255,90,31,0.1)',  text: ORANGE,    label: 'Patient' },
+    staff:   { bg: 'rgba(14,110,119,0.1)', text: '#0E6E77', label: 'Staff'   },
 };
 
 /* ─── Storage helpers ──────────────────────────────────────────────────────── */
@@ -57,48 +55,21 @@ function deleteCredential(id) {
 
 function clearAll() { localStorage.removeItem(STORAGE_KEY); }
 
-/* ─── WhatsApp formatter ───────────────────────────────────────────────────── */
 function formatWhatsApp(c) {
     if (c.type === 'patient') {
-        return [
-            `🏥 *HMSCare – Patient Login Credentials*`,
-            `━━━━━━━━━━━━━━━━━━━━`,
-            `👤 *Name:* ${c.fullName}`,
-            `🔢 *Patient Number:* ${c.patientNumber}`,
-            c.email ? `📧 *Email:* ${c.email}` : null,
-            `🔑 *Temporary Password:* ${c.tempPassword}`,
-            `━━━━━━━━━━━━━━━━━━━━`,
-            `📱 *How to log in:*`,
-            `🔗 ${window.location.origin}/patientlogin`,
-            ``,
-            `⚠️ Please change your password after first login.`,
-        ].filter(Boolean).join('\n');
+        return [`🏥 *HMSCare – Patient Login Credentials*`,`━━━━━━━━━━━━━━━━━━━━`,`👤 *Name:* ${c.fullName}`,`🔢 *Patient Number:* ${c.patientNumber}`,c.email?`📧 *Email:* ${c.email}`:null,`🔑 *Temporary Password:* ${c.tempPassword}`,`━━━━━━━━━━━━━━━━━━━━`,`📱 *How to log in:*`,`🔗 ${window.location.origin}/patientlogin`,``,`⚠️ Please change your password after first login.`].filter(Boolean).join('\n');
     }
-    return [
-        `🏥 *HMSCare – Staff Login Credentials*`,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `👤 *Name:* ${c.fullName}`,
-        `🏷️ *Role:* ${c.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
-        c.employeeId ? `🔢 *Employee ID:* ${c.employeeId}` : null,
-        `📧 *Email:* ${c.email}`,
-        `🔑 *Temporary Password:* ${c.tempPassword}`,
-        c.hospitalName ? `🏨 *Hospital:* ${c.hospitalName}` : null,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `📱 *How to log in:*`,
-        `🔗 ${window.location.origin}/stafflogin`,
-        ``,
-        `⚠️ Please change your password after first login.`,
-    ].filter(Boolean).join('\n');
+    return [`🏥 *HMSCare – Staff Login Credentials*`,`━━━━━━━━━━━━━━━━━━━━`,`👤 *Name:* ${c.fullName}`,`🏷️ *Role:* ${c.role?.replace('_',' ').replace(/\b\w/g,l=>l.toUpperCase())}`,c.employeeId?`🔢 *Employee ID:* ${c.employeeId}`:null,`📧 *Email:* ${c.email}`,`🔑 *Temporary Password:* ${c.tempPassword}`,c.hospitalName?`🏨 *Hospital:* ${c.hospitalName}`:null,`━━━━━━━━━━━━━━━━━━━━`,`📱 *How to log in:*`,`🔗 ${window.location.origin}/stafflogin`,``,`⚠️ Please change your password after first login.`].filter(Boolean).join('\n');
 }
 
 /* ─── Main Component ───────────────────────────────────────────────────────── */
 export default function CredentialsHistory({ isMobile }) {
-    const [records,       setRecords]      = useState([]);
-    const [search,        setSearch]       = useState('');
-    const [filterType,    setFilterType]   = useState('all');
-    const [copiedId,      setCopiedId]     = useState(null);
-    const [expandedId,    setExpandedId]   = useState(null);
-    const [confirmClear,  setConfirmClear] = useState(false);
+    const [records,      setRecords]     = useState([]);
+    const [search,       setSearch]      = useState('');
+    const [filterType,   setFilterType]  = useState('all');
+    const [copiedId,     setCopiedId]    = useState(null);
+    const [expandedId,   setExpandedId]  = useState(null);
+    const [confirmClear, setConfirm]     = useState(false);
 
     const reload = () => setRecords(loadCredentials());
     useEffect(() => { reload(); }, []);
@@ -106,88 +77,63 @@ export default function CredentialsHistory({ isMobile }) {
     const filtered = records.filter(r => {
         const matchType = filterType === 'all' || r.type === filterType;
         const q = search.toLowerCase();
-        return matchType && (!q ||
-            r.fullName?.toLowerCase().includes(q) ||
-            r.email?.toLowerCase().includes(q) ||
-            r.patientNumber?.toLowerCase().includes(q) ||
-            r.employeeId?.toLowerCase().includes(q) ||
-            r.role?.toLowerCase().includes(q)
-        );
+        return matchType && (!q || r.fullName?.toLowerCase().includes(q) || r.email?.toLowerCase().includes(q) || r.patientNumber?.toLowerCase().includes(q) || r.employeeId?.toLowerCase().includes(q) || r.role?.toLowerCase().includes(q));
     });
 
     const fallbackCopy = (text, id) => {
         const el = document.createElement('textarea');
         el.value = text; el.style.cssText = 'position:fixed;opacity:0';
         document.body.appendChild(el); el.focus(); el.select();
-        try { document.execCommand('copy'); setCopiedId(id); setTimeout(() => setCopiedId(null), 2500); }
-        catch { alert('Copy failed:\n\n' + text); }
+        try { document.execCommand('copy'); setCopiedId(id); setTimeout(() => setCopiedId(null), 2500); } catch { alert('Copy failed:\n\n' + text); }
         document.body.removeChild(el);
     };
 
     const copyWhatsApp = (c) => {
         const text = formatWhatsApp(c);
         if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text)
-                .then(() => { setCopiedId(c.id); setTimeout(() => setCopiedId(null), 2500); })
-                .catch(() => fallbackCopy(text, c.id));
+            navigator.clipboard.writeText(text).then(() => { setCopiedId(c.id); setTimeout(() => setCopiedId(null), 2500); }).catch(() => fallbackCopy(text, c.id));
         } else { fallbackCopy(text, c.id); }
     };
 
     const remove = (id) => { deleteCredential(id); reload(); };
 
     const handleClearAll = () => {
-        if (confirmClear) { clearAll(); reload(); setConfirmClear(false); }
-        else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); }
+        if (confirmClear) { clearAll(); reload(); setConfirm(false); }
+        else { setConfirm(true); setTimeout(() => setConfirm(false), 3000); }
     };
 
     const timeAgo = (iso) => {
-        const diff = Date.now() - new Date(iso).getTime();
-        const m = Math.floor(diff / 60000);
-        if (m < 1) return 'just now';
-        if (m < 60) return `${m}m ago`;
-        const h = Math.floor(m / 60);
-        if (h < 24) return `${h}h ago`;
+        const diff = Date.now() - new Date(iso).getTime(), m = Math.floor(diff / 60000);
+        if (m < 1) return 'just now'; if (m < 60) return `${m}m ago`;
+        const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`;
         return `${Math.floor(h / 24)}d ago`;
     };
 
-    /* Ghost button shared style */
     const ghostBtn = (extra = {}) => ({
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '9px 14px', background: T.input,
-        border: `1px solid ${T.border}`, borderRadius: 10,
-        color: T.textSub, fontWeight: 600, fontSize: 13,
-        cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-        ...extra,
+        display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
+        background: C.card, border: `1px solid ${C.border}`, borderRadius: 10,
+        color: C.textSub, fontWeight: 600, fontSize: 13,
+        cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', ...extra,
     });
 
     return (
-        <div style={{ color: T.text, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
+        <div style={{ color: C.text, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');`}</style>
 
             {/* ── Header ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, gap: 12, flexWrap: 'wrap' }}>
                 <div>
                     <div style={{ width: 36, height: 4, borderRadius: 2, background: ORANGE, marginBottom: 10 }} />
-                    <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4, color: T.text }}>
-                        Credentials Log
-                    </h1>
-                    <p style={{ color: T.textSub, fontSize: 13 }}>
-                        {records.length} records saved · Copy &amp; send via WhatsApp anytime
-                    </p>
+                    <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4, color: C.text }}>Credentials Log</h1>
+                    <p style={{ color: C.textSub, fontSize: 13 }}>{records.length} records saved · Copy &amp; send via WhatsApp anytime</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={reload} style={ghostBtn()}
                         onMouseEnter={e => e.currentTarget.style.borderColor = ORANGE}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
-                    >
-                        <RefreshCw size={14} /> Refresh
-                    </button>
+                        onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+                    ><RefreshCw size={14} /> Refresh</button>
                     {records.length > 0 && (
-                        <button onClick={handleClearAll} style={ghostBtn({
-                            background:    confirmClear ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.08)',
-                            border:        `1px solid ${confirmClear ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.2)'}`,
-                            color:         '#ef4444',
-                        })}>
+                        <button onClick={handleClearAll} style={ghostBtn({ background: confirmClear ? 'rgba(239,68,68,0.08)' : C.card, border: `1px solid ${confirmClear ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)'}`, color: '#ef4444' })}>
                             <Trash2 size={14} /> {confirmClear ? 'Confirm Clear All' : 'Clear All'}
                         </button>
                     )}
@@ -196,33 +142,19 @@ export default function CredentialsHistory({ isMobile }) {
 
             {/* ── Filters ── */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexDirection: isMobile ? 'column' : 'row' }}>
-                {/* Search */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: T.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${T.border}`, flex: 1 }}>
-                    <Search size={14} color={T.textMuted} />
-                    <input
-                        placeholder="Search by name, email, ID…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        style={{ background: 'none', border: 'none', outline: 'none', color: T.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }}
-                    />
-                    {search && (
-                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textMuted, display: 'flex' }}>
-                            <X size={13} />
-                        </button>
-                    )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${C.border}`, flex: 1 }}>
+                    <Search size={14} color={C.textMuted} />
+                    <input placeholder="Search by name, email, ID…" value={search} onChange={e => setSearch(e.target.value)}
+                        style={{ background: 'none', border: 'none', outline: 'none', color: C.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, display: 'flex' }}><X size={13} /></button>}
                 </div>
-
-                {/* Type pills */}
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['all', 'patient', 'staff'].map(f => {
                         const active = filterType === f;
                         return (
                             <button key={f} onClick={() => setFilterType(f)}
-                                style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${active ? ORANGE : T.border}`, background: active ? 'rgba(255,90,31,0.15)' : T.card, color: active ? ORANGE : T.textSub, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', textTransform: 'capitalize', transition: 'all 0.15s' }}>
-                                {f === 'all'
-                                    ? `All (${records.length})`
-                                    : `${f.charAt(0).toUpperCase() + f.slice(1)}s (${records.filter(r => r.type === f).length})`
-                                }
+                                style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${active ? ORANGE : C.border}`, background: active ? 'rgba(255,90,31,0.08)' : C.card, color: active ? ORANGE : C.textSub, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', textTransform: 'capitalize', transition: 'all 0.15s' }}>
+                                {f === 'all' ? `All (${records.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)}s (${records.filter(r => r.type === f).length})`}
                             </button>
                         );
                     })}
@@ -231,16 +163,12 @@ export default function CredentialsHistory({ isMobile }) {
 
             {/* ── Empty state ── */}
             {filtered.length === 0 && (
-                <div style={{ padding: '60px 20px', textAlign: 'center', background: T.card, borderRadius: 20, border: `1.5px dashed ${T.border}` }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(255,90,31,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                <div style={{ padding: '60px 20px', textAlign: 'center', background: C.card, borderRadius: 20, border: `1.5px dashed ${C.border}` }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(255,90,31,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
                         <KeyRound size={22} color={ORANGE} strokeWidth={1.5} />
                     </div>
-                    <p style={{ fontSize: 14, color: T.textMuted, fontWeight: 600 }}>
-                        {search ? 'No matching records' : 'No credentials saved yet'}
-                    </p>
-                    <p style={{ fontSize: 12, color: T.textMuted, marginTop: 4 }}>
-                        Credentials will appear here after registering patients or staff
-                    </p>
+                    <p style={{ fontSize: 14, color: C.text, fontWeight: 600 }}>{search ? 'No matching records' : 'No credentials saved yet'}</p>
+                    <p style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>Credentials will appear here after registering patients or staff</p>
                 </div>
             )}
 
@@ -248,85 +176,76 @@ export default function CredentialsHistory({ isMobile }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {filtered.map(c => {
                     const ts         = TYPE_STYLE[c.type] || TYPE_STYLE.staff;
-                    const roleColor  = ROLE_COLOR[c.role] || ROLE_COLOR[c.type] || '#18A8B5';
+                    const roleColor  = ROLE_COLOR[c.role] || ROLE_COLOR[c.type] || '#0E6E77';
                     const isExpanded = expandedId === c.id;
                     const isCopied   = copiedId   === c.id;
-
                     return (
-                        <div key={c.id} style={{ background: T.card, borderRadius: 16, border: `1px solid ${T.border}`, overflow: 'hidden', transition: 'border-color 0.2s', boxShadow: T.shadow }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,90,31,0.3)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+                        <div key={c.id}
+                            style={{ background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, overflow: 'hidden', transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: C.shadow }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,90,31,0.3)'; e.currentTarget.style.boxShadow = C.shadowLg; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = C.shadow; }}
                         >
-                            {/* Row header */}
-                            <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
-                                onClick={() => setExpandedId(isExpanded ? null : c.id)}>
-                                <div style={{ width: 40, height: 40, borderRadius: 11, background: roleColor + '1A', color: roleColor, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {/* Row */}
+                            <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => setExpandedId(isExpanded ? null : c.id)}>
+                                <div style={{ width: 40, height: 40, borderRadius: 11, background: roleColor + '15', color: roleColor, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     {c.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
-                                        <p style={{ fontWeight: 700, fontSize: 14, color: T.text }}>{c.fullName}</p>
+                                        <p style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{c.fullName}</p>
                                         <span style={{ background: ts.bg, color: ts.text, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{ts.label}</span>
                                         {c.role && c.type === 'staff' && (
-                                            <span style={{ background: roleColor + '18', color: roleColor, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, textTransform: 'capitalize' }}>
+                                            <span style={{ background: roleColor + '12', color: roleColor, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, textTransform: 'capitalize' }}>
                                                 {c.role.replace('_', ' ')}
                                             </span>
                                         )}
                                     </div>
                                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                                        <span style={{ fontSize: 11, color: T.textMuted }}>{c.email || c.patientNumber}</span>
-                                        <span style={{ fontSize: 11, color: T.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                            <Clock size={10} />{timeAgo(c.createdAt)}
-                                        </span>
+                                        <span style={{ fontSize: 11, color: C.textMuted }}>{c.email || c.patientNumber}</span>
+                                        <span style={{ fontSize: 11, color: C.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10} />{timeAgo(c.createdAt)}</span>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                                    {/* WhatsApp copy button */}
-                                    <button
-                                        onClick={e => { e.stopPropagation(); copyWhatsApp(c); }}
-                                        title="Copy WhatsApp message"
-                                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 9, border: `1px solid ${isCopied ? 'rgba(16,185,129,0.4)' : 'rgba(255,90,31,0.35)'}`, background: isCopied ? 'rgba(16,185,129,0.1)' : 'rgba(255,90,31,0.1)', color: isCopied ? '#10b981' : ORANGE, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                                    <button onClick={e => { e.stopPropagation(); copyWhatsApp(c); }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 9, border: `1px solid ${isCopied ? 'rgba(5,150,105,0.35)' : 'rgba(255,90,31,0.3)'}`, background: isCopied ? 'rgba(5,150,105,0.08)' : 'rgba(255,90,31,0.08)', color: isCopied ? '#059669' : ORANGE, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                                         {isCopied ? <><CopyCheck size={13} /> Copied!</> : <><Share2 size={13} /> WhatsApp</>}
                                     </button>
-                                    {/* Delete */}
                                     <button onClick={e => { e.stopPropagation(); remove(c.id); }}
-                                        style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-                                    >
-                                        <Trash2 size={13} />
-                                    </button>
-                                    <ChevronDown size={15} color={T.textMuted} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+                                        style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.07)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.07)'}
+                                    ><Trash2 size={13} /></button>
+                                    <ChevronDown size={15} color={C.textMuted} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
                                 </div>
                             </div>
 
-                            {/* Expanded detail */}
+                            {/* Expanded */}
                             {isExpanded && (
-                                <div style={{ borderTop: `1px solid ${T.border}`, padding: '14px 16px', background: 'rgba(255,255,255,0.02)' }}>
+                                <div style={{ borderTop: `1px solid ${C.border}`, padding: '14px 16px', background: C.cardAlt }}>
                                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8, marginBottom: 12 }}>
                                         {[
-                                            c.type === 'patient' && { label: 'Patient Number', value: c.patientNumber, mono: true, color: '#18A8B5' },
-                                            c.type === 'staff' && c.employeeId && { label: 'Employee ID', value: c.employeeId, mono: true, color: '#18A8B5' },
+                                            c.type === 'patient' && { label: 'Patient Number', value: c.patientNumber, mono: true, color: '#0E6E77' },
+                                            c.type === 'staff' && c.employeeId && { label: 'Employee ID', value: c.employeeId, mono: true, color: '#0E6E77' },
                                             { label: 'Email', value: c.email || '—' },
                                             { label: 'Password', value: c.tempPassword, mono: true, color: ORANGE, sensitive: true },
                                             c.hospitalName && { label: 'Hospital', value: c.hospitalName },
                                             { label: 'Registered', value: new Date(c.createdAt).toLocaleString() },
                                         ].filter(Boolean).map(({ label, value, mono, color, sensitive }) => (
-                                            <div key={label} style={{ background: sensitive ? 'rgba(255,90,31,0.07)' : T.cardAlt, borderRadius: 10, padding: '10px 13px', border: `1px solid ${sensitive ? 'rgba(255,90,31,0.22)' : T.border}` }}>
-                                                <p style={{ fontSize: 10, color: T.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
-                                                <p style={{ fontSize: mono ? 15 : 13, fontWeight: 700, color: color || T.text, fontFamily: mono ? 'monospace' : 'inherit', letterSpacing: mono ? '0.08em' : 'normal' }}>{value}</p>
+                                            <div key={label} style={{ background: sensitive ? 'rgba(255,90,31,0.06)' : C.card, borderRadius: 10, padding: '10px 13px', border: `1px solid ${sensitive ? 'rgba(255,90,31,0.2)' : C.border}` }}>
+                                                <p style={{ fontSize: 10, color: C.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</p>
+                                                <p style={{ fontSize: mono ? 15 : 13, fontWeight: 700, color: color || C.text, fontFamily: mono ? 'monospace' : 'inherit', letterSpacing: mono ? '0.08em' : 'normal' }}>{value}</p>
                                             </div>
                                         ))}
                                     </div>
 
                                     {/* WhatsApp preview */}
-                                    <div style={{ background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.18)', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
-                                        <p style={{ fontSize: 11, color: '#25d366', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>WhatsApp Message Preview</p>
-                                        <pre style={{ fontSize: 12, color: T.textSub, lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{formatWhatsApp(c)}</pre>
+                                    <div style={{ background: 'rgba(37,211,102,0.05)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
+                                        <p style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>WhatsApp Message Preview</p>
+                                        <pre style={{ fontSize: 12, color: C.textSub, lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{formatWhatsApp(c)}</pre>
                                     </div>
 
                                     <button onClick={() => copyWhatsApp(c)}
-                                        style={{ width: '100%', padding: 10, background: isCopied ? 'rgba(16,185,129,0.15)' : `linear-gradient(135deg,${ORANGE} 0%,#FF8C55 100%)`, border: isCopied ? '1px solid rgba(16,185,129,0.3)' : 'none', borderRadius: 10, color: isCopied ? '#10b981' : '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, transition: 'all 0.2s' }}>
+                                        style={{ width: '100%', padding: 10, background: isCopied ? 'rgba(5,150,105,0.1)' : `linear-gradient(135deg,${ORANGE} 0%,#FF8C55 100%)`, border: isCopied ? '1px solid rgba(5,150,105,0.3)' : 'none', borderRadius: 10, color: isCopied ? '#059669' : '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, transition: 'all 0.2s' }}>
                                         {isCopied ? <><CopyCheck size={15} /> Copied to clipboard!</> : <><Share2 size={15} /> Copy WhatsApp Message</>}
                                     </button>
                                 </div>
