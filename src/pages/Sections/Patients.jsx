@@ -52,14 +52,29 @@ export default function PatientManagement() {
         try {
             const token = localStorage.getItem('token');
             const user  = JSON.parse(localStorage.getItem('user'));
-            if (!user?.id) return;
-            const res = await fetch(
+
+            if (!user?.id) {
+                console.error('No hospital ID found');
+                return;
+            }
+
+            const response = await fetch(
                 `${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { 'Authorization': `Bearer ${token}` } }
             );
-            if (res.ok) { const data = await res.json(); setPatients(data.patients); }
-        } catch (e) { console.error(e); }
-        finally { setLoading(false); }
+
+            if (response.ok) {
+                const data = await response.json();
+                // handle both { patients: [...] } and direct array responses
+                setPatients(Array.isArray(data) ? data : (data.patients || []));
+            } else {
+                console.error('Failed to fetch patients');
+            }
+        } catch (error) {
+            console.error('Error fetching patients:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddPatient = () => {
