@@ -98,7 +98,7 @@ export default function PatientManagement() {
 
                 // ── Save to credentials log so it appears in Credentials History ──
                 if (modalMode === 'add' && data.tempPassword) {
-                    const { saveCredential } = await import('./CredentialsHistory');
+                    import { saveCredential } from './sections/CredentialsHistory';
                     saveCredential({
                         type: 'patient',
                         fullName: data.patient?.full_name || formData.fullName,
