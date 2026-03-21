@@ -141,7 +141,7 @@ function LoadingState({ t, accent }) {
     );
 }
 
-/* ─── PatientsSection ── */
+/* ─── PatientsSection ── gfd*/
 function PatientsSection({ t, hospitalId, accent }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
