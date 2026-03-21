@@ -7,6 +7,7 @@ import {
   Eye, Zap, Bell, Shield, Thermometer, Wind, ChevronRight
 } from 'lucide-react';
 import ChangePasswordModal from '../Components/ChangePasswordModal';
+import NotificationsPanel from '../Components/NotificationsPanel';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
@@ -28,13 +29,13 @@ const patientApi = {
     fetch(`${BASE_URL}/api/patients/detail/${patientId}`, { headers: authHeaders() }).then(handle),
 };
 
-const ORANGE  = '#FF5A1F';
+const ORANGE = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 const EMERALD = '#059669';
-const AMBER   = '#d97706';
-const ROSE    = '#e11d48';
-const CYAN    = '#0891b2';
-const INDIGO  = '#4f46e5';
+const AMBER = '#d97706';
+const ROSE = '#e11d48';
+const CYAN = '#0891b2';
+const INDIGO = '#4f46e5';
 
 const T = {
   dark: {
@@ -58,18 +59,18 @@ const T = {
 };
 
 const STATUS_MAP = {
-  scheduled: { bg: 'rgba(217,119,6,0.12)',  text: AMBER,   dot: AMBER,   label: 'Scheduled' },
-  completed: { bg: 'rgba(5,150,105,0.12)',   text: EMERALD, dot: EMERALD, label: 'Completed' },
-  cancelled: { bg: 'rgba(225,29,72,0.12)',   text: ROSE,    dot: ROSE,    label: 'Cancelled' },
-  active:    { bg: 'rgba(5,150,105,0.12)',   text: EMERALD, dot: EMERALD, label: 'Active'    },
-  no_show:   { bg: 'rgba(107,114,128,0.12)', text: '#6b7280', dot: '#6b7280', label: 'No Show' },
+  scheduled: { bg: 'rgba(217,119,6,0.12)', text: AMBER, dot: AMBER, label: 'Scheduled' },
+  completed: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Completed' },
+  cancelled: { bg: 'rgba(225,29,72,0.12)', text: ROSE, dot: ROSE, label: 'Cancelled' },
+  active: { bg: 'rgba(5,150,105,0.12)', text: EMERALD, dot: EMERALD, label: 'Active' },
+  no_show: { bg: 'rgba(107,114,128,0.12)', text: '#6b7280', dot: '#6b7280', label: 'No Show' },
 };
 
 const RECORD_TYPES = {
-  lab_results:  { label: 'Lab Results',  color: CYAN   },
-  consultation: { label: 'Consultation', color: ORANGE  },
-  imaging:      { label: 'Imaging',      color: INDIGO  },
-  other:        { label: 'Other',        color: '#6b7280' },
+  lab_results: { label: 'Lab Results', color: CYAN },
+  consultation: { label: 'Consultation', color: ORANGE },
+  imaging: { label: 'Imaging', color: INDIGO },
+  other: { label: 'Other', color: '#6b7280' },
 };
 
 const initials = (name) =>
@@ -117,10 +118,10 @@ function Err({ msg, t }) {
 
 /* ─── Overview ── */
 function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
-  const [stats, setStats]        = useState({ appointments: 0, prescriptions: 0, records: 0 });
+  const [stats, setStats] = useState({ appointments: 0, prescriptions: 0, records: 0 });
   const [recentAppts, setRecent] = useState([]);
-  const [loading, setLoading]    = useState(true);
-  const hour     = new Date().getHours();
+  const [loading, setLoading] = useState(true);
+  const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   useEffect(() => {
@@ -137,17 +138,17 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
   }, [hospitalId, patient?.id]);
 
   const vitals = [
-    { label: 'Heart Rate',     value: '—', unit: 'bpm',  icon: Heart,       color: ROSE   },
-    { label: 'Blood Pressure', value: '—', unit: 'mmHg', icon: Activity,    color: ORANGE },
-    { label: 'Temperature',    value: '—', unit: '°C',   icon: Thermometer, color: AMBER  },
-    { label: 'O₂ Saturation',  value: '—', unit: '%',    icon: Wind,        color: INDIGO },
+    { label: 'Heart Rate', value: '—', unit: 'bpm', icon: Heart, color: ROSE },
+    { label: 'Blood Pressure', value: '—', unit: 'mmHg', icon: Activity, color: ORANGE },
+    { label: 'Temperature', value: '—', unit: '°C', icon: Thermometer, color: AMBER },
+    { label: 'O₂ Saturation', value: '—', unit: '%', icon: Wind, color: INDIGO },
   ];
 
   const quickActions = [
-    { label: 'Appointments',   icon: Calendar, color: ORANGE, section: 'appointments', count: stats.appointments  },
-    { label: 'Medical Records', icon: FileText, color: INDIGO, section: 'records',     count: stats.records       },
-    { label: 'Prescriptions',  icon: Pill,     color: EMERALD, section: 'prescriptions', count: stats.prescriptions },
-    { label: 'My Profile',     icon: User,     color: AMBER,  section: 'profile',      count: null               },
+    { label: 'Appointments', icon: Calendar, color: ORANGE, section: 'appointments', count: stats.appointments },
+    { label: 'Medical Records', icon: FileText, color: INDIGO, section: 'records', count: stats.records },
+    { label: 'Prescriptions', icon: Pill, color: EMERALD, section: 'prescriptions', count: stats.prescriptions },
+    { label: 'My Profile', icon: User, color: AMBER, section: 'profile', count: null },
   ];
 
   return (
@@ -246,10 +247,10 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
 
 /* ─── Appointments ── */
 function MyAppointments({ t, patient, hospitalId }) {
-  const [items, setItems]     = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
-  const [filter, setFilter]   = useState('all');
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -319,11 +320,11 @@ function MyAppointments({ t, patient, hospitalId }) {
 
 /* ─── Medical Records ── */
 function MyRecords({ t, patient, hospitalId }) {
-  const [items, setItems]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
-  const [filter, setFilter]     = useState('All');
+  const [filter, setFilter] = useState('All');
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -409,9 +410,9 @@ function MyRecords({ t, patient, hospitalId }) {
 
 /* ─── Prescriptions ── */
 function MyPrescriptions({ t, patient, hospitalId }) {
-  const [items, setItems]     = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -422,7 +423,7 @@ function MyPrescriptions({ t, patient, hospitalId }) {
   useEffect(() => { load(); }, [load]);
 
   const activeRx = items.filter(r => r.status?.toLowerCase() === 'active');
-  const otherRx  = items.filter(r => r.status?.toLowerCase() !== 'active');
+  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active');
 
   const RxCard = ({ rx, i }) => (
     <div style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
@@ -485,17 +486,17 @@ function MyPrescriptions({ t, patient, hospitalId }) {
 /* ─── Profile ── */
 function MyProfile({ t, patient, isDark, onChangePw }) {
   const info = [
-    { label: 'Full Name',          value: patient?.fullName || '—',          icon: User,     color: ORANGE  },
-    { label: 'Patient ID',         value: patient?.patientNumber || '—',     icon: Shield,   color: INDIGO  },
-    { label: 'Blood Group',        value: patient?.bloodGroup || '—',        icon: Droplets, color: ROSE    },
-    { label: 'Gender',             value: patient?.gender || '—',            icon: User,     color: ORANGE2 },
-    { label: 'Date of Birth',      value: patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—', icon: Activity, color: AMBER },
-    { label: 'Phone',              value: patient?.phone || '—',             icon: Phone,    color: EMERALD },
-    { label: 'Email',              value: patient?.email || '—',             icon: Mail,     color: INDIGO  },
-    { label: 'Address',            value: patient?.address || '—',           icon: MapPin,   color: AMBER   },
+    { label: 'Full Name', value: patient?.fullName || '—', icon: User, color: ORANGE },
+    { label: 'Patient ID', value: patient?.patientNumber || '—', icon: Shield, color: INDIGO },
+    { label: 'Blood Group', value: patient?.bloodGroup || '—', icon: Droplets, color: ROSE },
+    { label: 'Gender', value: patient?.gender || '—', icon: User, color: ORANGE2 },
+    { label: 'Date of Birth', value: patient?.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—', icon: Activity, color: AMBER },
+    { label: 'Phone', value: patient?.phone || '—', icon: Phone, color: EMERALD },
+    { label: 'Email', value: patient?.email || '—', icon: Mail, color: INDIGO },
+    { label: 'Address', value: patient?.address || '—', icon: MapPin, color: AMBER },
     { label: 'Medical Conditions', value: patient?.medicalConditions || 'None listed', icon: Activity, color: ROSE },
-    { label: 'Next of Kin',        value: patient?.nextOfKinName || '—',     icon: User,     color: CYAN    },
-    { label: 'Kin Phone',          value: patient?.nextOfKinPhone || '—',    icon: Phone,    color: CYAN    },
+    { label: 'Next of Kin', value: patient?.nextOfKinName || '—', icon: User, color: CYAN },
+    { label: 'Kin Phone', value: patient?.nextOfKinPhone || '—', icon: Phone, color: CYAN },
   ];
 
   return (
@@ -540,23 +541,24 @@ function MyProfile({ t, patient, isDark, onChangePw }) {
 }
 
 const NAV = [
-  { id: 'overview',      label: 'Home',          icon: Home     },
-  { id: 'appointments',  label: 'Appointments',  icon: Calendar },
-  { id: 'records',       label: 'Records',       icon: FileText },
-  { id: 'prescriptions', label: 'Prescriptions', icon: Pill     },
-  { id: 'profile',       label: 'Profile',       icon: User     },
+  { id: 'overview', label: 'Home', icon: Home },
+  { id: 'appointments', label: 'Appointments', icon: Calendar },
+  { id: 'records', label: 'Records', icon: FileText },
+  { id: 'prescriptions', label: 'Prescriptions', icon: Pill },
+  { id: 'profile', label: 'Profile', icon: User },
 ];
 
 export default function PatientDashboard() {
   const navigate = useNavigate();
-  const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
-  const [patient, setPatient]       = useState(null);
-  const [section, setSection]       = useState('overview');
-  const [isMobile, setIsMobile]     = useState(false);
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [patient, setPatient] = useState(null);
+  const [section, setSection] = useState('overview');
+  const [isMobile, setIsMobile] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
 
-  const t          = isDark ? T.dark : T.light;
+  const t = isDark ? T.dark : T.light;
   const hospitalId = patient?.hospital_id;
 
   useEffect(() => { const fn = () => setIsDark(localStorage.getItem('theme') === 'dark'); window.addEventListener('themeChange', fn); return () => window.removeEventListener('themeChange', fn); }, []);
@@ -566,24 +568,24 @@ export default function PatientDashboard() {
     catch { navigate('/patientlogin'); }
   }, []);
 
-  const toggleTheme  = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
+  const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
   const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/patientlogin'); };
-  const goTo         = (id) => { setSection(id); setMobileMenu(false); };
+  const goTo = (id) => { setSection(id); setMobileMenu(false); };
 
   const sectionProps = { t, patient, isDark, hospitalId };
 
   const renderSection = () => {
     switch (section) {
-      case 'overview':      return <Overview         {...sectionProps} onNavigate={goTo} />;
-      case 'appointments':  return <MyAppointments   {...sectionProps} />;
-      case 'records':       return <MyRecords        {...sectionProps} />;
+      case 'overview': return <Overview         {...sectionProps} onNavigate={goTo} />;
+      case 'appointments': return <MyAppointments   {...sectionProps} />;
+      case 'records': return <MyRecords        {...sectionProps} />;
       case 'prescriptions': return <MyPrescriptions  {...sectionProps} />;
-      case 'profile':       return <MyProfile        {...sectionProps} onChangePw={() => setShowChangePw(true)} />;
-      default:              return <Overview         {...sectionProps} onNavigate={goTo} />;
+      case 'profile': return <MyProfile        {...sectionProps} onChangePw={() => setShowChangePw(true)} />;
+      default: return <Overview         {...sectionProps} onNavigate={goTo} />;
     }
   };
 
-  const av    = initials(patient?.fullName);
+  const av = initials(patient?.fullName);
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   const SidebarContent = ({ forceFull = false }) => (
@@ -712,12 +714,11 @@ export default function PatientDashboard() {
                 {isDark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             )}
-            <div style={{ position: 'relative' }}>
-              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>
-                <Bell size={16} />
-              </button>
-              <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: ROSE, border: `2px solid ${t.sidebar}` }} />
-            </div>
+            <NotificationsPanel
+              isDark={isDark}
+              onNavigate={goTo}
+              onCountChange={() => { }}
+            />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>{av}</div>
               {!isMobile && (

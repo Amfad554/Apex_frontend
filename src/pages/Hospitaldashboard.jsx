@@ -6,29 +6,29 @@ import {
   Menu, ChevronDown, X, MoreHorizontal, KeyRound
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
-
-import Patients          from './Sections/Patients.jsx';
-import Appointments      from './Sections/Appointments.jsx';
-import Staff             from './Sections/Staff.jsx';
-import Pharmacy          from './Sections/Pharmacy.jsx';
-import RecordsSection    from './Sections/Recordssection.jsx';
-import DashSettings      from './Sections/Settings.jsx';
-import DashboardHome     from './Sections/Dashboardhome.jsx';
+import NotificationsPanel from '../Components/NotificationsPanel';
+import Patients from './Sections/Patients.jsx';
+import Appointments from './Sections/Appointments.jsx';
+import Staff from './Sections/Staff.jsx';
+import Pharmacy from './Sections/Pharmacy.jsx';
+import RecordsSection from './Sections/Recordssection.jsx';
+import DashSettings from './Sections/Settings.jsx';
+import DashboardHome from './Sections/Dashboardhome.jsx';
 import CredentialsHistory from './Sections/CredentialsHistory.jsx';
 
 const NAV_ITEMS = [
-  { id: 'dashboard',   icon: Home,        label: 'Dashboard'       },
-  { id: 'patients',    icon: Users,       label: 'Patients'        },
-  { id: 'appointments',icon: Calendar,    label: 'Appointments'    },
-  { id: 'staff',       icon: Stethoscope, label: 'Staff'           },
-  { id: 'pharmacy',    icon: Pill,        label: 'Pharmacy'        },
-  { id: 'records',     icon: FileText,    label: 'Records'         },
-  { id: 'settings',    icon: Settings,    label: 'Settings'        },
-  { id: 'credentials', icon: KeyRound,    label: 'Credentials Log' },
+  { id: 'dashboard', icon: Home, label: 'Dashboard' },
+  { id: 'patients', icon: Users, label: 'Patients' },
+  { id: 'appointments', icon: Calendar, label: 'Appointments' },
+  { id: 'staff', icon: Stethoscope, label: 'Staff' },
+  { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
+  { id: 'records', icon: FileText, label: 'Records' },
+  { id: 'settings', icon: Settings, label: 'Settings' },
+  { id: 'credentials', icon: KeyRound, label: 'Credentials Log' },
 ];
 
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
-const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
+const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
 
 /* ─── Active pip ─────────────────────────────────────────────────────────────── */
 function ActivePill() {
@@ -43,20 +43,21 @@ function ActivePill() {
 
 export default function HospitalDashboard() {
   const navigate = useNavigate();
-  const [isDark, setIsDark]           = useState(() => localStorage.getItem('theme') === 'dark');
-  const [activeSection, setActive]    = useState('dashboard');
-  const [transitioning, setTrans]     = useState(false);
-  const [sidebarOpen, setSidebar]     = useState(true);
-  const [mobileSidebar, setMobile]    = useState(false);
-  const [moreDrawer, setMoreDrawer]   = useState(false);
-  const [hospital, setHospital]       = useState(null);
-  const [searchQuery, setSearch]      = useState('');
-  const [searchOpen, setSearchOpen]   = useState(false);
-  const [notifications]               = useState(3);
-  const [isMobile, setIsMobile]       = useState(false);
-  const [isTablet, setIsTablet]       = useState(false);
-  const [headerIn, setHeaderIn]       = useState(false);
-  const [navMounted, setNavMounted]   = useState(false);
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeSection, setActive] = useState('dashboard');
+  const [transitioning, setTrans] = useState(false);
+  const [sidebarOpen, setSidebar] = useState(true);
+  const [mobileSidebar, setMobile] = useState(false);
+  const [moreDrawer, setMoreDrawer] = useState(false);
+  const [hospital, setHospital] = useState(null);
+  const [searchQuery, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notifications] = useState(3);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [headerIn, setHeaderIn] = useState(false);
+  const [navMounted, setNavMounted] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
 
   const t = isDark ? themes.dark : themes.light;
 
@@ -116,15 +117,15 @@ export default function HospitalDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'dashboard':    return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients':     return <Patients        {...sectionProps} />;
+      case 'dashboard': return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients': return <Patients        {...sectionProps} />;
       case 'appointments': return <Appointments    {...sectionProps} />;
-      case 'staff':        return <Staff           {...sectionProps} />;
-      case 'pharmacy':     return <Pharmacy        {...sectionProps} />;
-      case 'records':      return <RecordsSection  {...sectionProps} />;
-      case 'settings':     return <DashSettings    {...sectionProps} />;
-      case 'credentials':  return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-      default:             return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
+      case 'staff': return <Staff           {...sectionProps} />;
+      case 'pharmacy': return <Pharmacy        {...sectionProps} />;
+      case 'records': return <RecordsSection  {...sectionProps} />;
+      case 'settings': return <DashSettings    {...sectionProps} />;
+      case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
+      default: return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
     }
   };
 
@@ -477,15 +478,11 @@ export default function HospitalDashboard() {
             </button>
 
             {/* Notifications */}
-            <div style={{ position: 'relative' }}>
-              <button style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              ><Bell size={16} /></button>
-              {notifications > 0 && (
-                <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: ACCENT.red, border: `2px solid ${t.sidebar}`, animation: 'badgePulse 2s ease-in-out infinite' }} />
-              )}
-            </div>
+            <NotificationsPanel
+              isDark={isDark}
+              onNavigate={goTo}
+              onCountChange={() => { }}
+            />
 
             {/* Avatar + name */}
             <div

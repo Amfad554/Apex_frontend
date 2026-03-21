@@ -13,6 +13,7 @@ import {
     Trash2
 } from 'lucide-react';
 import ChangePasswordModal from '../Components/ChangePasswordModal';
+import NotificationsPanel from '../Components/NotificationsPanel';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
@@ -64,19 +65,19 @@ const api = {
     },
 };
 
-const NAVY       = '#0A1A3F';
-const SOFT_NAVY  = '#1F2A44';
-const ORANGE     = '#FF5A1F';
+const NAVY = '#0A1A3F';
+const SOFT_NAVY = '#1F2A44';
+const ORANGE = '#FF5A1F';
 const LIGHT_GRAY = '#F5F7FA';
 const BLUE = '#3b5bdb', BLUE2 = '#4c6ef5', EMERALD = '#059669', AMBER = '#d97706',
     ROSE = '#e11d48', CYAN = '#0891b2', VIOLET = '#7c3aed';
 
 const ROLE_META = {
-    doctor:       { label: 'Doctor',       accent: BLUE,    accent2: BLUE2,     icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR'  },
-    nurse:        { label: 'Nurse',        accent: EMERALD, accent2: '#10b981', icon: Heart,       gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN'  },
-    pharmacist:   { label: 'Pharmacist',   accent: VIOLET,  accent2: '#8b5cf6', icon: Pill,        gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
-    lab_staff:    { label: 'Lab Staff',    accent: CYAN,    accent2: '#06b6d4', icon: Microscope,  gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
-    receptionist: { label: 'Receptionist', accent: AMBER,   accent2: '#f59e0b', icon: PhoneCall,   gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
+    doctor: { label: 'Doctor', accent: BLUE, accent2: BLUE2, icon: Stethoscope, gradient: `linear-gradient(135deg,#3b5bdb,#4c6ef5)`, tag: 'DR' },
+    nurse: { label: 'Nurse', accent: EMERALD, accent2: '#10b981', icon: Heart, gradient: `linear-gradient(135deg,#059669,#10b981)`, tag: 'RN' },
+    pharmacist: { label: 'Pharmacist', accent: VIOLET, accent2: '#8b5cf6', icon: Pill, gradient: `linear-gradient(135deg,#7c3aed,#8b5cf6)`, tag: 'RPh' },
+    lab_staff: { label: 'Lab Staff', accent: CYAN, accent2: '#06b6d4', icon: Microscope, gradient: `linear-gradient(135deg,#0891b2,#06b6d4)`, tag: 'MLT' },
+    receptionist: { label: 'Receptionist', accent: AMBER, accent2: '#f59e0b', icon: PhoneCall, gradient: `linear-gradient(135deg,#d97706,#f59e0b)`, tag: 'RCP' },
 };
 
 const themes = {
@@ -95,21 +96,21 @@ const themes = {
 };
 
 const STATUS_COLORS = {
-    scheduled: { bg: 'rgba(217,119,6,0.12)',  color: AMBER,   label: 'Scheduled' },
-    completed: { bg: 'rgba(5,150,105,0.12)',  color: EMERALD, label: 'Completed' },
-    cancelled: { bg: 'rgba(225,29,72,0.12)',  color: ROSE,    label: 'Cancelled' },
-    active:    { bg: 'rgba(5,150,105,0.12)',  color: EMERALD, label: 'Active'    },
-    no_show:   { bg: 'rgba(107,114,128,0.12)',color: '#6b7280',label: 'No Show'  },
+    scheduled: { bg: 'rgba(217,119,6,0.12)', color: AMBER, label: 'Scheduled' },
+    completed: { bg: 'rgba(5,150,105,0.12)', color: EMERALD, label: 'Completed' },
+    cancelled: { bg: 'rgba(225,29,72,0.12)', color: ROSE, label: 'Cancelled' },
+    active: { bg: 'rgba(5,150,105,0.12)', color: EMERALD, label: 'Active' },
+    no_show: { bg: 'rgba(107,114,128,0.12)', color: '#6b7280', label: 'No Show' },
 };
 
 const TYPE_COLORS = {
-    lab_results:  { bg: 'rgba(6,182,212,0.15)',  text: '#22d3ee', label: 'Lab Results'  },
+    lab_results: { bg: 'rgba(6,182,212,0.15)', text: '#22d3ee', label: 'Lab Results' },
     consultation: { bg: 'rgba(59,130,246,0.15)', text: '#60a5fa', label: 'Consultation' },
-    imaging:      { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', label: 'Imaging'      },
-    other:        { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: 'Other'        },
+    imaging: { bg: 'rgba(245,158,11,0.15)', text: '#fbbf24', label: 'Imaging' },
+    other: { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: 'Other' },
 };
 
-const AVATAR_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ec4899','#06b6d4','#7c3aed','#059669'];
+const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#7c3aed', '#059669'];
 
 const initials = (name) => !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -142,11 +143,11 @@ function LoadingState({ t, accent }) {
 
 /* ─── PatientsSection ── */
 function PatientsSection({ t, hospitalId, accent }) {
-    const [patients, setPatients]       = useState([]);
-    const [loading, setLoading]         = useState(true);
-    const [search, setSearch]           = useState('');
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
     const [viewPatient, setViewPatient] = useState(null);
-    const [error, setError]             = useState('');
+    const [error, setError] = useState('');
 
     const load = useCallback(async (q = '') => {
         try { setLoading(true); setError(''); const res = await api.patients.list(hospitalId, q ? { search: q } : {}); setPatients(res.patients || []); }
@@ -236,15 +237,15 @@ function PatientsSection({ t, hospitalId, accent }) {
 /* ─── AppointmentsSection ── */
 function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
     const [appointments, setAppointments] = useState([]);
-    const [patients, setPatients]         = useState([]);
-    const [doctors, setDoctors]           = useState([]);
-    const [loading, setLoading]           = useState(true);
-    const [filter, setFilter]             = useState('All');
-    const [search, setSearch]             = useState('');
-    const [showAdd, setShowAdd]           = useState(false);
-    const [submitting, setSubmitting]     = useState(false);
-    const [formError, setFormError]       = useState('');
-    const [toast, setToast]               = useState(null);
+    const [patients, setPatients] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('All');
+    const [search, setSearch] = useState('');
+    const [showAdd, setShowAdd] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [formError, setFormError] = useState('');
+    const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
     const canCreate = ['doctor', 'receptionist', 'nurse'].includes(role);
 
@@ -314,35 +315,35 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(340px,1fr))', gap: 14 }}>
                     {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No appointments found</div>
-                    : filtered.map((a, i) => {
-                        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-                        return (
-                            <div key={a.id} style={{ background: t.surface, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '22', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(a.patient?.fullName)}</div>
-                                        <div><p style={{ fontWeight: 700, fontSize: 14 }}>{a.patient?.fullName}</p><p style={{ fontSize: 11, color: t.textMuted }}>{a.patient?.patientNumber}</p></div>
-                                    </div>
-                                    <Badge status={a.status} />
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-                                    {[{ label: 'Doctor', value: a.doctor?.fullName }, { label: 'Reason', value: a.reason }, { label: 'Date', value: new Date(a.appointmentDate).toLocaleDateString() }, { label: 'Time', value: a.appointmentTime || '—' }].map(({ label, value }) => (
-                                        <div key={label} style={{ background: t.cardAlt, borderRadius: 8, padding: '8px 10px', border: `1px solid ${t.border}` }}>
-                                            <p style={{ fontSize: 10, color: t.textMuted, marginBottom: 2 }}>{label}</p>
-                                            <p style={{ fontSize: 12, fontWeight: 600 }}>{value || '—'}</p>
+                        : filtered.map((a, i) => {
+                            const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                            return (
+                                <div key={a.id} style={{ background: t.surface, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '22', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(a.patient?.fullName)}</div>
+                                            <div><p style={{ fontWeight: 700, fontSize: 14 }}>{a.patient?.fullName}</p><p style={{ fontSize: 11, color: t.textMuted }}>{a.patient?.patientNumber}</p></div>
                                         </div>
-                                    ))}
+                                        <Badge status={a.status} />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+                                        {[{ label: 'Doctor', value: a.doctor?.fullName }, { label: 'Reason', value: a.reason }, { label: 'Date', value: new Date(a.appointmentDate).toLocaleDateString() }, { label: 'Time', value: a.appointmentTime || '—' }].map(({ label, value }) => (
+                                            <div key={label} style={{ background: t.cardAlt, borderRadius: 8, padding: '8px 10px', border: `1px solid ${t.border}` }}>
+                                                <p style={{ fontSize: 10, color: t.textMuted, marginBottom: 2 }}>{label}</p>
+                                                <p style={{ fontSize: 12, fontWeight: 600 }}>{value || '—'}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 6 }}>
+                                        {a.status === 'scheduled' && canCreate && (
+                                            <><button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '7px', background: 'rgba(5,150,105,0.12)', border: 'none', borderRadius: 8, color: EMERALD, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
+                                                <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '7px', background: 'rgba(225,29,72,0.1)', border: 'none', borderRadius: 8, color: ROSE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button></>
+                                        )}
+                                        {canCreate && <button onClick={() => handleDelete(a.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: 6 }}>
-                                    {a.status === 'scheduled' && canCreate && (
-                                        <><button onClick={() => updateStatus(a.id, 'completed')} style={{ flex: 1, padding: '7px', background: 'rgba(5,150,105,0.12)', border: 'none', borderRadius: 8, color: EMERALD, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Complete</button>
-                                        <button onClick={() => updateStatus(a.id, 'cancelled')} style={{ flex: 1, padding: '7px', background: 'rgba(225,29,72,0.1)', border: 'none', borderRadius: 8, color: ROSE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button></>
-                                    )}
-                                    {canCreate && <button onClick={() => handleDelete(a.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                 </div>
             )}
             {showAdd && (
@@ -377,15 +378,15 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
 /* ─── PrescriptionsSection ── */
 function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
     const [prescriptions, setPrescriptions] = useState([]);
-    const [patients, setPatients]           = useState([]);
-    const [doctors, setDoctors]             = useState([]);
-    const [loading, setLoading]             = useState(true);
-    const [filter, setFilter]               = useState('All');
-    const [search, setSearch]               = useState('');
-    const [showAdd, setShowAdd]             = useState(false);
-    const [submitting, setSubmitting]       = useState(false);
-    const [formError, setFormError]         = useState('');
-    const [toast, setToast]                 = useState(null);
+    const [patients, setPatients] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('All');
+    const [search, setSearch] = useState('');
+    const [showAdd, setShowAdd] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [formError, setFormError] = useState('');
+    const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', medication: '', dosage: '', duration: '', instructions: '' });
     const canCreate = ['doctor', 'pharmacist'].includes(role);
 
@@ -458,19 +459,19 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
                         <thead><tr style={{ background: t.cardAlt }}>{['Patient', 'Drug', 'Dosage', 'Doctor', 'Status', 'Actions'].map(h => <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
                         <tbody>
                             {filtered.length === 0 ? <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted }}>No prescriptions found</td></tr>
-                            : filtered.map((rx, i) => {
-                                const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-                                return (
-                                    <tr key={rx.id} style={{ borderBottom: `1px solid ${t.border}` }} onMouseEnter={e => e.currentTarget.style.background = t.hover} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: 8, background: color + '22', color, fontWeight: 700, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(rx.patient?.fullName)}</div><p style={{ fontWeight: 600, fontSize: 13 }}>{rx.patient?.fullName}</p></div></td>
-                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Pill size={13} color={ORANGE} /><span style={{ fontSize: 13, fontWeight: 600 }}>{rx.medication}</span></div></td>
-                                        <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.dosage}</td>
-                                        <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.doctor?.fullName}</td>
-                                        <td style={{ padding: '12px 16px' }}><Badge status={rx.status} /></td>
-                                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', gap: 6 }}>{rx.status === 'active' && canCreate && <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: `${ORANGE}15`, border: 'none', borderRadius: 7, color: ORANGE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>}{canCreate && <button onClick={() => handleDelete(rx.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>}</div></td>
-                                    </tr>
-                                );
-                            })}
+                                : filtered.map((rx, i) => {
+                                    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                                    return (
+                                        <tr key={rx.id} style={{ borderBottom: `1px solid ${t.border}` }} onMouseEnter={e => e.currentTarget.style.background = t.hover} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: 8, background: color + '22', color, fontWeight: 700, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{initials(rx.patient?.fullName)}</div><p style={{ fontWeight: 600, fontSize: 13 }}>{rx.patient?.fullName}</p></div></td>
+                                            <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Pill size={13} color={ORANGE} /><span style={{ fontSize: 13, fontWeight: 600 }}>{rx.medication}</span></div></td>
+                                            <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.dosage}</td>
+                                            <td style={{ padding: '12px 16px', fontSize: 12, color: t.textSub }}>{rx.doctor?.fullName}</td>
+                                            <td style={{ padding: '12px 16px' }}><Badge status={rx.status} /></td>
+                                            <td style={{ padding: '12px 16px' }}><div style={{ display: 'flex', gap: 6 }}>{rx.status === 'active' && canCreate && <button onClick={() => updateStatus(rx.id, 'completed')} style={{ padding: '4px 10px', background: `${ORANGE}15`, border: 'none', borderRadius: 7, color: ORANGE, fontWeight: 600, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Dispense</button>}{canCreate && <button onClick={() => handleDelete(rx.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={12} /></button>}</div></td>
+                                        </tr>
+                                    );
+                                })}
                         </tbody>
                     </table>
                 </div>
@@ -506,17 +507,17 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
 
 /* ─── RecordsSection ── */
 function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
-    const [records, setRecords]   = useState([]);
+    const [records, setRecords] = useState([]);
     const [patients, setPatients] = useState([]);
-    const [doctors, setDoctors]   = useState([]);
-    const [loading, setLoading]   = useState(true);
-    const [filter, setFilter]     = useState('All');
-    const [search, setSearch]     = useState('');
-    const [showAdd, setShowAdd]   = useState(false);
-    const [viewRec, setViewRec]   = useState(null);
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('All');
+    const [search, setSearch] = useState('');
+    const [showAdd, setShowAdd] = useState(false);
+    const [viewRec, setViewRec] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError]   = useState('');
-    const [toast, setToast]           = useState(null);
+    const [formError, setFormError] = useState('');
+    const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', recordType: 'lab_results', title: '', diagnosis: '', findings: '', notes: '' });
     const canCreate = ['doctor', 'lab_staff', 'nurse'].includes(role);
 
@@ -572,31 +573,31 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
                     {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No records found</div>
-                    : filtered.map((r, i) => {
-                        const tc = TYPE_COLORS[r.recordType] || TYPE_COLORS.other;
-                        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-                        return (
-                            <div key={r.id} style={{ background: t.surface, borderRadius: 16, padding: 16, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                                    <span style={{ background: tc.bg, color: tc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 8 }}>{tc.label}</span>
-                                    <div style={{ display: 'flex', gap: 6 }}>
-                                        <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: `${ORANGE}15`, border: 'none', cursor: 'pointer', color: ORANGE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} /></button>
-                                        {canCreate && <button onClick={() => handleDelete(r.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
+                        : filtered.map((r, i) => {
+                            const tc = TYPE_COLORS[r.recordType] || TYPE_COLORS.other;
+                            const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                            return (
+                                <div key={r.id} style={{ background: t.surface, borderRadius: 16, padding: 16, border: `1px solid ${t.border}`, boxShadow: t.shadow }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                                        <span style={{ background: tc.bg, color: tc.text, fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 8 }}>{tc.label}</span>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <button onClick={() => setViewRec(r)} style={{ width: 28, height: 28, borderRadius: 7, background: `${ORANGE}15`, border: 'none', cursor: 'pointer', color: ORANGE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Eye size={13} /></button>
+                                            {canCreate && <button onClick={() => handleDelete(r.id)} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', color: ROSE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={13} /></button>}
+                                        </div>
+                                    </div>
+                                    <h3 style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{r.title}</h3>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                        <div style={{ width: 26, height: 26, borderRadius: 7, background: color + '22', color, fontWeight: 700, fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(r.patient?.fullName)}</div>
+                                        <div><p style={{ fontSize: 12, fontWeight: 600 }}>{r.patient?.fullName}</p><p style={{ fontSize: 10, color: t.textMuted }}>{r.patient?.patientNumber}</p></div>
+                                    </div>
+                                    {r.notes && <p style={{ fontSize: 12, color: t.textSub, marginBottom: 8, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.notes}</p>}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${t.border}` }}>
+                                        <span style={{ fontSize: 11, color: t.textMuted }}>{r.doctor?.fullName}</span>
+                                        <span style={{ fontSize: 11, color: t.textMuted }}>{new Date(r.recordDate).toLocaleDateString()}</span>
                                     </div>
                                 </div>
-                                <h3 style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{r.title}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                                    <div style={{ width: 26, height: 26, borderRadius: 7, background: color + '22', color, fontWeight: 700, fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(r.patient?.fullName)}</div>
-                                    <div><p style={{ fontSize: 12, fontWeight: 600 }}>{r.patient?.fullName}</p><p style={{ fontSize: 10, color: t.textMuted }}>{r.patient?.patientNumber}</p></div>
-                                </div>
-                                {r.notes && <p style={{ fontSize: 12, color: t.textSub, marginBottom: 8, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.notes}</p>}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${t.border}` }}>
-                                    <span style={{ fontSize: 11, color: t.textMuted }}>{r.doctor?.fullName}</span>
-                                    <span style={{ fontSize: 11, color: t.textMuted }}>{new Date(r.recordDate).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                 </div>
             )}
             {viewRec && (
@@ -653,10 +654,10 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
 
 /* ─── HomeDashboard ── */
 function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isMobile }) {
-    const [stats, setStats]             = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
+    const [stats, setStats] = useState({ patients: 0, appointments: 0, prescriptions: 0, records: 0 });
     const [recentAppointments, setRecent] = useState([]);
-    const [loading, setLoading]         = useState(true);
-    const hour     = new Date().getHours();
+    const [loading, setLoading] = useState(true);
+    const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     useEffect(() => {
@@ -753,14 +754,14 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
 /* ─── MyProfile ── */
 function MyProfile({ t, staff, isDark, roleMeta, onChangePw }) {
     const info = [
-        { label: 'Full Name',  value: staff?.fullName || staff?.name || '—', icon: User,        color: NAVY          },
-        { label: 'Employee ID',value: staff?.employeeId || '—',              icon: Shield,      color: ORANGE        },
-        { label: 'Role',       value: roleMeta.label,                         icon: Stethoscope, color: roleMeta.accent },
-        { label: 'Department', value: staff?.department || '—',               icon: BedDouble,   color: CYAN          },
-        { label: 'Specialty',  value: staff?.specialty || '—',                icon: Activity,    color: EMERALD       },
-        { label: 'Phone',      value: staff?.phone || '—',                    icon: Phone,       color: AMBER         },
-        { label: 'Email',      value: staff?.email || '—',                    icon: Mail,        color: BLUE          },
-        { label: 'Status',     value: staff?.status || 'active',              icon: CheckCircle, color: EMERALD       },
+        { label: 'Full Name', value: staff?.fullName || staff?.name || '—', icon: User, color: NAVY },
+        { label: 'Employee ID', value: staff?.employeeId || '—', icon: Shield, color: ORANGE },
+        { label: 'Role', value: roleMeta.label, icon: Stethoscope, color: roleMeta.accent },
+        { label: 'Department', value: staff?.department || '—', icon: BedDouble, color: CYAN },
+        { label: 'Specialty', value: staff?.specialty || '—', icon: Activity, color: EMERALD },
+        { label: 'Phone', value: staff?.phone || '—', icon: Phone, color: AMBER },
+        { label: 'Email', value: staff?.email || '—', icon: Mail, color: BLUE },
+        { label: 'Status', value: staff?.status || 'active', icon: CheckCircle, color: EMERALD },
     ];
     return (
         <div>
@@ -801,23 +802,24 @@ function MyProfile({ t, staff, isDark, roleMeta, onChangePw }) {
 }
 
 const NAV_BY_ROLE = {
-    doctor:       [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'prescriptions', label: 'Prescriptions', icon: Pill }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
-    nurse:        [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
-    pharmacist:   [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
-    lab_staff:    [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'records', label: 'Records', icon: FileText }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
+    doctor: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'prescriptions', label: 'Prescriptions', icon: Pill }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
+    nurse: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
+    pharmacist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
+    lab_staff: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'records', label: 'Records', icon: FileText }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
     receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
 };
 
 export default function StaffDashboard() {
     const navigate = useNavigate();
-    const [isDark, setIsDark]         = useState(() => localStorage.getItem('theme') === 'dark');
-    const [staff, setStaff]           = useState(null);
-    const [section, setSection]       = useState('home');
-    const [isMobile, setIsMobile]     = useState(false);
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+    const [staff, setStaff] = useState(null);
+    const [section, setSection] = useState('home');
+    const [isMobile, setIsMobile] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
-    const [headerIn, setHeaderIn]     = useState(false);
+    const [headerIn, setHeaderIn] = useState(false);
     const [navMounted, setNavMounted] = useState(false);
     const [showChangePw, setShowChangePw] = useState(false);
+    const [notifCount, setNotifCount] = useState(0);
 
     useEffect(() => { setTimeout(() => setHeaderIn(true), 50); setTimeout(() => setNavMounted(true), 150); }, []);
     useEffect(() => { const check = () => setIsMobile(window.innerWidth < 768); check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check); }, []);
@@ -827,29 +829,29 @@ export default function StaffDashboard() {
         catch { navigate('/stafflogin'); }
     }, []);
 
-    const rawRole  = (staff?.role || 'doctor').toLowerCase().replace(/\s+/g, '_');
+    const rawRole = (staff?.role || 'doctor').toLowerCase().replace(/\s+/g, '_');
     const roleMeta = ROLE_META[rawRole] || ROLE_META.doctor;
     const navItems = NAV_BY_ROLE[rawRole] || NAV_BY_ROLE.doctor;
     const BOTTOM_NAV = navItems.slice(0, 4);
-    const MORE_NAV   = navItems.slice(4);
-    const t          = isDark ? themes.dark : themes.light;
+    const MORE_NAV = navItems.slice(4);
+    const t = isDark ? themes.dark : themes.light;
     const hospitalId = staff?.hospital_id;
 
-    const toggleTheme  = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
+    const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
     const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/stafflogin'); };
-    const goTo         = (id) => { setSection(id); setMobileMenu(false); };
+    const goTo = (id) => { setSection(id); setMobileMenu(false); };
 
     const sharedProps = { t, isDark, accent: roleMeta.accent, roleMeta, hospitalId, isMobile, role: rawRole };
 
     const renderSection = () => {
         switch (section) {
-            case 'home':          return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients':      return <PatientsSection  {...sharedProps} />;
-            case 'appointments':  return <AppointmentsSection {...sharedProps} />;
+            case 'home': return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients': return <PatientsSection  {...sharedProps} />;
+            case 'appointments': return <AppointmentsSection {...sharedProps} />;
             case 'prescriptions': return <PrescriptionsSection {...sharedProps} />;
-            case 'records':       return <RecordsSection   {...sharedProps} />;
-            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
-            default:              return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'records': return <RecordsSection   {...sharedProps} />;
+            case 'profile': return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
+            default: return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
         }
     };
 
@@ -968,6 +970,12 @@ export default function StaffDashboard() {
                         <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}12`, border: `1px solid ${ORANGE}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: ORANGE }}>
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
                         </button>
+                        <NotificationsPanel
+                            isDark={isDark}
+                            onNavigate={goTo}
+                            onCountChange={() => { }}
+                        />
+
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px', borderRadius: 10, transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = t.hover}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
