@@ -61,33 +61,47 @@ function clearAll() { localStorage.removeItem(STORAGE_KEY); }
 
 /* ─── WhatsApp message builder ───────────────────────────────────────────────*/
 function formatWhatsApp(c) {
+    const portal = c.type === 'patient' ? PATIENT_PORTAL : STAFF_PORTAL;
+    const role   = c.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
     if (c.type === 'patient') {
         return [
             `🏥 *HMSCare – Patient Login Credentials*`,
             `━━━━━━━━━━━━━━━━━━━━`,
             `👤 *Name:* ${c.fullName}`,
             `🔢 *Patient Number:* ${c.patientNumber}`,
-            c.email ? `📧 *Email:* ${c.email}` : null,
-            `🔑 *Temporary Password:* \`${c.tempPassword}\``,
+            ``,
+            `📧 *Email (tap to copy):*`,
+            c.email ? c.email : `_(no email provided)_`,
+            ``,
+            `🔑 *Password (tap to copy):*`,
+            c.tempPassword,
+            ``,
             `━━━━━━━━━━━━━━━━━━━━`,
-            `📱 *Log in to your patient portal here:*`,
-            `🔗 ${PATIENT_PORTAL}`,
+            `📱 *Login portal:*`,
+            portal,
             ``,
             `⚠️ Please change your password after your first login.`,
-        ].filter(Boolean).join('\n');
+        ].filter(line => line !== null && line !== undefined).join('\n');
     }
+
     return [
         `🏥 *HMSCare – Staff Login Credentials*`,
         `━━━━━━━━━━━━━━━━━━━━`,
         `👤 *Name:* ${c.fullName}`,
-        `🏷️ *Role:* ${c.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+        role ? `🏷️ *Role:* ${role}` : null,
         c.employeeId ? `🔢 *Employee ID:* ${c.employeeId}` : null,
-        `📧 *Email:* ${c.email}`,
-        `🔑 *Temporary Password:* \`${c.tempPassword}\``,
         c.hospitalName ? `🏨 *Hospital:* ${c.hospitalName}` : null,
+        ``,
+        `📧 *Email (tap to copy):*`,
+        c.email || `_(no email provided)_`,
+        ``,
+        `🔑 *Password (tap to copy):*`,
+        c.tempPassword,
+        ``,
         `━━━━━━━━━━━━━━━━━━━━`,
-        `📱 *Log in to your staff portal here:*`,
-        `🔗 ${STAFF_PORTAL}`,
+        `📱 *Login portal:*`,
+        portal,
         ``,
         `⚠️ Please change your password after your first login.`,
     ].filter(Boolean).join('\n');
@@ -97,15 +111,14 @@ function formatWhatsApp(c) {
    If the patient/staff has a phone number saved, opens their chat directly.
    Otherwise opens WhatsApp with the message pre-filled (user picks contact).  */
 function sendWhatsApp(c) {
-    const text    = encodeURIComponent(formatWhatsApp(c));
-    // Strip all non-digits from phone, add country code if needed
+    const text     = encodeURIComponent(formatWhatsApp(c));
     const rawPhone = (c.phone || '').replace(/\D/g, '');
-    // If phone available → open direct chat; otherwise → open generic share
-    const url = rawPhone
+    const url      = rawPhone
         ? `https://wa.me/${rawPhone}?text=${text}`
         : `https://wa.me/?text=${text}`;
     window.open(url, '_blank', 'noopener,noreferrer');
 }
+
 
 /* ─── Main Component ─────────────────────────────────────────────────────────*/
 export default function CredentialsHistory({ isMobile }) {
