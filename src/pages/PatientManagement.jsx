@@ -3,7 +3,7 @@ import {
     Users, Search, Plus, Edit, Trash2, X, Save,
     UserPlus, Phone, Mail, MapPin, Calendar, Droplet, User
 } from 'lucide-react';
-import { saveCredential } from './sections/CredentialsHistory';
+import { saveCredential } from './Sections/CredentialsHistory';
 
 const INPUT_CLS =
     "w-full py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 transition-all " +
