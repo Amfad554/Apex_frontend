@@ -1,524 +1,521 @@
-import React, { useState, useEffect } from 'react';
-import {
-    Users, Search, Plus, Edit, Trash2, X, Save,
-    UserPlus, Phone, Mail, MapPin, Calendar, Droplet, User
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { UserPlus, Search, X, Eye, Trash2, Droplets, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
+import { patientsAPI } from '../../Services/api.js';
+import { saveCredential } from './CredentialsHistory.jsx';
 
-/* ─── Brand Tokens ─────────────────────────────────────────────────────────── */
-const ORANGE = '#FF5A1F';
-const ORANGE2 = '#e64d15';
-
-const C = {
-    pageBg: '#F5F7FA',
-    card: '#ffffff',
-    border: 'rgba(10,26,63,0.08)',
-    text: '#0A1A3F',
-    textSub: '#374151',
-    textMuted: '#6B7280',
-    shadow: '0 2px 12px rgba(10,26,63,0.06)',
+// ─── Brand tokens ─────────────────────────────────────────────────────────────
+const T = {
+    navy: '#0A1A3F',
+    softNavy: '#1F2A44',
+    orange: '#FF5A1F',
+    lightGray: '#F5F7FA',
 };
 
-const INPUT_CLS =
-    "w-full py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 transition-all " +
-    "focus:ring-orange-200 focus:border-orange-400 placeholder-slate-400 bg-white text-sm";
+const AVATAR_COLORS = [T.orange, '#10b981', '#8b5cf6', '#06b6d4', '#f59e0b', '#ec4899', '#7c3aed', '#059669'];
 
-const LBL = { fontSize: 12, fontWeight: 600, color: C.text, display: 'block', marginBottom: 5 };
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function Toast({ message, type = 'success', onClose }) {
+    useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
+    const isSuccess = type === 'success';
+    return (
+        <div style={{
+            position: 'fixed', top: 20, right: 20, zIndex: 99999,
+            background: isSuccess ? '#f0fdf4' : '#fef2f2',
+            border: `1px solid ${isSuccess ? '#86efac' : '#fca5a5'}`,
+            color: isSuccess ? '#166534' : '#991b1b',
+            borderRadius: 12, padding: '14px 18px',
+            minWidth: 280, maxWidth: 'calc(100vw - 40px)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+            animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards',
+        }}>
+            <style>{`
+                @keyframes toastIn { from{transform:translateX(110%);opacity:0} to{transform:translateX(0);opacity:1} }
+                @keyframes spin    { to{transform:rotate(360deg)} }
+            `}</style>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
+        </div>
+    );
+}
 
-export default function PatientManagement() {
-    const [patients, setPatients] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [modalMode, setModalMode] = useState('add');
-    const [selectedPatient, setSelectedPatient] = useState(null);
-    const [isMobile, setIsMobile] = useState(false);
-    const [formData, setFormData] = useState({
-        fullName: '', dateOfBirth: '', gender: '', phone: '', email: '',
-        address: '', bloodGroup: '', medicalConditions: '',
-        nextOfKinName: '', nextOfKinPhone: ''
-    });
+// ─── Credentials Modal ────────────────────────────────────────────────────────
+function CredentialsModal({ credentials, t, isMobile, onClose }) {
+    const [copiedField, setCopiedField] = useState(null);
 
-    useEffect(() => {
-        fetchPatients();
-        const check = () => setIsMobile(window.innerWidth < 768);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
-
-    const fetchPatients = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user'));
-            const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
-            if (!hospitalId) { setLoading(false); return; }
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/patients/${hospitalId}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            if (response.ok) {
-                const data = await response.json();
-                setPatients(Array.isArray(data) ? data : (data.patients || []));
-            }
-        } catch (error) {
-            console.error('Error fetching patients:', error);
-        } finally {
-            setLoading(false);
-        }
+    const copy = (text, field) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
     };
 
-    const handleAddPatient = () => {
-        setModalMode('add');
-        setFormData({ fullName: '', dateOfBirth: '', gender: '', phone: '', email: '', address: '', bloodGroup: '', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
-        setShowModal(true);
-    };
+    const CopyBtn = ({ text, field, accent }) => (
+        <button onClick={() => copy(text, field)}
+            style={{ background: copiedField === field ? 'rgba(16,185,129,0.15)' : `${accent}18`, border: `1px solid ${copiedField === field ? 'rgba(16,185,129,0.3)' : `${accent}44`}`, borderRadius: 8, cursor: 'pointer', color: copiedField === field ? '#10b981' : accent, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, transition: 'all .18s' }}>
+            {copiedField === field ? <><CopyCheck size={13} />Copied</> : <><Copy size={13} />Copy</>}
+        </button>
+    );
 
-    const handleEditPatient = (patient) => {
-        setModalMode('edit');
-        setSelectedPatient(patient);
-        setFormData({
-            fullName: patient.full_name || '', dateOfBirth: patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '',
-            gender: patient.gender || '', phone: patient.phone || '', email: patient.email || '',
-            address: patient.address || '', bloodGroup: patient.blood_group || '',
-            medicalConditions: patient.medical_conditions || '',
-            nextOfKinName: patient.next_of_kin_name || '',
-            nextOfKinPhone: patient.next_of_kin_phone || ''
-        });
-        setShowModal(true);
-    };
-
-    const handleDeletePatient = async (patientId, patientName) => {
-        if (!window.confirm(`Delete ${patientName}? This cannot be undone.`)) return;
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
-                method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) { alert('Patient deleted'); fetchPatients(); }
-            else { const d = await res.json(); alert(`Error: ${d.error}`); }
-        } catch (e) { console.error(e); alert('Failed to delete patient'); }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem('token');
-            const url = modalMode === 'add'
-                ? `${import.meta.env.VITE_API_URL}/api/patients`
-                : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
-            const res = await fetch(url, {
-                method: modalMode === 'add' ? 'POST' : 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (res.ok) {
-                alert(modalMode === 'add' ? 'Patient registered!' : 'Patient updated!');
-                setShowModal(false); fetchPatients();
-            } else { const d = await res.json(); alert(`Error: ${d.error}`); }
-        } catch (e) { console.error(e); alert('Failed to save patient'); }
-    };
-
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-    const filteredPatients = patients.filter(p => {
-        const q = searchQuery.toLowerCase();
-        return (
-            (p.full_name ?? '').toLowerCase().includes(q) ||
-            (p.patient_number ?? '').toLowerCase().includes(q) ||
-            (p.phone ?? '').includes(q)
-        );
-    });
-
-    const getInitial = (name) => (name ?? '?').charAt(0).toUpperCase();
-
-    if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', backgroundColor: C.pageBg }}>
-            <div style={{ textAlign: 'center' }}>
-                <div style={{ width: 40, height: 40, border: `3px solid rgba(255,90,31,0.2)`, borderTopColor: ORANGE, borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 0.8s linear infinite' }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                <p style={{ color: C.textSub, fontSize: 13 }}>Loading patients...</p>
-            </div>
+    const Row = ({ label, children, accent }) => (
+        <div style={{ marginBottom: 10, background: accent ? `${accent}0d` : (t.cardAlt || 'rgba(0,0,0,0.04)'), borderRadius: 12, padding: '12px 16px', border: `1px solid ${accent ? `${accent}33` : t.border}` }}>
+            <p style={{ fontSize: 11, color: accent || t.textMuted, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>
+            {children}
         </div>
     );
 
     return (
-        <div style={{ backgroundColor: C.pageBg, minHeight: '100vh', padding: isMobile ? '14px 12px' : '24px' }}>
-            <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
-                {/* ── Header ── */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                    <div>
-                        <div style={{ width: 30, height: 3, borderRadius: 2, background: ORANGE, marginBottom: 8 }} />
-                        <h1 style={{ fontSize: isMobile ? 17 : 24, fontWeight: 800, color: C.text, letterSpacing: '-0.3px', marginBottom: 2 }}>
-                            Patient Management
-                        </h1>
-                        <p style={{ fontSize: isMobile ? 12 : 14, color: C.textMuted }}>Manage all registered patients</p>
-                    </div>
-                    <button
-                        onClick={handleAddPatient}
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            backgroundColor: ORANGE, color: '#fff',
-                            border: 'none', borderRadius: 10, fontWeight: 600,
-                            boxShadow: '0 4px 14px rgba(255,90,31,0.3)',
-                            padding: isMobile ? '8px 12px' : '10px 20px',
-                            fontSize: isMobile ? 12 : 14, cursor: 'pointer',
-                            fontFamily: 'inherit', transition: 'background 0.15s',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
-                    >
-                        <Plus style={{ width: 16, height: 16 }} />
-                        {isMobile ? 'Add' : 'Add Patient'}
-                    </button>
-                </div>
-
-                {/* ── Stats ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-                    <div style={{ backgroundColor: C.card, borderRadius: 12, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 9, backgroundColor: 'rgba(255,90,31,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <Users style={{ width: 18, height: 18, color: ORANGE }} />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: isMobile ? 20 : 26, fontWeight: 800, color: C.text, lineHeight: 1 }}>{patients.length}</p>
-                                <p style={{ fontSize: isMobile ? 11 : 13, color: C.textMuted, marginTop: 2 }}>Total Patients</p>
-                            </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
+            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <KeyRound size={18} color={T.orange} />
                         </div>
-                    </div>
-                    <div style={{ backgroundColor: C.card, borderRadius: 12, padding: 16, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 9, backgroundColor: 'rgba(5,150,105,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <UserPlus style={{ width: 18, height: 18, color: '#059669' }} />
-                            </div>
-                            <div>
-                                <p style={{ fontSize: isMobile ? 20 : 26, fontWeight: 800, color: C.text, lineHeight: 1 }}>
-                                    {patients.filter(p => new Date(p.created_at).toDateString() === new Date().toDateString()).length}
-                                </p>
-                                <p style={{ fontSize: isMobile ? 11 : 13, color: C.textMuted, marginTop: 2 }}>Today</p>
-                            </div>
+                        <div>
+                            <p style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Patient Registered!</p>
+                            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>Share these credentials with the patient</p>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Search ── */}
-                <div style={{ backgroundColor: C.card, borderRadius: 12, padding: '10px 14px', marginBottom: 12, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    <div style={{ position: 'relative' }}>
-                        <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: C.textMuted }} />
-                        <input
-                            type="text"
-                            placeholder="Search by name, patient number, or phone..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            style={{
-                                width: '100%', paddingLeft: 34, paddingRight: 12,
-                                paddingTop: 10, paddingBottom: 10,
-                                border: `1px solid ${C.border}`, borderRadius: 8,
-                                fontSize: isMobile ? 13 : 14, color: C.text, backgroundColor: '#F5F7FA',
-                                outline: 'none', fontFamily: 'inherit',
-                            }}
-                            onFocus={e => { e.target.style.borderColor = ORANGE; e.target.style.boxShadow = '0 0 0 3px rgba(255,90,31,0.1)'; }}
-                            onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; }}
-                        />
-                    </div>
-                </div>
+                <div style={{ padding: '20px 24px' }}>
+                    <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
+                        ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
+                    </p>
 
-                {/* ── Patient List ── */}
-                <div style={{ backgroundColor: C.card, borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    {filteredPatients.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '48px 20px' }}>
-                            <Users style={{ width: 40, height: 40, color: 'rgba(10,26,63,0.12)', margin: '0 auto 12px' }} />
-                            <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 4 }}>
-                                {patients.length === 0 ? 'No patients registered yet' : 'No patients found'}
-                            </h3>
-                            <p style={{ fontSize: 13, color: C.textMuted, marginBottom: 14 }}>
-                                {patients.length === 0 ? 'Start by registering your first patient' : 'Try adjusting your search'}
-                            </p>
-                            {patients.length === 0 && (
-                                <button onClick={handleAddPatient}
-                                    style={{ padding: '9px 18px', backgroundColor: ORANGE, color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
-                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
-                                >
-                                    Register First Patient
-                                </button>
-                            )}
+                    <Row label="Patient Name">
+                        <p style={{ fontSize: 14, fontWeight: 800, color: t.text }}>{credentials.fullName}</p>
+                    </Row>
+
+                    <Row label="Patient Number (Login ID)" accent={T.orange}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
+                            <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
                         </div>
-                    ) : isMobile ? (
+                    </Row>
 
-                        /* ════ MOBILE: Card list ════ */
-                        <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                            {filteredPatients.map(patient => (
-                                <div key={patient.id}
-                                    style={{ background: '#FAFBFC', borderRadius: 10, padding: '10px 12px', border: `1px solid ${C.border}` }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-                                            <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                {getInitial(patient.full_name)}
-                                            </div>
-                                            <div style={{ minWidth: 0 }}>
-                                                <p style={{ fontSize: 13, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    {patient.full_name ?? 'Unknown'}
-                                                </p>
-                                                <p style={{ fontSize: 10, color: ORANGE, fontFamily: 'monospace', fontWeight: 600 }}>
-                                                    {patient.patient_number}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-                                            <button onClick={() => handleEditPatient(patient)}
-                                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: ORANGE, borderRadius: 7, transition: 'background 0.15s' }}
-                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.08)'}
-                                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                            ><Edit style={{ width: 14, height: 14 }} /></button>
-                                            <button onClick={() => handleDeletePatient(patient.id, patient.full_name ?? 'this patient')}
-                                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 7, transition: 'background 0.15s' }}
-                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
-                                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                            ><Trash2 style={{ width: 14, height: 14 }} /></button>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                                        <span style={{ fontSize: 11, color: C.textMuted, textTransform: 'capitalize' }}>{patient.gender}</span>
-                                        <span style={{ fontSize: 11, color: C.textMuted }}>·</span>
-                                        <span style={{ fontSize: 11, color: C.textMuted }}>{patient.phone}</span>
-                                        {patient.blood_group && (
-                                            <>
-                                                <span style={{ fontSize: 11, color: C.textMuted }}>·</span>
-                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#c0392b', backgroundColor: 'rgba(225,29,72,0.07)', padding: '1px 6px', borderRadius: 4 }}>
-                                                    {patient.blood_group}
-                                                </span>
-                                            </>
-                                        )}
-                                        <span style={{ fontSize: 10, color: C.textMuted, marginLeft: 'auto' }}>
-                                            {new Date(patient.created_at).toLocaleDateString()}
-                                        </span>
-                                    </div>
+                    <Row label="Temporary Password" accent="#f59e0b">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
+                        </div>
+                    </Row>
+
+                    {credentials.email && (
+                        <Row label="Email">
+                            <p style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{credentials.email}</p>
+                        </Row>
+                    )}
+
+                    <div style={{ background: `${T.navy}14`, border: `1px solid ${T.navy}28`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub, lineHeight: 1.8 }}>
+                        <strong style={{ color: t.text }}>How to log in:</strong><br />
+                        Go to <strong>/patientlogin</strong> → use <strong>email</strong> + password, or <strong>patient number</strong> as identifier.
+                    </div>
+
+                    <button onClick={onClose}
+                        style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44` }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = ''; }}
+                    >Done</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Shared close button ──────────────────────────────────────────────────────
+function CloseBtn({ onClick }) {
+    return (
+        <button onClick={onClick}
+            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.transform = 'rotate(90deg)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.transform = ''; }}
+        ><X size={16} /></button>
+    );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export default function Patients({ isDark, t, hospital, isMobile }) {
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [search, setSearch] = useState('');
+    const [showRegister, setShowReg] = useState(false);
+    const [viewPatient, setViewPatient] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [formError, setFormError] = useState('');
+    const [toast, setToast] = useState(null);
+    const [credentials, setCredentials] = useState(null);
+    const [focused, setFocused] = useState(null);
+    const [form, setForm] = useState({
+        fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '',
+        address: '', bloodGroup: 'O+', medicalConditions: '',
+        nextOfKinName: '', nextOfKinPhone: '',
+    });
+
+    const hospitalId = hospital?.id;
+    const showToast = (message, type = 'success') => setToast({ message, type });
+
+    const inputStyle = (name) => ({
+        width: '100%', background: t.input,
+        border: `1.5px solid ${focused === name ? T.orange : t.border}`,
+        borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13,
+        outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+        boxShadow: focused === name ? `0 0 0 3px ${T.orange}18` : 'none',
+        transition: 'border-color .18s, box-shadow .18s',
+    });
+    const labelStyle = {
+        display: 'block', fontSize: 11, fontWeight: 700,
+        color: t.textMuted, marginBottom: 6,
+        letterSpacing: '0.07em', textTransform: 'uppercase',
+    };
+    const modalOverlay = {
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999,
+        overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center', minHeight: '100vh',
+    };
+    const modalBox = (maxW = 560) => ({
+        background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
+        border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+        flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40,
+    });
+
+    const loadPatients = async (q = '') => {
+        if (!hospitalId) return;
+        try {
+            setLoading(true); setError('');
+            const params = q ? { search: q } : {};
+            const res = await patientsAPI.list(hospitalId, params);
+            setPatients(res.patients || []);
+        } catch (err) { setError(err.message); }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { loadPatients(); }, [hospitalId]);
+    useEffect(() => { const id = setTimeout(() => loadPatients(search), 400); return () => clearTimeout(id); }, [search]);
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) {
+            setFormError('Please fill all required fields.'); return;
+        }
+        try {
+            setSubmitting(true); setFormError('');
+            const res = await patientsAPI.create({ ...form });
+            setShowReg(false);
+            setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
+            loadPatients();
+            const credEntry = {
+                type: 'patient',
+                fullName: res.patient.fullName,
+                patientNumber: res.patient.patientNumber,
+                tempPassword: res.tempPassword,
+                email: res.patient.email || null,
+            };
+            saveCredential(credEntry);
+            setCredentials(credEntry);
+        } catch (err) { setFormError(err.message); }
+        finally { setSubmitting(false); }
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm('Delete this patient? This cannot be undone.')) return;
+        try {
+            await patientsAPI.delete(id);
+            setPatients(prev => prev.filter(p => p.id !== id));
+            showToast('Patient deleted.');
+        } catch (err) { showToast(err.message, 'error'); }
+    };
+
+    const ViewBtn = ({ onClick, size = 30 }) => (
+        <button onClick={onClick}
+            style={{ width: size, height: size, borderRadius: 8, background: `${T.orange}12`, border: 'none', cursor: 'pointer', color: T.orange, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${T.orange}25`; e.currentTarget.style.transform = 'scale(1.12)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${T.orange}12`; e.currentTarget.style.transform = ''; }}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+        ><Eye size={size === 32 ? 15 : 14} /></button>
+    );
+    const DelBtn = ({ onClick, size = 30 }) => (
+        <button onClick={onClick}
+            style={{ width: size, height: size, borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.22)'; e.currentTarget.style.transform = 'scale(1.12)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.transform = ''; }}
+            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+        ><Trash2 size={size === 32 ? 15 : 14} /></button>
+    );
+
+    return (
+        <div>
+            {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+            {credentials && (
+                <CredentialsModal credentials={credentials} t={t} isMobile={isMobile}
+                    onClose={() => { setCredentials(null); showToast('Patient registered successfully!'); }} />
+            )}
+
+            {/* ── Header ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
+                <div>
+                    <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 900, letterSpacing: '-0.03em', color: t.text, marginBottom: 3 }}>Patients</h1>
+                    <p style={{ color: t.textSub, fontSize: 13 }}>{patients.length} patients registered</p>
+                </div>
+                <button onClick={() => setShowReg(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '9px 14px' : '10px 20px', background: T.orange, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44`, flexShrink: 0, transition: 'transform .15s, box-shadow .15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px ${T.orange}55`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px ${T.orange}44`; }}
+                    onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
+                    onMouseUp={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                >
+                    <UserPlus size={16} /> {isMobile ? 'Add' : 'Register Patient'}
+                </button>
+            </div>
+
+            {/* ── Search ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.card, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${focused === 'search' ? T.orange : t.border}`, marginBottom: 20, transition: 'border-color .18s' }}>
+                <Search size={15} color={t.textMuted} />
+                <input
+                    placeholder="Search by name or patient number…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    onFocus={() => setFocused('search')}
+                    onBlur={() => setFocused(null)}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }}
+                />
+                {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex' }}><X size={14} /></button>}
+            </div>
+
+            {/* ── Mobile cards ── */}
+            {isMobile ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {loading ? (
+                        <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                            <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> Loading patients…
+                        </div>
+                    ) : error ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: t.card, borderRadius: 14, border: `1.5px solid ${t.border}` }}>
+                            <AlertCircle size={18} />{error}
+                        </div>
+                    ) : patients.length === 0 ? (
+                        <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, fontSize: 14, background: t.card, borderRadius: 14, border: `1.5px solid ${t.border}` }}>No patients found</div>
+                    ) : patients.map((p, i) => {
+                        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                        const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                        return (
+                            <div key={p.id} style={{ background: t.card, borderRadius: 14, padding: '14px 16px', border: `1.5px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color .18s, box-shadow .18s' }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = `${T.orange}44`; e.currentTarget.style.boxShadow = `0 6px 20px rgba(255,90,31,0.1)`; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = 'none'; }}
+                            >
+                                <div style={{ width: 40, height: 40, borderRadius: 11, background: color + '22', color, fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ fontWeight: 700, fontSize: 14, color: t.text }}>{p.fullName}</p>
+                                    <p style={{ fontSize: 11, color: t.textMuted }}>{p.patientNumber} · {p.gender} · <span style={{ color: T.orange }}>{p.bloodGroup || '—'}</span></p>
+                                    <p style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>{p.phone}</p>
                                 </div>
-                            ))}
+                                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                                    <ViewBtn onClick={() => setViewPatient(p)} size={32} />
+                                    <DelBtn onClick={() => handleDelete(p.id)} size={32} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                /* ── Desktop table ── */
+                <div style={{ background: t.card, borderRadius: 18, border: `1.5px solid ${t.border}`, boxShadow: t.shadow, overflow: 'hidden' }}>
+                    {loading ? (
+                        <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                            <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> Loading patients…
                         </div>
-
+                    ) : error ? (
+                        <div style={{ padding: 30, textAlign: 'center', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                            <AlertCircle size={18} />{error}
+                        </div>
                     ) : (
-
-                        /* ════ DESKTOP: Table ════ */
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead style={{ backgroundColor: '#F5F7FA', borderBottom: `1px solid ${C.border}` }}>
-                                    <tr>
-                                        {['Patient #', 'Name', 'Gender', 'Blood Group', 'Phone', 'Registered', 'Actions'].map(h => (
-                                            <th key={h} style={{ padding: '13px 18px', textAlign: h === 'Actions' ? 'right' : 'left', fontSize: 12, fontWeight: 700, color: C.textSub, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                {h}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredPatients.map(patient => (
-                                        <tr key={patient.id}
-                                            style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.15s' }}
-                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.03)'}
-                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ background: t.cardAlt, borderBottom: `2px solid ${T.orange}33` }}>
+                                    {['Patient', 'Patient No.', 'Gender', 'Blood', 'Phone', 'Actions'].map(h => (
+                                        <th key={h} style={{ padding: '12px 18px', textAlign: 'left', fontSize: 10.5, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{h}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {patients.length === 0 ? (
+                                    <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted, fontSize: 14 }}>No patients found</td></tr>
+                                ) : patients.map((p, i) => {
+                                    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                                    const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                                    return (
+                                        <tr key={p.id} style={{ borderBottom: `1px solid ${t.border}`, transition: 'background .15s' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = t.hover}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
-                                            {/* Patient # */}
                                             <td style={{ padding: '14px 18px' }}>
-                                                <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: ORANGE }}>
-                                                    {patient.patient_number}
-                                                </span>
-                                            </td>
-                                            {/* Name */}
-                                            <td style={{ padding: '14px 18px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                    <div style={{ width: 38, height: 38, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                        {getInitial(patient.full_name)}
-                                                    </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <div style={{ width: 34, height: 34, borderRadius: 10, background: color + '22', color, fontWeight: 800, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>
                                                     <div>
-                                                        <p style={{ fontSize: 15, fontWeight: 600, color: C.text }}>{patient.full_name ?? 'Unknown'}</p>
-                                                        <p style={{ fontSize: 12, color: C.textMuted }}>{patient.email || 'No email'}</p>
+                                                        <p style={{ fontWeight: 700, fontSize: 13, color: t.text }}>{p.fullName}</p>
+                                                        <p style={{ fontSize: 11, color: t.textMuted, textTransform: 'capitalize' }}>{p.gender}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            {/* Gender */}
-                                            <td style={{ padding: '14px 18px', fontSize: 14, color: C.textSub, textTransform: 'capitalize' }}>{patient.gender}</td>
-                                            {/* Blood Group */}
+                                            <td style={{ padding: '14px 18px', fontSize: 13, color: t.textSub }}>{p.patientNumber}</td>
+                                            <td style={{ padding: '14px 18px', fontSize: 13, color: t.textSub, textTransform: 'capitalize' }}>{p.gender}</td>
                                             <td style={{ padding: '14px 18px' }}>
-                                                <span style={{ padding: '3px 10px', borderRadius: 5, fontSize: 13, fontWeight: 700, backgroundColor: 'rgba(225,29,72,0.07)', color: '#c0392b', border: '1px solid rgba(225,29,72,0.15)' }}>
-                                                    {patient.blood_group || 'N/A'}
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: T.orange }}>
+                                                    <Droplets size={13} />{p.bloodGroup || '—'}
                                                 </span>
                                             </td>
-                                            {/* Phone */}
-                                            <td style={{ padding: '14px 18px', fontSize: 14, color: C.textSub }}>{patient.phone}</td>
-                                            {/* Registered */}
-                                            <td style={{ padding: '14px 18px', fontSize: 13, color: C.textMuted }}>
-                                                {new Date(patient.created_at).toLocaleDateString()}
-                                            </td>
-                                            {/* Actions */}
+                                            <td style={{ padding: '14px 18px', fontSize: 13, color: t.textSub }}>{p.phone}</td>
                                             <td style={{ padding: '14px 18px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-                                                    <button onClick={() => handleEditPatient(patient)}
-                                                        style={{ padding: 7, background: 'none', border: 'none', cursor: 'pointer', color: ORANGE, borderRadius: 8, transition: 'background 0.15s' }}
-                                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.08)'}
-                                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                                        title="Edit">
-                                                        <Edit style={{ width: 17, height: 17 }} />
-                                                    </button>
-                                                    <button onClick={() => handleDeletePatient(patient.id, patient.full_name ?? 'this patient')}
-                                                        style={{ padding: 7, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 8, transition: 'background 0.15s' }}
-                                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
-                                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                                        title="Delete">
-                                                        <Trash2 style={{ width: 17, height: 17 }} />
-                                                    </button>
+                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                    <ViewBtn onClick={() => setViewPatient(p)} />
+                                                    <DelBtn onClick={() => handleDelete(p.id)} />
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     )}
                 </div>
-            </div>
+            )}
 
-            {/* ══════════ MODAL ══════════ */}
-            {showModal && (
-                <div
-                    style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 50, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', padding: isMobile ? 0 : 16 }}
-                    onClick={e => e.target === e.currentTarget && setShowModal(false)}
-                >
-                    <div style={{
-                        backgroundColor: '#fff', width: '100%',
-                        maxWidth: isMobile ? '100%' : 520,
-                        maxHeight: isMobile ? '92vh' : '88vh',
-                        overflowY: 'auto',
-                        borderRadius: isMobile ? '20px 20px 0 0' : 14,
-                        border: `1px solid ${C.border}`,
-                        boxShadow: '0 24px 80px rgba(10,26,63,0.15)',
-                    }}>
-                        <div style={{ position: 'sticky', top: 0, backgroundColor: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}` }}>
-                            <div>
-                                <div style={{ width: 22, height: 3, borderRadius: 2, background: ORANGE, marginBottom: 6 }} />
-                                <h2 style={{ fontSize: 15, fontWeight: 800, color: C.text }}>
-                                    {modalMode === 'add' ? 'Register New Patient' : 'Edit Patient'}
-                                </h2>
+            {/* ── Register Modal ── */}
+            {showRegister && (
+                <div onClick={e => e.target === e.currentTarget && setShowReg(false)} style={modalOverlay}>
+                    <div style={modalBox(560)}>
+                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <UserPlus size={16} color={T.orange} />
+                                </div>
+                                <div>
+                                    <h2 style={{ fontWeight: 800, fontSize: 15, color: t.text }}>Register New Patient</h2>
+                                    <p style={{ fontSize: 11, color: t.textMuted, marginTop: 1 }}>Credentials shown after registration</p>
+                                </div>
                             </div>
-                            <button onClick={() => setShowModal(false)}
-                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, borderRadius: 8, transition: 'background 0.15s' }}
-                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(10,26,63,0.06)'}
-                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                <X style={{ width: 16, height: 16 }} />
-                            </button>
+                            <CloseBtn onClick={() => setShowReg(false)} />
                         </div>
 
-                        <form onSubmit={handleSubmit} style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <div>
-                                <label style={LBL}>Full Name *</label>
-                                <div style={{ position: 'relative' }}>
-                                    <User style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: C.textMuted }} />
-                                    <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required placeholder="John Doe"
-                                        className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
+                        <form onSubmit={handleRegister} style={{ padding: '20px' }}>
+                            {formError && (
+                                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                    <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />{formError}
                                 </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                <div>
-                                    <label style={LBL}>Date of Birth *</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Calendar style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
-                                        <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required
-                                            className={`${INPUT_CLS} pl-8 pr-2`} style={{ color: C.text }} />
-                                    </div>
+                            )}
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={labelStyle}>Full Name *</label>
+                                    <input required style={inputStyle('fullName')} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Amara Okafor"
+                                        onFocus={() => setFocused('fullName')} onBlur={() => setFocused(null)} />
                                 </div>
                                 <div>
-                                    <label style={LBL}>Gender *</label>
-                                    <select name="gender" value={formData.gender} onChange={handleChange} required
-                                        className={`${INPUT_CLS} px-3`} style={{ color: formData.gender ? C.text : '#9CA3AF' }}>
-                                        <option value="">Select</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
+                                    <label style={labelStyle}>Date of Birth *</label>
+                                    <input type="date" required style={inputStyle('dob')} value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })}
+                                        onFocus={() => setFocused('dob')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Gender *</label>
+                                    <select style={inputStyle('gender')} value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
+                                        onFocus={() => setFocused('gender')} onBlur={() => setFocused(null)}>
+                                        <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 <div>
-                                    <label style={LBL}>Phone *</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Phone style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
-                                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+1234567890"
-                                            className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
-                                    </div>
+                                    <label style={labelStyle}>Phone *</label>
+                                    <input required style={inputStyle('phone')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="0801-234-5678"
+                                        onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)} />
                                 </div>
                                 <div>
-                                    <label style={LBL}>Blood Group</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <Droplet style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
-                                        <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange}
-                                            className={`${INPUT_CLS} pl-8 pr-2`} style={{ color: formData.bloodGroup ? C.text : '#9CA3AF' }}>
-                                            <option value="">Select</option>
-                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={LBL}>Email Address</label>
-                                <div style={{ position: 'relative' }}>
-                                    <Mail style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
-                                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="patient@email.com"
-                                        className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={LBL}>Address *</label>
-                                <div style={{ position: 'relative' }}>
-                                    <MapPin style={{ position: 'absolute', left: 10, top: 10, width: 13, height: 13, color: C.textMuted }} />
-                                    <textarea name="address" value={formData.address} onChange={handleChange} required rows="2"
-                                        placeholder="123 Main Street, City, State"
-                                        className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={LBL}>Medical Conditions</label>
-                                <textarea name="medicalConditions" value={formData.medicalConditions} onChange={handleChange} rows="2"
-                                    placeholder="Known conditions, allergies, etc."
-                                    className={`${INPUT_CLS} px-3`} style={{ color: C.text }} />
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                <div>
-                                    <label style={LBL}>Next of Kin</label>
-                                    <input type="text" name="nextOfKinName" value={formData.nextOfKinName} onChange={handleChange} placeholder="Jane Doe"
-                                        className={`${INPUT_CLS} px-3`} style={{ color: C.text }} />
+                                    <label style={labelStyle}>Email</label>
+                                    <input type="email" style={inputStyle('email')} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="patient@email.com"
+                                        onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} />
                                 </div>
                                 <div>
-                                    <label style={LBL}>Kin Phone</label>
-                                    <input type="tel" name="nextOfKinPhone" value={formData.nextOfKinPhone} onChange={handleChange} placeholder="+234..."
-                                        className={`${INPUT_CLS} px-3`} style={{ color: C.text }} />
+                                    <label style={labelStyle}>Blood Group</label>
+                                    <select style={inputStyle('bloodGroup')} value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}
+                                        onFocus={() => setFocused('bloodGroup')} onBlur={() => setFocused(null)}>
+                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => <option key={b}>{b}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Medical Conditions</label>
+                                    <input style={inputStyle('medCond')} value={form.medicalConditions} onChange={e => setForm({ ...form, medicalConditions: e.target.value })} placeholder="e.g. Hypertension, Diabetes"
+                                        onFocus={() => setFocused('medCond')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={labelStyle}>Address *</label>
+                                    <input required style={inputStyle('address')} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Patient's home address"
+                                        onFocus={() => setFocused('address')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Next of Kin Name</label>
+                                    <input style={inputStyle('kinName')} value={form.nextOfKinName} onChange={e => setForm({ ...form, nextOfKinName: e.target.value })}
+                                        onFocus={() => setFocused('kinName')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Next of Kin Phone</label>
+                                    <input style={inputStyle('kinPhone')} value={form.nextOfKinPhone} onChange={e => setForm({ ...form, nextOfKinPhone: e.target.value })}
+                                        onFocus={() => setFocused('kinPhone')} onBlur={() => setFocused(null)} />
                                 </div>
                             </div>
-
-                            <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
-                                <button type="submit"
-                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', padding: '10px 0', boxShadow: '0 4px 14px rgba(255,90,31,0.3)', transition: 'background 0.15s' }}
-                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
-                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
-                                >
-                                    <Save style={{ width: 14, height: 14 }} />
-                                    {modalMode === 'add' ? 'Register Patient' : 'Save Changes'}
-                                </button>
-                                <button type="button" onClick={() => setShowModal(false)}
-                                    style={{ padding: '10px 16px', backgroundColor: 'transparent', border: `1px solid ${C.border}`, borderRadius: 10, color: C.textSub, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(10,26,63,0.04)'; e.currentTarget.style.borderColor = 'rgba(10,26,63,0.2)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; }}
-                                >
-                                    Cancel
-                                </button>
+                            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                                <button type="button" onClick={() => setShowReg(false)}
+                                    style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'background .15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = t.hover}
+                                    onMouseLeave={e => e.currentTarget.style.background = t.input}
+                                >Cancel</button>
+                                <button type="submit" disabled={submitting}
+                                    style={{ flex: 2, padding: '11px', background: submitting ? `${T.orange}88` : T.orange, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, boxShadow: submitting ? 'none' : `0 4px 16px ${T.orange}44`, transition: 'all .15s' }}
+                                    onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${T.orange}55`; } }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px ${T.orange}44`; }}
+                                    onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                                >{submitting ? 'Registering…' : 'Register Patient'}</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ── View Patient Modal ── */}
+            {viewPatient && (
+                <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={modalOverlay}>
+                    <div style={modalBox(480)}>
+                        {/* header with navy bg */}
+                        <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    {viewPatient.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h2 style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{viewPatient.fullName}</h2>
+                                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{viewPatient.patientNumber}</p>
+                                </div>
+                            </div>
+                            <CloseBtn onClick={() => setViewPatient(null)} />
+                        </div>
+                        <div style={{ padding: 20 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                {[
+                                    { label: 'Phone', value: viewPatient.phone },
+                                    { label: 'Email', value: viewPatient.email || '—' },
+                                    { label: 'Gender', value: viewPatient.gender, cap: true },
+                                    { label: 'Blood Group', value: viewPatient.bloodGroup || '—' },
+                                    { label: 'Date of Birth', value: new Date(viewPatient.dateOfBirth).toLocaleDateString() },
+                                    { label: 'Next of Kin', value: viewPatient.nextOfKinName || '—' },
+                                    { label: 'Kin Phone', value: viewPatient.nextOfKinPhone || '—' },
+                                    { label: 'Conditions', value: viewPatient.medicalConditions || '—' },
+                                    { label: 'Address', value: viewPatient.address, full: true },
+                                ].map(({ label, value, full, cap }) => (
+                                    <div key={label} style={{ gridColumn: full ? '1/-1' : 'auto', background: t.cardAlt, borderRadius: 10, padding: '11px 13px', border: `1px solid ${t.border}` }}>
+                                        <p style={{ fontSize: 10.5, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>
+                                        <p style={{ fontSize: 13, fontWeight: 700, color: t.text, textTransform: cap ? 'capitalize' : 'none' }}>{value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
