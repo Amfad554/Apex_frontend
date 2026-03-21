@@ -8,8 +8,8 @@ const PALETTE = {
     orange:     '#FF5A1F',
     white:      '#FFFFFF',
     navyBorder: 'rgba(255,255,255,0.08)',
-    navySub:    'rgba(255,255,255,0.55)',
-    navyMuted:  'rgba(255,255,255,0.30)',
+    navySub:    'rgba(255,255,255,0.80)',
+    navyMuted:  'rgba(255,255,255,0.55)',
     navyHover:  'rgba(255,255,255,0.04)',
     cardAlt:    'rgba(255,255,255,0.03)',
     shadow:     '0 4px 24px rgba(0,0,0,0.35)',
@@ -103,7 +103,7 @@ function LineGraph({ datasets, labels, height = 160, animate = false }) {
                     </g>
                 );
             })}
-            {labels.map((l,i) => <text key={i} x={pad.l+(i/(labels.length-1))*gw} y={height-4} textAnchor="middle" fill="rgba(255,255,255,0.30)" fontSize="10">{l}</text>)}
+            {labels.map((l,i) => <text key={i} x={pad.l+(i/(labels.length-1))*gw} y={height-4} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="10">{l}</text>)}
         </svg>
     );
 }
@@ -148,7 +148,7 @@ function StatCard({ label, value, gradient, icon: Icon, spark, delay, isMobile }
                 onMouseLeave={e => e.currentTarget.style.transform='rotate(0deg) scale(1)'}
             ><Icon size={isMobile?18:22} color="#fff" /></div>
             <div style={{ flex: isMobile?1:undefined }}>
-                <p style={{ color:'rgba(255,255,255,0.72)', fontSize:12, marginBottom:2 }}>{label}</p>
+                <p style={{ color:'rgba(255,255,255,0.85)', fontSize:12, marginBottom:2 }}>{label}</p>
                 <p style={{ color:'#fff', fontSize: isMobile?26:32, fontWeight:800, letterSpacing:'-1px', marginBottom: isMobile?0:12, lineHeight:1.1 }}>{displayVal}</p>
                 {!isMobile && <Sparkline data={spark} color="rgba(255,255,255,0.65)" animate={visible} />}
             </div>
@@ -260,7 +260,7 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
                             <DonutChart value={totalPts} total={Math.max(totalPts+10,1)} color={ACCENT.orange} size={86} animate={chartsReady} />
                             <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
                                 <span style={{ fontWeight:800, fontSize:16, color:PALETTE.white }}>{totalPts}</span>
-                                <span style={{ fontSize:9, color:PALETTE.navyMuted }}>Patients</span>
+                                <span style={{ fontSize:9, color:PALETTE.navyMuted }}> Patients</span>
                             </div>
                         </div>
                         <div style={{ flex:1 }}>

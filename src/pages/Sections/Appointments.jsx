@@ -8,8 +8,8 @@ const PALETTE = {
     orange: '#FF5A1F',
     white: '#FFFFFF',
     navyBorder: 'rgba(255,255,255,0.08)',
-    navySub: 'rgba(255,255,255,0.55)',
-    navyMuted: 'rgba(255,255,255,0.30)',
+    navySub: 'rgba(255,255,255,0.80)',
+    navyMuted: 'rgba(255,255,255,0.55)',
     navyHover: 'rgba(255,255,255,0.06)',
     cardAlt: 'rgba(255,255,255,0.03)',
     shadow: '0 4px 24px rgba(0,0,0,0.35)',
@@ -140,7 +140,6 @@ export function Appointments({ hospital, isMobile }) {
     const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
     return (
-        /* ── No background/minHeight/padding here — shell owns that ── */
         <div style={{ color: PALETTE.white, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
@@ -197,7 +196,7 @@ export function Appointments({ hospital, isMobile }) {
                     {['All', 'Scheduled', 'Completed', 'Cancelled'].map(s => {
                         const active = filter === s;
                         return (
-                            <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${active ? PALETTE.orange : t.border}`, background: active ? 'rgba(255,90,31,0.15)' : t.card, color: active ? PALETTE.orange : t.textSub, fontWeight: active ? 700 : 400, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.15s ease' }}
+                            <button key={s} onClick={() => setFilter(s)} style={{ padding: '8px 14px', borderRadius: 10, border: `1px solid ${active ? PALETTE.orange : t.border}`, background: active ? 'rgba(255,90,31,0.15)' : t.card, color: active ? PALETTE.orange : t.textSub, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.15s ease' }}
                                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
                                 onMouseLeave={e => e.currentTarget.style.transform = ''}
                                 onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}

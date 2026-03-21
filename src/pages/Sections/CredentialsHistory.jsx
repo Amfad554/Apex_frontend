@@ -7,8 +7,8 @@ const PALETTE = {
     orange:     '#FF5A1F',
     white:      '#FFFFFF',
     navyBorder: 'rgba(255,255,255,0.08)',
-    navySub:    'rgba(255,255,255,0.55)',
-    navyMuted:  'rgba(255,255,255,0.30)',
+    navySub:    'rgba(255,255,255,0.80)',
+    navyMuted:  'rgba(255,255,255,0.55)',
     navyHover:  'rgba(255,255,255,0.04)',
     cardAlt:    'rgba(255,255,255,0.03)',
     shadow:     '0 4px 24px rgba(0,0,0,0.35)',
@@ -144,7 +144,7 @@ export default function CredentialsHistory({ isMobile }) {
                     {['all','patient','staff'].map(f => {
                         const active = filterType === f;
                         return (
-                            <button key={f} onClick={() => setFilterType(f)} style={{ padding:'8px 14px', borderRadius:10, border:`1px solid ${active?PALETTE.orange:t.border}`, background:active?'rgba(255,90,31,0.15)':t.card, color:active?PALETTE.orange:t.textSub, fontWeight:active?700:400, cursor:'pointer', fontSize:12, fontFamily:'inherit', textTransform:'capitalize', transition:'all 0.15s' }}>
+                            <button key={f} onClick={() => setFilterType(f)} style={{ padding:'8px 14px', borderRadius:10, border:`1px solid ${active?PALETTE.orange:t.border}`, background:active?'rgba(255,90,31,0.15)':t.card, color:active?PALETTE.orange:t.textSub, fontWeight:active?700:500, cursor:'pointer', fontSize:12, fontFamily:'inherit', textTransform:'capitalize', transition:'all 0.15s' }}>
                                 {f === 'all' ? `All (${records.length})` : `${f.charAt(0).toUpperCase()+f.slice(1)}s (${records.filter(r=>r.type===f).length})`}
                             </button>
                         );
