@@ -48,13 +48,11 @@ export default function PatientManagement() {
         return () => window.removeEventListener('resize', check);
     }, []);
 
-    /* ── Fetch — tries every field name the backend might use for hospital ID ── */
+    /* ── Fetch ── */
     const fetchPatients = async () => {
         try {
             const token = localStorage.getItem('token');
             const user  = JSON.parse(localStorage.getItem('user'));
-
-            // Cover all possible field names your backend might store the hospital ID under
             const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
 
             if (!hospitalId) {
@@ -70,7 +68,6 @@ export default function PatientManagement() {
 
             if (response.ok) {
                 const data = await response.json();
-                // Handle both { patients: [] } and direct array responses
                 setPatients(Array.isArray(data) ? data : (data.patients || []));
             } else {
                 console.error('Failed to fetch patients — HTTP status:', response.status, 'for hospital ID:', hospitalId);
@@ -92,9 +89,9 @@ export default function PatientManagement() {
         setModalMode('edit');
         setSelectedPatient(patient);
         setFormData({
-            fullName: patient.full_name, dateOfBirth: patient.date_of_birth,
-            gender: patient.gender, phone: patient.phone, email: patient.email || '',
-            address: patient.address, bloodGroup: patient.blood_group || '',
+            fullName: patient.full_name || '', dateOfBirth: patient.date_of_birth || '',
+            gender: patient.gender || '', phone: patient.phone || '', email: patient.email || '',
+            address: patient.address || '', bloodGroup: patient.blood_group || '',
             medicalConditions: patient.medical_conditions || '',
             nextOfKinName: patient.next_of_kin_name || '',
             nextOfKinPhone: patient.next_of_kin_phone || ''
@@ -145,6 +142,9 @@ export default function PatientManagement() {
             (p.phone ?? '').includes(q)
         );
     });
+
+    /* ── Helper: safe first initial ── */
+    const getInitial = (name) => (name ?? '?').charAt(0).toUpperCase();
 
     /* ── Loading spinner ── */
     if (loading) return (
@@ -276,11 +276,11 @@ export default function PatientManagement() {
                                         {/* Avatar + name */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
                                             <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                {patient.full_name.charAt(0).toUpperCase()}
+                                                {getInitial(patient.full_name)}
                                             </div>
                                             <div style={{ minWidth: 0 }}>
                                                 <p style={{ fontSize: 13, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    {patient.full_name}
+                                                    {patient.full_name ?? 'Unknown'}
                                                 </p>
                                                 <p style={{ fontSize: 10, color: ORANGE, fontFamily: 'monospace', fontWeight: 600 }}>
                                                     {patient.patient_number}
@@ -294,7 +294,7 @@ export default function PatientManagement() {
                                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.08)'}
                                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                                             ><Edit style={{ width: 14, height: 14 }} /></button>
-                                            <button onClick={() => handleDeletePatient(patient.id, patient.full_name)}
+                                            <button onClick={() => handleDeletePatient(patient.id, patient.full_name ?? 'this patient')}
                                                 style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 7, transition: 'background 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
                                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -351,10 +351,10 @@ export default function PatientManagement() {
                                             <td style={{ padding: '11px 16px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                     <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                        {patient.full_name.charAt(0).toUpperCase()}
+                                                        {getInitial(patient.full_name)}
                                                     </div>
                                                     <div>
-                                                        <p style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{patient.full_name}</p>
+                                                        <p style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{patient.full_name ?? 'Unknown'}</p>
                                                         <p style={{ fontSize: 11, color: C.textMuted }}>{patient.email || 'No email'}</p>
                                                     </div>
                                                 </div>
@@ -378,7 +378,7 @@ export default function PatientManagement() {
                                                         title="Edit">
                                                         <Edit style={{ width: 15, height: 15 }} />
                                                     </button>
-                                                    <button onClick={() => handleDeletePatient(patient.id, patient.full_name)}
+                                                    <button onClick={() => handleDeletePatient(patient.id, patient.full_name ?? 'this patient')}
                                                         style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 8, transition: 'background 0.15s' }}
                                                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
                                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
