@@ -48,27 +48,35 @@ export default function PatientManagement() {
         return () => window.removeEventListener('resize', check);
     }, []);
 
+    /* ── Fetch — tries every field name the backend might use for hospital ID ── */
     const fetchPatients = async () => {
         try {
             const token = localStorage.getItem('token');
             const user  = JSON.parse(localStorage.getItem('user'));
 
-            if (!user?.id) {
-                console.error('No hospital ID found');
+            // Cover all possible field names your backend might store the hospital ID under
+            const hospitalId = user?.id
+                || user?.hospitalId
+                || user?.hospital_id
+                || user?.hospitalID;
+
+            if (!hospitalId) {
+                console.error('No hospital ID found in stored user object:', user);
+                setLoading(false);
                 return;
             }
 
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}`,
+                `${import.meta.env.VITE_API_URL}/api/patients/hospital/${hospitalId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
             if (response.ok) {
                 const data = await response.json();
-                // handle both { patients: [...] } and direct array responses
+                // Handle both { patients: [] } and direct array responses
                 setPatients(Array.isArray(data) ? data : (data.patients || []));
             } else {
-                console.error('Failed to fetch patients');
+                console.error('Failed to fetch patients — HTTP status:', response.status, 'for hospital ID:', hospitalId);
             }
         } catch (error) {
             console.error('Error fetching patients:', error);
@@ -102,7 +110,7 @@ export default function PatientManagement() {
         try {
             const token = localStorage.getItem('token');
             const res   = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
-                method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+                method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) { alert('Patient deleted'); fetchPatients(); }
             else { const d = await res.json(); alert(`Error: ${d.error}`); }
@@ -114,12 +122,13 @@ export default function PatientManagement() {
         try {
             const token = localStorage.getItem('token');
             const user  = JSON.parse(localStorage.getItem('user'));
+            const hospitalId = user?.id || user?.hospitalId || user?.hospital_id || user?.hospitalID;
             const url   = modalMode === 'add'
-                ? `${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}`
+                ? `${import.meta.env.VITE_API_URL}/api/patients/hospital/${hospitalId}`
                 : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
             const res = await fetch(url, {
                 method:  modalMode === 'add' ? 'POST' : 'PUT',
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body:    JSON.stringify(formData)
             });
             if (res.ok) {
@@ -137,12 +146,17 @@ export default function PatientManagement() {
         (p.phone && p.phone.includes(searchQuery))
     );
 
-    /* ── Loading ── */
+    /* ── Loading spinner ── */
     if (loading) return (
-        <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: C.pageBg }}>
-            <div className="text-center">
-                <div className="w-10 h-10 border-4 border-t-transparent rounded-full mx-auto mb-3 animate-spin"
-                    style={{ borderColor: ORANGE, borderTopColor: 'transparent' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', backgroundColor: C.pageBg }}>
+            <div style={{ textAlign: 'center' }}>
+                <div style={{
+                    width: 40, height: 40, border: `3px solid rgba(255,90,31,0.2)`,
+                    borderTopColor: ORANGE, borderRadius: '50%',
+                    margin: '0 auto 12px',
+                    animation: 'spin 0.8s linear infinite',
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 <p style={{ color: C.textSub, fontSize: 13 }}>Loading patients...</p>
             </div>
         </div>
@@ -153,7 +167,7 @@ export default function PatientManagement() {
             <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
                 {/* ── Header ── */}
-                <div className="flex items-center justify-between mb-5">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                     <div>
                         <div style={{ width: 30, height: 3, borderRadius: 2, background: ORANGE, marginBottom: 8 }} />
                         <h1 style={{ fontSize: isMobile ? 17 : 21, fontWeight: 800, color: C.text, letterSpacing: '-0.3px', marginBottom: 2 }}>
@@ -163,28 +177,29 @@ export default function PatientManagement() {
                     </div>
                     <button
                         onClick={handleAddPatient}
-                        className="flex items-center gap-1.5 text-white rounded-lg font-semibold transition-all active:scale-95"
                         style={{
-                            backgroundColor: ORANGE,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            backgroundColor: ORANGE, color: '#fff',
+                            border: 'none', borderRadius: 10, fontWeight: 600,
                             boxShadow: '0 4px 14px rgba(255,90,31,0.3)',
                             padding: isMobile ? '8px 12px' : '9px 16px',
-                            fontSize: isMobile ? 12 : 13
+                            fontSize: isMobile ? 12 : 13, cursor: 'pointer',
+                            fontFamily: 'inherit', transition: 'background 0.15s',
                         }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus style={{ width: 15, height: 15 }} />
                         {isMobile ? 'Add' : 'Add Patient'}
                     </button>
                 </div>
 
                 {/* ── Stats ── */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="rounded-xl p-4" style={{ backgroundColor: C.card, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: 'rgba(255,90,31,0.1)' }}>
-                                <Users className="w-4 h-4" style={{ color: ORANGE }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                    <div style={{ backgroundColor: C.card, borderRadius: 12, padding: 14, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: 'rgba(255,90,31,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <Users style={{ width: 16, height: 16, color: ORANGE }} />
                             </div>
                             <div>
                                 <p style={{ fontSize: 20, fontWeight: 800, color: C.text, lineHeight: 1 }}>{patients.length}</p>
@@ -192,10 +207,10 @@ export default function PatientManagement() {
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-xl p-4" style={{ backgroundColor: C.card, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <UserPlus className="w-4 h-4 text-green-600" />
+                    <div style={{ backgroundColor: C.card, borderRadius: 12, padding: 14, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 9, backgroundColor: 'rgba(5,150,105,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <UserPlus style={{ width: 16, height: 16, color: '#059669' }} />
                             </div>
                             <div>
                                 <p style={{ fontSize: 20, fontWeight: 800, color: C.text, lineHeight: 1 }}>
@@ -208,25 +223,32 @@ export default function PatientManagement() {
                 </div>
 
                 {/* ── Search ── */}
-                <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: C.card, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div style={{ backgroundColor: C.card, borderRadius: 12, padding: '10px 14px', marginBottom: 12, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: C.textMuted }} />
                         <input
                             type="text"
                             placeholder="Search by name, patient number, or phone..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className={`${INPUT_CLS} pl-9 pr-4`}
-                            style={{ color: C.text }}
+                            style={{
+                                width: '100%', paddingLeft: 32, paddingRight: 12,
+                                paddingTop: 9, paddingBottom: 9,
+                                border: `1px solid ${C.border}`, borderRadius: 8,
+                                fontSize: 13, color: C.text, backgroundColor: '#F5F7FA',
+                                outline: 'none', fontFamily: 'inherit',
+                            }}
+                            onFocus={e => { e.target.style.borderColor = ORANGE; e.target.style.boxShadow = '0 0 0 3px rgba(255,90,31,0.1)'; }}
+                            onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; }}
                         />
                     </div>
                 </div>
 
                 {/* ── Patient List ── */}
-                <div className="rounded-xl overflow-hidden" style={{ backgroundColor: C.card, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                <div style={{ backgroundColor: C.card, borderRadius: 12, overflow: 'hidden', border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
                     {filteredPatients.length === 0 ? (
-                        <div className="text-center py-10">
-                            <Users className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(10,26,63,0.12)' }} />
+                        <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+                            <Users style={{ width: 40, height: 40, color: 'rgba(10,26,63,0.12)', margin: '0 auto 12px' }} />
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>
                                 {patients.length === 0 ? 'No patients registered yet' : 'No patients found'}
                             </h3>
@@ -235,8 +257,7 @@ export default function PatientManagement() {
                             </p>
                             {patients.length === 0 && (
                                 <button onClick={handleAddPatient}
-                                    className="px-4 py-2 text-white rounded-lg font-semibold transition-all active:scale-95 text-xs"
-                                    style={{ backgroundColor: ORANGE }}
+                                    style={{ padding: '8px 16px', backgroundColor: ORANGE, color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                                     onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
                                 >
@@ -251,14 +272,13 @@ export default function PatientManagement() {
                             {filteredPatients.map(patient => (
                                 <div key={patient.id}
                                     style={{ background: '#FAFBFC', borderRadius: 10, padding: '10px 12px', border: `1px solid ${C.border}` }}>
-                                    <div className="flex items-center justify-between gap-2">
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                                         {/* Avatar + name */}
-                                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
-                                                style={{ backgroundColor: '#0A1A3F', fontSize: 11 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+                                            <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                 {patient.full_name.charAt(0).toUpperCase()}
                                             </div>
-                                            <div className="min-w-0">
+                                            <div style={{ minWidth: 0 }}>
                                                 <p style={{ fontSize: 13, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                     {patient.full_name}
                                                 </p>
@@ -268,30 +288,28 @@ export default function PatientManagement() {
                                             </div>
                                         </div>
                                         {/* Actions */}
-                                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                                        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
                                             <button onClick={() => handleEditPatient(patient)}
-                                                className="p-1.5 rounded-lg transition-colors"
-                                                style={{ color: ORANGE }}
+                                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: ORANGE, borderRadius: 7, transition: 'background 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.08)'}
                                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                            ><Edit className="w-3.5 h-3.5" /></button>
+                                            ><Edit style={{ width: 14, height: 14 }} /></button>
                                             <button onClick={() => handleDeletePatient(patient.id, patient.full_name)}
-                                                className="p-1.5 rounded-lg transition-colors"
-                                                style={{ color: '#ef4444' }}
+                                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 7, transition: 'background 0.15s' }}
                                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
                                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                            ><Trash2 className="w-3.5 h-3.5" /></button>
+                                            ><Trash2 style={{ width: 14, height: 14 }} /></button>
                                         </div>
                                     </div>
                                     {/* Detail row */}
-                                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
                                         <span style={{ fontSize: 11, color: C.textMuted, textTransform: 'capitalize' }}>{patient.gender}</span>
                                         <span style={{ fontSize: 11, color: C.textMuted }}>·</span>
                                         <span style={{ fontSize: 11, color: C.textMuted }}>{patient.phone}</span>
                                         {patient.blood_group && (
                                             <>
                                                 <span style={{ fontSize: 11, color: C.textMuted }}>·</span>
-                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#c0392b', backgroundColor: 'rgba(225,29,72,0.07)', padding: '1px 5px', borderRadius: 4 }}>
+                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#c0392b', backgroundColor: 'rgba(225,29,72,0.07)', padding: '1px 6px', borderRadius: 4 }}>
                                                     {patient.blood_group}
                                                 </span>
                                             </>
@@ -307,8 +325,8 @@ export default function PatientManagement() {
                     ) : (
 
                         /* ════ DESKTOP: Table ════ */
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ backgroundColor: '#F5F7FA', borderBottom: `1px solid ${C.border}` }}>
                                     <tr>
                                         {['Patient #', 'Name', 'Gender', 'Blood Group', 'Phone', 'Registered', 'Actions'].map(h => (
@@ -325,15 +343,14 @@ export default function PatientManagement() {
                                             onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.03)'}
                                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                                         >
-                                            <td style={{ padding: '10px 16px' }}>
+                                            <td style={{ padding: '11px 16px' }}>
                                                 <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: ORANGE }}>
                                                     {patient.patient_number}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '10px 16px' }}>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
-                                                        style={{ backgroundColor: '#0A1A3F', fontSize: 11 }}>
+                                            <td style={{ padding: '11px 16px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#0A1A3F', color: '#fff', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                         {patient.full_name.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
@@ -342,33 +359,31 @@ export default function PatientManagement() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '10px 16px', fontSize: 12, color: C.textSub, textTransform: 'capitalize' }}>{patient.gender}</td>
-                                            <td style={{ padding: '10px 16px' }}>
-                                                <span style={{ padding: '2px 7px', borderRadius: 5, fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(225,29,72,0.07)', color: '#c0392b', border: '1px solid rgba(225,29,72,0.15)' }}>
+                                            <td style={{ padding: '11px 16px', fontSize: 12, color: C.textSub, textTransform: 'capitalize' }}>{patient.gender}</td>
+                                            <td style={{ padding: '11px 16px' }}>
+                                                <span style={{ padding: '2px 8px', borderRadius: 5, fontSize: 11, fontWeight: 700, backgroundColor: 'rgba(225,29,72,0.07)', color: '#c0392b', border: '1px solid rgba(225,29,72,0.15)' }}>
                                                     {patient.blood_group || 'N/A'}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '10px 16px', fontSize: 12, color: C.textSub }}>{patient.phone}</td>
-                                            <td style={{ padding: '10px 16px', fontSize: 11, color: C.textMuted }}>
+                                            <td style={{ padding: '11px 16px', fontSize: 12, color: C.textSub }}>{patient.phone}</td>
+                                            <td style={{ padding: '11px 16px', fontSize: 11, color: C.textMuted }}>
                                                 {new Date(patient.created_at).toLocaleDateString()}
                                             </td>
-                                            <td style={{ padding: '10px 16px' }}>
-                                                <div className="flex items-center justify-end gap-1">
+                                            <td style={{ padding: '11px 16px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
                                                     <button onClick={() => handleEditPatient(patient)}
-                                                        className="p-1.5 rounded-lg transition-colors"
-                                                        style={{ color: ORANGE }}
+                                                        style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: ORANGE, borderRadius: 8, transition: 'background 0.15s' }}
                                                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,90,31,0.08)'}
                                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                                                         title="Edit">
-                                                        <Edit className="w-3.5 h-3.5" />
+                                                        <Edit style={{ width: 15, height: 15 }} />
                                                     </button>
                                                     <button onClick={() => handleDeletePatient(patient.id, patient.full_name)}
-                                                        className="p-1.5 rounded-lg transition-colors"
-                                                        style={{ color: '#ef4444' }}
+                                                        style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', borderRadius: 8, transition: 'background 0.15s' }}
                                                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'}
                                                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                                                         title="Delete">
-                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        <Trash2 style={{ width: 15, height: 15 }} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -383,21 +398,22 @@ export default function PatientManagement() {
 
             {/* ══════════ MODAL ══════════ */}
             {showModal && (
-                <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', padding: isMobile ? 0 : 16 }}>
-                    <div
-                        className="bg-white w-full overflow-y-auto"
-                        style={{
-                            borderRadius:  isMobile ? '20px 20px 0 0' : 14,
-                            maxWidth:      isMobile ? '100%' : 520,
-                            maxHeight:     isMobile ? '92vh' : '88vh',
-                            border:        `1px solid ${C.border}`,
-                            boxShadow:     '0 24px 80px rgba(10,26,63,0.15)',
-                        }}>
+                <div
+                    style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 50, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', padding: isMobile ? 0 : 16 }}
+                    onClick={e => e.target === e.currentTarget && setShowModal(false)}
+                >
+                    <div style={{
+                        backgroundColor: '#fff', width: '100%',
+                        maxWidth: isMobile ? '100%' : 520,
+                        maxHeight: isMobile ? '92vh' : '88vh',
+                        overflowY: 'auto',
+                        borderRadius: isMobile ? '20px 20px 0 0' : 14,
+                        border: `1px solid ${C.border}`,
+                        boxShadow: '0 24px 80px rgba(10,26,63,0.15)',
+                    }}>
 
                         {/* Modal header */}
-                        <div className="sticky top-0 bg-white px-5 py-3.5 flex items-center justify-between"
-                            style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ position: 'sticky', top: 0, backgroundColor: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}` }}>
                             <div>
                                 <div style={{ width: 22, height: 3, borderRadius: 2, background: ORANGE, marginBottom: 6 }} />
                                 <h2 style={{ fontSize: 15, fontWeight: 800, color: C.text }}>
@@ -405,11 +421,10 @@ export default function PatientManagement() {
                                 </h2>
                             </div>
                             <button onClick={() => setShowModal(false)}
-                                className="p-1.5 rounded-lg transition-colors"
-                                style={{ color: C.textMuted }}
-                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(10,26,63,0.06)'; e.currentTarget.style.color = C.text; }}
-                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.textMuted; }}>
-                                <X className="w-4 h-4" />
+                                style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, borderRadius: 8, transition: 'background 0.15s' }}
+                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(10,26,63,0.06)'}
+                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                <X style={{ width: 16, height: 16 }} />
                             </button>
                         </div>
 
@@ -418,18 +433,18 @@ export default function PatientManagement() {
                             {/* Full Name */}
                             <div>
                                 <label style={LBL}>Full Name *</label>
-                                <div className="relative">
-                                    <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <div style={{ position: 'relative' }}>
+                                    <User style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: C.textMuted }} />
                                     <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required placeholder="John Doe"
                                         className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2.5">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 <div>
                                     <label style={LBL}>Date of Birth *</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <div style={{ position: 'relative' }}>
+                                        <Calendar style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
                                         <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required
                                             className={`${INPUT_CLS} pl-8 pr-2`} style={{ color: C.text }} />
                                     </div>
@@ -446,19 +461,19 @@ export default function PatientManagement() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2.5">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 <div>
                                     <label style={LBL}>Phone *</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <div style={{ position: 'relative' }}>
+                                        <Phone style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
                                         <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+1234567890"
                                             className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
                                     </div>
                                 </div>
                                 <div>
                                     <label style={LBL}>Blood Group</label>
-                                    <div className="relative">
-                                        <Droplet className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <div style={{ position: 'relative' }}>
+                                        <Droplet style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
                                         <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange}
                                             className={`${INPUT_CLS} pl-8 pr-2`} style={{ color: formData.bloodGroup ? C.text : '#9CA3AF' }}>
                                             <option value="">Select</option>
@@ -470,8 +485,8 @@ export default function PatientManagement() {
 
                             <div>
                                 <label style={LBL}>Email Address</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                <div style={{ position: 'relative' }}>
+                                    <Mail style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: C.textMuted }} />
                                     <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="patient@email.com"
                                         className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
                                 </div>
@@ -479,8 +494,8 @@ export default function PatientManagement() {
 
                             <div>
                                 <label style={LBL}>Address *</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                                <div style={{ position: 'relative' }}>
+                                    <MapPin style={{ position: 'absolute', left: 10, top: 10, width: 13, height: 13, color: C.textMuted }} />
                                     <textarea name="address" value={formData.address} onChange={handleChange} required rows="2"
                                         placeholder="123 Main Street, City, State"
                                         className={`${INPUT_CLS} pl-8 pr-3`} style={{ color: C.text }} />
@@ -494,7 +509,7 @@ export default function PatientManagement() {
                                     className={`${INPUT_CLS} px-3`} style={{ color: C.text }} />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2.5">
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 <div>
                                     <label style={LBL}>Next of Kin</label>
                                     <input type="text" name="nextOfKinName" value={formData.nextOfKinName} onChange={handleChange} placeholder="Jane Doe"
@@ -508,19 +523,17 @@ export default function PatientManagement() {
                             </div>
 
                             {/* Submit row */}
-                            <div className="flex gap-2 pt-1">
+                            <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
                                 <button type="submit"
-                                    className="flex-1 text-white rounded-lg font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
-                                    style={{ backgroundColor: ORANGE, boxShadow: '0 4px 14px rgba(255,90,31,0.3)', padding: '10px 0', fontSize: 13 }}
+                                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', padding: '10px 0', boxShadow: '0 4px 14px rgba(255,90,31,0.3)', transition: 'background 0.15s' }}
                                     onMouseEnter={e => e.currentTarget.style.backgroundColor = ORANGE2}
                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = ORANGE}
                                 >
-                                    <Save className="w-3.5 h-3.5" />
+                                    <Save style={{ width: 14, height: 14 }} />
                                     {modalMode === 'add' ? 'Register Patient' : 'Save Changes'}
                                 </button>
                                 <button type="button" onClick={() => setShowModal(false)}
-                                    className="rounded-lg font-semibold transition-all"
-                                    style={{ border: `1px solid ${C.border}`, color: C.textSub, backgroundColor: 'transparent', padding: '10px 14px', fontSize: 13 }}
+                                    style={{ padding: '10px 16px', backgroundColor: 'transparent', border: `1px solid ${C.border}`, borderRadius: 10, color: C.textSub, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
                                     onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(10,26,63,0.04)'; e.currentTarget.style.borderColor = 'rgba(10,26,63,0.2)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; }}
                                 >
