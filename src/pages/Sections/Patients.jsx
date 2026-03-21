@@ -55,10 +55,7 @@ export default function PatientManagement() {
             const user  = JSON.parse(localStorage.getItem('user'));
 
             // Cover all possible field names your backend might store the hospital ID under
-            const hospitalId = user?.id
-                || user?.hospitalId
-                || user?.hospital_id
-                || user?.hospitalID;
+            const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
 
             if (!hospitalId) {
                 console.error('No hospital ID found in stored user object:', user);
@@ -67,7 +64,7 @@ export default function PatientManagement() {
             }
 
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/patients/hospital/${hospitalId}`,
+                `${import.meta.env.VITE_API_URL}/api/patients/${hospitalId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
 
@@ -122,9 +119,9 @@ export default function PatientManagement() {
         try {
             const token = localStorage.getItem('token');
             const user  = JSON.parse(localStorage.getItem('user'));
-            const hospitalId = user?.id || user?.hospitalId || user?.hospital_id || user?.hospitalID;
+            const hospitalId = user?.hospital_id || user?.hospitalId || user?.id;
             const url   = modalMode === 'add'
-                ? `${import.meta.env.VITE_API_URL}/api/patients/hospital/${hospitalId}`
+                ? `${import.meta.env.VITE_API_URL}/api/patients`
                 : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
             const res = await fetch(url, {
                 method:  modalMode === 'add' ? 'POST' : 'PUT',
