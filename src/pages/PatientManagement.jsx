@@ -17,11 +17,11 @@ const INPUT_CLS =
     "focus:ring-orange-200 focus:border-orange-400 text-slate-800 placeholder-slate-400";
 
 export default function PatientManagement() {
-    const [patients, setPatients]             = useState([]);
-    const [loading, setLoading]               = useState(true);
-    const [searchQuery, setSearchQuery]       = useState('');
-    const [showModal, setShowModal]           = useState(false);
-    const [modalMode, setModalMode]           = useState('add');
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [formData, setFormData] = useState({
         fullName: '', dateOfBirth: '', gender: '', phone: '', email: '',
@@ -34,7 +34,7 @@ export default function PatientManagement() {
     const fetchPatients = async () => {
         try {
             const token = localStorage.getItem('token');
-            const user  = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('user'));
             if (!user?.id) { console.error('No hospital ID found'); return; }
 
             const response = await fetch(
@@ -70,7 +70,7 @@ export default function PatientManagement() {
     const handleDeletePatient = async (patientId, patientName) => {
         if (!window.confirm(`Are you sure you want to delete ${patientName}? This action cannot be undone.`)) return;
         try {
-            const token    = localStorage.getItem('token');
+            const token = localStorage.getItem('token');
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/patients/${patientId}`, {
                 method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -78,14 +78,13 @@ export default function PatientManagement() {
             else { const data = await response.json(); alert(`Error: ${data.error}`); }
         } catch (error) { console.error('Error deleting patient:', error); alert('Failed to delete patient'); }
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            const user  = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('user'));
 
-            const url    = modalMode === 'add' ? `${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}` : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
+            const url = modalMode === 'add' ? `${import.meta.env.VITE_API_URL}/api/patients/hospital/${user.id}` : `${import.meta.env.VITE_API_URL}/api/patients/${selectedPatient.id}`;
             const method = modalMode === 'add' ? 'POST' : 'PUT';
 
             const response = await fetch(url, {
@@ -95,6 +94,21 @@ export default function PatientManagement() {
             });
 
             if (response.ok) {
+                const data = await response.json();
+
+                // ── Save to credentials log so it appears in Credentials History ──
+                if (modalMode === 'add' && data.tempPassword) {
+                    const { saveCredential } = await import('./CredentialsHistory');
+                    saveCredential({
+                        type: 'patient',
+                        fullName: data.patient?.full_name || formData.fullName,
+                        email: data.patient?.email || formData.email || null,
+                        phone: data.patient?.phone || formData.phone || null,
+                        patientNumber: data.patient?.patient_number || null,
+                        tempPassword: data.tempPassword,
+                    });
+                }
+
                 alert(modalMode === 'add' ? 'Patient registered successfully!' : 'Patient updated successfully!');
                 setShowModal(false); fetchPatients();
             } else { const data = await response.json(); alert(`Error: ${data.error}`); }
@@ -378,7 +392,7 @@ export default function PatientManagement() {
                                         <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange}
                                             className={`${INPUT_CLS} pl-11 pr-4`}>
                                             <option value="">Select blood group</option>
-                                            {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => <option key={g} value={g}>{g}</option>)}
+                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => <option key={g} value={g}>{g}</option>)}
                                         </select>
                                     </div>
                                 </div>
