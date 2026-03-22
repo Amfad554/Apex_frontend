@@ -4,7 +4,7 @@ import {
   Heart, Calendar, FileText, Pill, LogOut, Sun, Moon, Lock,
   Activity, User, X, Clock, Droplets, Phone, Mail,
   MapPin, AlertCircle, CheckCircle, Home, Menu,
-  Eye, Zap, Bell, Shield, Thermometer, Wind, ChevronRight
+  Eye, Zap, Bell, Shield, Thermometer, Wind, ChevronRight, Search
 } from 'lucide-react';
 import ChangePasswordModal from '../Components/ChangePasswordModal';
 import NotificationsPanel from '../Components/NotificationsPanel';
@@ -246,11 +246,14 @@ function Overview({ t, patient, isDark, onNavigate, hospitalId }) {
 }
 
 /* ─── Appointments ── */
-function MyAppointments({ t, patient, hospitalId }) {
+function MyAppointments({ t, patient, hospitalId, externalSearch = '' }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState(externalSearch);
+
+  useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -260,7 +263,14 @@ function MyAppointments({ t, patient, hospitalId }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = filter === 'all' ? items : items.filter(a => a.status?.toLowerCase() === filter);
+  const filtered = items.filter(a => {
+    const matchesFilter = filter === 'all' || a.status?.toLowerCase() === filter;
+    const matchesSearch = !search ||
+      a.reason?.toLowerCase().includes(search.toLowerCase()) ||
+      a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
   const counts = { all: items.length, scheduled: 0, completed: 0, cancelled: 0 };
   items.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
@@ -280,6 +290,12 @@ function MyAppointments({ t, patient, hospitalId }) {
           </div>
         ))}
       </div>
+      {/* Section search bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, marginBottom: 16, transition: 'border-color .18s', boxShadow: search ? `0 0 0 3px ${ORANGE}12` : 'none' }}>
+        <Search size={14} color={search ? ORANGE : t.textMuted} />
+        <input placeholder="Search by reason or doctor..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+        {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
+      </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
         {['all', 'scheduled', 'completed', 'cancelled'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 16px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
@@ -287,7 +303,10 @@ function MyAppointments({ t, patient, hospitalId }) {
           </button>
         ))}
       </div>
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={Calendar} label="appointments" t={t} /> : (
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? (
+        search ? <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 20, border: `1.5px dashed ${t.borderStrong}` }}>No appointments matching "{search}"</div>
+          : <Empty icon={Calendar} label="appointments" t={t} />
+      ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {filtered.map((a, i) => (
             <div key={a.id} style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, display: 'flex', gap: 18, alignItems: 'flex-start', animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
@@ -319,12 +338,15 @@ function MyAppointments({ t, patient, hospitalId }) {
 }
 
 /* ─── Medical Records ── */
-function MyRecords({ t, patient, hospitalId }) {
+function MyRecords({ t, patient, hospitalId, externalSearch = '' }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState('All');
+  const [search, setSearch] = useState(externalSearch);
+
+  useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -333,7 +355,15 @@ function MyRecords({ t, patient, hospitalId }) {
   }, [hospitalId, patient?.id]);
 
   useEffect(() => { load(); }, [load]);
-  const filtered = filter === 'All' ? items : items.filter(r => r.recordType === filter);
+
+  const filtered = items.filter(r => {
+    const matchesType = filter === 'All' || r.recordType === filter;
+    const matchesSearch = !search ||
+      r.title?.toLowerCase().includes(search.toLowerCase()) ||
+      r.diagnosis?.toLowerCase().includes(search.toLowerCase()) ||
+      r.doctor?.fullName?.toLowerCase().includes(search.toLowerCase());
+    return matchesType && matchesSearch;
+  });
 
   return (
     <div>
@@ -343,6 +373,12 @@ function MyRecords({ t, patient, hospitalId }) {
           <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} records on file</p>
         </div>
       </div>
+      {/* Section search bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, marginBottom: 16, transition: 'border-color .18s', boxShadow: search ? `0 0 0 3px ${ORANGE}12` : 'none' }}>
+        <Search size={14} color={search ? ORANGE : t.textMuted} />
+        <input placeholder="Search by title, diagnosis or doctor..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+        {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
+      </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {['All', ...Object.keys(RECORD_TYPES)].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 14px', borderRadius: 20, border: `1.5px solid ${filter === f ? ORANGE : t.border}`, background: filter === f ? t.accentBg : t.surface, color: filter === f ? ORANGE : t.textMuted, fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
@@ -350,7 +386,10 @@ function MyRecords({ t, patient, hospitalId }) {
           </button>
         ))}
       </div>
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? <Empty icon={FileText} label="records" t={t} /> : (
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : filtered.length === 0 ? (
+        search ? <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 20, border: `1.5px dashed ${t.borderStrong}` }}>No records matching "{search}"</div>
+          : <Empty icon={FileText} label="records" t={t} />
+      ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 16 }}>
           {filtered.map((r, i) => {
             const rt = RECORD_TYPES[r.recordType] || RECORD_TYPES.other;
@@ -378,7 +417,7 @@ function MyRecords({ t, patient, hospitalId }) {
         </div>
       )}
       {selected && (
-        <div onClick={e => e.target === e.currentTarget && setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }}>
+        <div onClick={e => e.target === e.currentTarget && setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
           <div style={{ background: t.surface, borderRadius: 26, width: '100%', maxWidth: 480, maxHeight: '88vh', overflowY: 'auto', border: `1px solid ${t.borderStrong}`, boxShadow: '0 32px 80px rgba(0,0,0,0.5)', animation: 'fadeUp 0.22s ease' }}>
             <div style={{ padding: '22px 24px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: t.surface, borderRadius: '26px 26px 0 0' }}>
               <div>
@@ -409,10 +448,13 @@ function MyRecords({ t, patient, hospitalId }) {
 }
 
 /* ─── Prescriptions ── */
-function MyPrescriptions({ t, patient, hospitalId }) {
+function MyPrescriptions({ t, patient, hospitalId, externalSearch = '' }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState(externalSearch);
+
+  useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
   const load = useCallback(async () => {
     if (!hospitalId || !patient?.id) { setLoading(false); return; }
@@ -422,8 +464,8 @@ function MyPrescriptions({ t, patient, hospitalId }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const activeRx = items.filter(r => r.status?.toLowerCase() === 'active');
-  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active');
+  const activeRx = items.filter(r => r.status?.toLowerCase() === 'active' && (!search || r.medication?.toLowerCase().includes(search.toLowerCase()) || r.doctor?.fullName?.toLowerCase().includes(search.toLowerCase())));
+  const otherRx = items.filter(r => r.status?.toLowerCase() !== 'active' && (!search || r.medication?.toLowerCase().includes(search.toLowerCase()) || r.doctor?.fullName?.toLowerCase().includes(search.toLowerCase())));
 
   const RxCard = ({ rx, i }) => (
     <div style={{ background: t.surface, borderRadius: 20, padding: '20px 22px', border: `1px solid ${t.border}`, boxShadow: t.shadow, animation: `fadeUp 0.3s ease ${i * 0.05}s both` }}>
@@ -454,9 +496,18 @@ function MyPrescriptions({ t, patient, hospitalId }) {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: t.text, letterSpacing: '-0.4px', marginBottom: 3 }}>Prescriptions</h1>
-        <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total · {activeRx.length} active</p>
+        <p style={{ fontSize: 13, color: t.textMuted }}>{items.length} total · {items.filter(r => r.status === 'active').length} active</p>
       </div>
-      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : items.length === 0 ? <Empty icon={Pill} label="prescriptions" t={t} /> : (
+      {/* Section search bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, marginBottom: 20, transition: 'border-color .18s', boxShadow: search ? `0 0 0 3px ${ORANGE}12` : 'none' }}>
+        <Search size={14} color={search ? ORANGE : t.textMuted} />
+        <input placeholder="Search by medication or doctor..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+        {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
+      </div>
+      {loading ? <Spinner t={t} /> : error ? <Err msg={error} t={t} /> : (activeRx.length + otherRx.length) === 0 ? (
+        search ? <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 20, border: `1.5px dashed ${t.borderStrong}` }}>No prescriptions matching "{search}"</div>
+          : <Empty icon={Pill} label="prescriptions" t={t} />
+      ) : (
         <>
           {activeRx.length > 0 && (
             <div style={{ marginBottom: 28 }}>
@@ -498,7 +549,6 @@ function MyProfile({ t, patient, isDark, onChangePw }) {
     { label: 'Next of Kin', value: patient?.nextOfKinName || '—', icon: User, color: CYAN },
     { label: 'Kin Phone', value: patient?.nextOfKinPhone || '—', icon: Phone, color: CYAN },
   ];
-
   return (
     <div>
       <div style={{ background: isDark ? `linear-gradient(135deg,rgba(255,90,31,0.14),rgba(79,70,229,0.08),transparent)` : `linear-gradient(135deg,rgba(255,90,31,0.1),rgba(79,70,229,0.05),transparent)`, borderRadius: 28, padding: 32, marginBottom: 24, border: `1px solid ${t.borderStrong}`, position: 'relative', overflow: 'hidden' }}>
@@ -513,7 +563,6 @@ function MyProfile({ t, patient, isDark, onChangePw }) {
               {patient?.bloodGroup && <span style={{ background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', color: ROSE, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{patient.bloodGroup}</span>}
               {patient?.gender && <span style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, color: t.textSub, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, textTransform: 'capitalize' }}>{patient.gender}</span>}
             </div>
-            {/* Change Password button inside profile */}
             <button onClick={onChangePw}
               style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid rgba(255,90,31,0.3)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
@@ -523,7 +572,6 @@ function MyProfile({ t, patient, isDark, onChangePw }) {
           </div>
         </div>
       </div>
-
       <h2 style={{ fontSize: 17, fontWeight: 800, color: t.text, marginBottom: 16 }}>Personal Information</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 12 }}>
         {info.map(({ label, value, icon: Icon, color }, i) => (
@@ -548,6 +596,8 @@ const NAV = [
   { id: 'profile', label: 'Profile', icon: User },
 ];
 
+const SEARCHABLE = ['appointments', 'records', 'prescriptions'];
+
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -556,7 +606,8 @@ export default function PatientDashboard() {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
-  const [notifCount, setNotifCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const t = isDark ? T.dark : T.light;
   const hospitalId = patient?.hospital_id;
@@ -570,18 +621,33 @@ export default function PatientDashboard() {
 
   const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
   const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/patientlogin'); };
-  const goTo = (id) => { setSection(id); setMobileMenu(false); };
+
+  const goTo = (id) => {
+    setSection(id);
+    setMobileMenu(false);
+    setSearchOpen(false);
+    if (!SEARCHABLE.includes(id)) setSearchQuery('');
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    // Auto-navigate to appointments when typing from a non-searchable section
+    if (value.trim() && !SEARCHABLE.includes(section)) {
+      setSection('appointments');
+    }
+  };
 
   const sectionProps = { t, patient, isDark, hospitalId };
 
   const renderSection = () => {
+    const externalSearch = SEARCHABLE.includes(section) ? searchQuery : '';
     switch (section) {
-      case 'overview': return <Overview         {...sectionProps} onNavigate={goTo} />;
-      case 'appointments': return <MyAppointments   {...sectionProps} />;
-      case 'records': return <MyRecords        {...sectionProps} />;
-      case 'prescriptions': return <MyPrescriptions  {...sectionProps} />;
-      case 'profile': return <MyProfile        {...sectionProps} onChangePw={() => setShowChangePw(true)} />;
-      default: return <Overview         {...sectionProps} onNavigate={goTo} />;
+      case 'overview': return <Overview        {...sectionProps} onNavigate={goTo} />;
+      case 'appointments': return <MyAppointments  {...sectionProps} externalSearch={externalSearch} />;
+      case 'records': return <MyRecords       {...sectionProps} externalSearch={externalSearch} />;
+      case 'prescriptions': return <MyPrescriptions {...sectionProps} externalSearch={externalSearch} />;
+      case 'profile': return <MyProfile       {...sectionProps} onChangePw={() => setShowChangePw(true)} />;
+      default: return <Overview        {...sectionProps} onNavigate={goTo} />;
     }
   };
 
@@ -590,7 +656,6 @@ export default function PatientDashboard() {
 
   const SidebarContent = ({ forceFull = false }) => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Logo */}
       <div style={{ padding: '18px 14px', borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px rgba(255,90,31,0.35)` }}>
@@ -609,11 +674,9 @@ export default function PatientDashboard() {
           </button>
         )}
       </div>
-
       <div style={{ padding: '12px 16px 6px' }}>
         <p style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>{today}</p>
       </div>
-
       <nav style={{ flex: 1, padding: 8, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = section === id;
@@ -629,8 +692,6 @@ export default function PatientDashboard() {
           );
         })}
       </nav>
-
-      {/* User footer */}
       <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: t.accentBg, border: `1px solid ${t.borderStrong}` }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{av}</div>
@@ -639,7 +700,6 @@ export default function PatientDashboard() {
             <p style={{ fontSize: 11, color: t.textMuted }}>{patient?.patientNumber || '—'}</p>
           </div>
         </div>
-        {/* Change Password button */}
         <button onClick={() => setShowChangePw(true)}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 9, borderRadius: 10, border: `1px solid rgba(255,90,31,0.3)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
@@ -675,6 +735,7 @@ export default function PatientDashboard() {
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         @keyframes slideLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
         @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
       `}</style>
 
       {/* Desktop sidebar */}
@@ -694,10 +755,34 @@ export default function PatientDashboard() {
         </>
       )}
 
+      {/* Mobile search overlay */}
+      {isMobile && searchOpen && (
+        <>
+          <div onClick={() => { setSearchOpen(false); setSearchQuery(''); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 400, backdropFilter: 'blur(2px)' }} />
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: t.sidebar, zIndex: 401, padding: '12px 16px', boxShadow: `0 4px 24px rgba(0,0,0,0.1)`, animation: 'slideDown 0.2s ease', borderBottom: `1px solid ${t.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 12, padding: '10px 14px', border: `1.5px solid ${searchQuery ? ORANGE : t.border}` }}>
+                <Search size={16} color={searchQuery ? ORANGE : t.textMuted} />
+                <input autoFocus placeholder="Search appointments, records..."
+                  value={searchQuery} onChange={e => handleSearchChange(e.target.value)}
+                  onKeyDown={e => e.key === 'Escape' && setSearchOpen(false)}
+                  style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 15, flex: 1, fontFamily: 'inherit' }} />
+                {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}><X size={15} /></button>}
+              </div>
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: ORANGE, fontFamily: 'inherit', fontSize: 14, whiteSpace: 'nowrap', fontWeight: 600 }}>
+                Cancel
+              </button>
+            </div>
+            {searchQuery && <p style={{ fontSize: 12, color: t.textMuted, marginTop: 8, paddingLeft: 2 }}>Searching in <strong style={{ color: t.text }}>{section}</strong>…</p>}
+          </div>
+        </>
+      )}
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', minWidth: 0 }}>
         {/* Header */}
         <header style={{ height: isMobile ? 56 : 64, flexShrink: 0, background: t.sidebar, borderBottom: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 12px' : '0 20px', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
             {isMobile && (
               <button onClick={() => setMobileMenu(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}>
                 <Menu size={20} />
@@ -705,20 +790,47 @@ export default function PatientDashboard() {
             )}
             {isMobile
               ? <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>HMS<span style={{ color: ORANGE }}>Care</span></span>
-              : <p style={{ fontSize: 16, fontWeight: 800, color: t.text }}>{NAV.find(n => n.id === section)?.label || 'Dashboard'}</p>
+              : (
+                /* Desktop search bar — new addition for patient dashboard */
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8, background: t.input,
+                  borderRadius: 10, padding: '8px 14px',
+                  border: `1.5px solid ${searchQuery ? ORANGE : t.border}`,
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: searchQuery ? `0 0 0 3px ${ORANGE}12` : 'none',
+                  flex: 1, maxWidth: 320,
+                }}>
+                  <Search size={14} color={searchQuery ? ORANGE : t.textMuted} />
+                  <input
+                    placeholder="Search appointments, records..."
+                    value={searchQuery}
+                    onChange={e => handleSearchChange(e.target.value)}
+                    onKeyDown={e => e.key === 'Escape' && setSearchQuery('')}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, flex: 1, fontFamily: 'inherit', minWidth: 0 }}
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}>
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+              )
             }
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
+            {/* Mobile search button */}
+            {isMobile && (
+              <button onClick={() => setSearchOpen(true)}
+                style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>
+                <Search size={16} />
+              </button>
+            )}
             {!isMobile && (
               <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub }}>
                 {isDark ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             )}
-            <NotificationsPanel
-              isDark={isDark}
-              onNavigate={goTo}
-              onCountChange={() => { }}
-            />
+            <NotificationsPanel isDark={isDark} onNavigate={goTo} onCountChange={() => { }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${ORANGE},${ORANGE2})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>{av}</div>
               {!isMobile && (
@@ -755,13 +867,7 @@ export default function PatientDashboard() {
         )}
       </div>
 
-      {/* Change Password Modal — correctly placed at root level */}
-      {showChangePw && (
-        <ChangePasswordModal
-          onClose={() => setShowChangePw(false)}
-          isDark={isDark}
-        />
-      )}
+      {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} isDark={isDark} />}
     </div>
   );
 }

@@ -111,7 +111,6 @@ const TYPE_COLORS = {
 };
 
 const AVATAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#7c3aed', '#059669'];
-
 const initials = (name) => !name ? '??' : name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
 function Badge({ status }) {
@@ -141,13 +140,16 @@ function LoadingState({ t, accent }) {
     );
 }
 
-/* ─── PatientsSection ── gfd*/
-function PatientsSection({ t, hospitalId, accent }) {
+/* ─── PatientsSection ── */
+function PatientsSection({ t, hospitalId, accent, externalSearch = '' }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(externalSearch);
     const [viewPatient, setViewPatient] = useState(null);
     const [error, setError] = useState('');
+
+    // Sync external search
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = useCallback(async (q = '') => {
         try { setLoading(true); setError(''); const res = await api.patients.list(hospitalId, q ? { search: q } : {}); setPatients(res.patients || []); }
@@ -155,18 +157,18 @@ function PatientsSection({ t, hospitalId, accent }) {
     }, [hospitalId]);
 
     useEffect(() => { load(); }, [load]);
-    useEffect(() => { const id = setTimeout(() => load(search), 400); return () => clearTimeout(id); }, [search]);
+    useEffect(() => { const id = setTimeout(() => load(search), 350); return () => clearTimeout(id); }, [search]);
 
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4 }}>Patients</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{patients.length} patients in your hospital</p>
+                    <p style={{ color: t.textSub, fontSize: 13 }}>{patients.length} patients{search ? ` matching "${search}"` : ' in your hospital'}</p>
                 </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, marginBottom: 20 }}>
-                <Search size={15} color={t.textMuted} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, marginBottom: 20, boxShadow: search ? `0 0 0 3px ${ORANGE}12` : 'none', transition: 'border-color .18s' }}>
+                <Search size={15} color={search ? ORANGE : t.textMuted} />
                 <input placeholder="Search by name or patient number..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
                 {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={14} /></button>}
             </div>
@@ -175,7 +177,9 @@ function PatientsSection({ t, hospitalId, accent }) {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {patients.length === 0 ? (
-                        <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No patients found</div>
+                        <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>
+                            {search ? `No patients matching "${search}"` : 'No patients found'}
+                        </div>
                     ) : patients.map((p, i) => {
                         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         return (
@@ -198,7 +202,7 @@ function PatientsSection({ t, hospitalId, accent }) {
                 </div>
             )}
             {viewPatient && (
-                <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 460, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
                         <div style={{ padding: '18px 20px', background: ORANGE + '14', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -235,19 +239,21 @@ function PatientsSection({ t, hospitalId, accent }) {
 }
 
 /* ─── AppointmentsSection ── */
-function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
+function AppointmentsSection({ t, hospitalId, accent, isMobile, role, externalSearch = '' }) {
     const [appointments, setAppointments] = useState([]);
     const [patients, setPatients] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(externalSearch);
     const [showAdd, setShowAdd] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
     const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
     const canCreate = ['doctor', 'receptionist', 'nurse'].includes(role);
+
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = useCallback(async () => {
         if (!hospitalId) return;
@@ -279,7 +285,11 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
         catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = appointments.filter(a => a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase()) || a.reason?.toLowerCase().includes(search.toLowerCase()));
+    const filtered = appointments.filter(a =>
+        a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        a.reason?.toLowerCase().includes(search.toLowerCase())
+    );
     const counts = { scheduled: 0, completed: 0, cancelled: 0 };
     appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
@@ -302,9 +312,10 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
                 ))}
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
-                    <Search size={14} color={t.textMuted} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, flex: 1, minWidth: 200, transition: 'border-color .18s' }}>
+                    <Search size={14} color={search ? ORANGE : t.textMuted} />
                     <input placeholder="Search appointments..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['All', 'Scheduled', 'Completed', 'Cancelled'].map(s => (
@@ -314,7 +325,9 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
             </div>
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(340px,1fr))', gap: 14 }}>
-                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No appointments found</div>
+                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>
+                        {search ? `No appointments matching "${search}"` : 'No appointments found'}
+                    </div>
                         : filtered.map((a, i) => {
                             const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                             return (
@@ -347,7 +360,7 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Book Appointment</h2>
@@ -376,19 +389,21 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role }) {
 }
 
 /* ─── PrescriptionsSection ── */
-function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
+function PrescriptionsSection({ t, hospitalId, accent, isMobile, role, externalSearch = '' }) {
     const [prescriptions, setPrescriptions] = useState([]);
     const [patients, setPatients] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(externalSearch);
     const [showAdd, setShowAdd] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
     const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', medication: '', dosage: '', duration: '', instructions: '' });
     const canCreate = ['doctor', 'pharmacist'].includes(role);
+
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = useCallback(async () => {
         if (!hospitalId) return;
@@ -420,7 +435,10 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
         catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = prescriptions.filter(rx => rx.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || rx.medication?.toLowerCase().includes(search.toLowerCase()));
+    const filtered = prescriptions.filter(rx =>
+        rx.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        rx.medication?.toLowerCase().includes(search.toLowerCase())
+    );
     const counts = { active: 0, completed: 0, cancelled: 0 };
     prescriptions.forEach(rx => { if (counts[rx.status] !== undefined) counts[rx.status]++; });
 
@@ -443,9 +461,10 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
                 ))}
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
-                    <Search size={14} color={t.textMuted} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, flex: 1, minWidth: 200, transition: 'border-color .18s' }}>
+                    <Search size={14} color={search ? ORANGE : t.textMuted} />
                     <input placeholder="Search prescriptions..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                     {['All', 'Active', 'Completed', 'Cancelled'].map(s => (
@@ -458,7 +477,7 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead><tr style={{ background: t.cardAlt }}>{['Patient', 'Drug', 'Dosage', 'Doctor', 'Status', 'Actions'].map(h => <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
                         <tbody>
-                            {filtered.length === 0 ? <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted }}>No prescriptions found</td></tr>
+                            {filtered.length === 0 ? <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted }}>{search ? `No prescriptions matching "${search}"` : 'No prescriptions found'}</td></tr>
                                 : filtered.map((rx, i) => {
                                     const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                                     return (
@@ -477,7 +496,7 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Issue Prescription</h2>
@@ -506,13 +525,13 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role }) {
 }
 
 /* ─── RecordsSection ── */
-function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
+function RecordsSection({ t, hospitalId, accent, isMobile, role, externalSearch = '' }) {
     const [records, setRecords] = useState([]);
     const [patients, setPatients] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(externalSearch);
     const [showAdd, setShowAdd] = useState(false);
     const [viewRec, setViewRec] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -520,6 +539,8 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
     const [toast, setToast] = useState(null);
     const [form, setForm] = useState({ patientId: '', doctorId: '', recordType: 'lab_results', title: '', diagnosis: '', findings: '', notes: '' });
     const canCreate = ['doctor', 'lab_staff', 'nurse'].includes(role);
+
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = useCallback(async () => {
         if (!hospitalId) return;
@@ -546,7 +567,10 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
         catch (err) { setToast({ message: err.message, type: 'error' }); }
     };
 
-    const filtered = records.filter(r => r.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) || r.title?.toLowerCase().includes(search.toLowerCase()));
+    const filtered = records.filter(r =>
+        r.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        r.title?.toLowerCase().includes(search.toLowerCase())
+    );
     const inputStyle = { width: '100%', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' };
     const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
@@ -558,9 +582,10 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
                 {canCreate && <button onClick={() => setShowAdd(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${ORANGE}44` }}><Plus size={15} /> Add Record</button>}
             </div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1, minWidth: 200 }}>
-                    <Search size={14} color={t.textMuted} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.surface, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${search ? ORANGE : t.border}`, flex: 1, minWidth: 200, transition: 'border-color .18s' }}>
+                    <Search size={14} color={search ? ORANGE : t.textMuted} />
                     <input placeholder="Search records..." value={search} onChange={e => setSearch(e.target.value)} style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted }}><X size={13} /></button>}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {['All', ...Object.keys(TYPE_COLORS)].map(s => (
@@ -572,7 +597,9 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
             </div>
             {loading ? <LoadingState t={t} accent={accent} /> : (
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
-                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>No records found</div>
+                    {filtered.length === 0 ? <div style={{ gridColumn: '1/-1', padding: 40, textAlign: 'center', color: t.textMuted, background: t.surface, borderRadius: 16, border: `1px solid ${t.border}` }}>
+                        {search ? `No records matching "${search}"` : 'No records found'}
+                    </div>
                         : filtered.map((r, i) => {
                             const tc = TYPE_COLORS[r.recordType] || TYPE_COLORS.other;
                             const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
@@ -601,7 +628,7 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
                 </div>
             )}
             {viewRec && (
-                <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 440, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 15 }}>{viewRec.title}</h2>
@@ -623,7 +650,7 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role }) {
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Medical Record</h2>
@@ -707,19 +734,6 @@ function HomeDashboard({ t, staff, isDark, roleMeta, hospitalId, onNavigate, isM
                             </div>
                         ))}
                     </div>
-                    <div style={{ marginBottom: 24 }}>
-                        <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text, marginBottom: 14 }}>Quick Actions</h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(120px,1fr))', gap: 10 }}>
-                            {statCards.map(({ label, icon: Icon, section }) => (
-                                <button key={section} onClick={() => onNavigate(section)} style={{ background: t.surface, borderRadius: 16, padding: '16px 12px', border: `1px solid ${t.border}`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, transition: 'all 0.2s', fontFamily: 'inherit', boxShadow: t.shadow }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = ORANGE + '55'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.background = t.hover; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = t.surface; }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={16} color={ORANGE} /></div>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: t.text }}>{label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                             <h2 style={{ fontSize: 16, fontWeight: 800, color: t.text }}>Recent Appointments</h2>
@@ -776,8 +790,7 @@ function MyProfile({ t, staff, isDark, roleMeta, onChangePw }) {
                             {staff?.employeeId && <span style={{ background: `${ORANGE}28`, border: `1px solid ${ORANGE}44`, color: '#ffb399', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>{staff.employeeId}</span>}
                             <span style={{ background: 'rgba(5,150,105,0.2)', border: '1px solid rgba(5,150,105,0.3)', color: '#6ee7a0', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>Active Staff</span>
                         </div>
-                        <button onClick={onChangePw}
-                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid rgba(255,90,31,0.4)`, background: 'rgba(255,90,31,0.12)', color: ORANGE, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+                        <button onClick={onChangePw} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1px solid rgba(255,90,31,0.4)`, background: 'rgba(255,90,31,0.12)', color: ORANGE, fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.2)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.12)'}>
                             <Lock size={14} /> Change Password
@@ -809,6 +822,9 @@ const NAV_BY_ROLE = {
     receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
 };
 
+// Sections that support search
+const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'prescriptions', 'records'];
+
 export default function StaffDashboard() {
     const navigate = useNavigate();
     const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -819,7 +835,7 @@ export default function StaffDashboard() {
     const [headerIn, setHeaderIn] = useState(false);
     const [navMounted, setNavMounted] = useState(false);
     const [showChangePw, setShowChangePw] = useState(false);
-    const [notifCount, setNotifCount] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => { setTimeout(() => setHeaderIn(true), 50); setTimeout(() => setNavMounted(true), 150); }, []);
     useEffect(() => { const check = () => setIsMobile(window.innerWidth < 768); check(); window.addEventListener('resize', check); return () => window.removeEventListener('resize', check); }, []);
@@ -839,25 +855,39 @@ export default function StaffDashboard() {
 
     const toggleTheme = () => { const next = !isDark; setIsDark(next); localStorage.setItem('theme', next ? 'dark' : 'light'); window.dispatchEvent(new Event('themeChange')); };
     const handleLogout = () => { ['token', 'user', 'userRole'].forEach(k => localStorage.removeItem(k)); window.dispatchEvent(new Event('authChange')); navigate('/stafflogin'); };
-    const goTo = (id) => { setSection(id); setMobileMenu(false); };
+
+    const goTo = (id) => {
+        setSection(id);
+        setMobileMenu(false);
+        // Clear search when navigating manually
+        if (!SEARCHABLE_SECTIONS.includes(id)) setSearchQuery('');
+    };
+
+    const handleSearchChange = (value) => {
+        setSearchQuery(value);
+        // Auto-navigate to patients when searching from a non-searchable section
+        if (value.trim() && !SEARCHABLE_SECTIONS.includes(section)) {
+            setSection('patients');
+        }
+    };
 
     const sharedProps = { t, isDark, accent: roleMeta.accent, roleMeta, hospitalId, isMobile, role: rawRole };
 
     const renderSection = () => {
+        const externalSearch = SEARCHABLE_SECTIONS.includes(section) ? searchQuery : '';
         switch (section) {
-            case 'home': return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients': return <PatientsSection  {...sharedProps} />;
-            case 'appointments': return <AppointmentsSection {...sharedProps} />;
-            case 'prescriptions': return <PrescriptionsSection {...sharedProps} />;
-            case 'records': return <RecordsSection   {...sharedProps} />;
-            case 'profile': return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
-            default: return <HomeDashboard    {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'home':          return <HomeDashboard       {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients':      return <PatientsSection     {...sharedProps} externalSearch={externalSearch} />;
+            case 'appointments':  return <AppointmentsSection {...sharedProps} externalSearch={externalSearch} />;
+            case 'prescriptions': return <PrescriptionsSection {...sharedProps} externalSearch={externalSearch} />;
+            case 'records':       return <RecordsSection      {...sharedProps} externalSearch={externalSearch} />;
+            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
+            default:              return <HomeDashboard       {...sharedProps} staff={staff} onNavigate={goTo} />;
         }
     };
 
     const SidebarContent = ({ forceFull = false }) => (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Logo */}
             <div style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${t.border}`, opacity: headerIn ? 1 : 0, transform: headerIn ? 'translateY(0)' : 'translateY(-8px)', transition: 'opacity 0.4s,transform 0.4s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${NAVY},${SOFT_NAVY})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 14px rgba(10,26,63,0.4)`, border: `1px solid ${ORANGE}44` }}>
@@ -870,8 +900,6 @@ export default function StaffDashboard() {
                 </div>
                 {forceFull && <button onClick={() => setMobileMenu(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, padding: 4, display: 'flex', borderRadius: 8 }}><X size={18} /></button>}
             </div>
-
-            {/* User chip */}
             <div style={{ padding: '10px 14px 4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: `${ORANGE}10`, border: `1px solid ${ORANGE}22` }}>
                     <div style={{ width: 28, height: 28, borderRadius: 8, background: roleMeta.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><roleMeta.icon size={14} color="#fff" /></div>
@@ -881,8 +909,6 @@ export default function StaffDashboard() {
                     </div>
                 </div>
             </div>
-
-            {/* Nav */}
             <nav style={{ flex: 1, padding: '8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
                 {navItems.map(({ id, icon: Icon, label }, idx) => {
                     const isActive = section === id;
@@ -898,22 +924,18 @@ export default function StaffDashboard() {
                     );
                 })}
             </nav>
-
-            {/* Footer: Change Password + Logout */}
             <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <button onClick={() => setShowChangePw(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid rgba(255,90,31,0.25)`, background: 'rgba(255,90,31,0.08)', color: ORANGE, fontSize: 14, fontWeight: 600, width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,90,31,0.14)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.08)'}>
-                    <Lock size={18} style={{ flexShrink: 0 }} />
-                    <span>Change Password</span>
+                    <Lock size={18} style={{ flexShrink: 0 }} /><span>Change Password</span>
                 </button>
                 <button onClick={handleLogout}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: ROSE, fontSize: 14, fontWeight: 500, background: 'none', border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(225,29,72,0.08)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <LogOut size={18} style={{ flexShrink: 0 }} />
-                    <span>Logout</span>
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'>
+                    <LogOut size={18} style={{ flexShrink: 0 }} /><span>Logout</span>
                 </button>
             </div>
         </div>
@@ -933,6 +955,7 @@ export default function StaffDashboard() {
                 @keyframes slideRight{from{transform:translateX(-100%)}to{transform:translateX(0)}}
                 @keyframes headerSlide{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
                 @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+                @keyframes spin{to{transform:rotate(360deg)}}
                 select option{background:#1F2A44;color:#F5F7FA;}
             `}</style>
 
@@ -946,7 +969,7 @@ export default function StaffDashboard() {
             {/* Mobile Sidebar Overlay */}
             {isMobile && mobileMenu && (
                 <>
-                    <div onClick={() => setMobileMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, animation: 'fadeIn 0.2s ease' }} />
+                    <div onClick={() => setMobileMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, animation: 'fadeIn 0.2s ease', backdropFilter: 'blur(3px)' }} />
                     <aside style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 270, background: t.sidebar, zIndex: 201, display: 'flex', flexDirection: 'column', boxShadow: '6px 0 32px rgba(0,0,0,0.3)', animation: 'slideRight 0.24s ease' }}>
                         <SidebarContent forceFull />
                     </aside>
@@ -960,9 +983,25 @@ export default function StaffDashboard() {
                         <button onClick={() => isMobile && setMobileMenu(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}><Menu size={20} /></button>
                         {isMobile && <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>Apex<span style={{ color: ORANGE }}>HMS</span></span>}
                         {!isMobile && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}` }}>
-                                <Search size={14} color={t.textMuted} />
-                                <input placeholder="Search patients, records..." style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: 200, fontFamily: 'inherit' }} />
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10,
+                                padding: '8px 14px', border: `1.5px solid ${searchQuery ? ORANGE : t.border}`,
+                                transition: 'border-color 0.2s, box-shadow 0.2s',
+                                boxShadow: searchQuery ? `0 0 0 3px ${ORANGE}12` : 'none',
+                            }}>
+                                <Search size={14} color={searchQuery ? ORANGE : t.textMuted} />
+                                <input
+                                    placeholder="Search patients, records..."
+                                    value={searchQuery}
+                                    onChange={e => handleSearchChange(e.target.value)}
+                                    onKeyDown={e => e.key === 'Escape' && setSearchQuery('')}
+                                    style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: 200, fontFamily: 'inherit' }}
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}>
+                                        <X size={13} />
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -970,12 +1009,7 @@ export default function StaffDashboard() {
                         <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}12`, border: `1px solid ${ORANGE}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: ORANGE }}>
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
                         </button>
-                        <NotificationsPanel
-                            isDark={isDark}
-                            onNavigate={goTo}
-                            onCountChange={() => { }}
-                        />
-
+                        <NotificationsPanel isDark={isDark} onNavigate={goTo} onCountChange={() => {}} />
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px', borderRadius: 10, transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = t.hover}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -1012,21 +1046,14 @@ export default function StaffDashboard() {
                         })}
                         {MORE_NAV.length > 0 && (
                             <button onClick={() => setMobileMenu(true)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '6px 8px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'transparent', color: t.textMuted, fontFamily: 'inherit', flex: 1, minHeight: 48 }}>
-                                <MoreHorizontal size={21} />
-                                <span style={{ fontSize: 10 }}>More</span>
+                                <MoreHorizontal size={21} /><span style={{ fontSize: 10 }}>More</span>
                             </button>
                         )}
                     </nav>
                 )}
             </div>
 
-            {/* Change Password Modal — correctly at root level */}
-            {showChangePw && (
-                <ChangePasswordModal
-                    onClose={() => setShowChangePw(false)}
-                    isDark={isDark}
-                />
-            )}
+            {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} isDark={isDark} />}
         </div>
     );
 }
