@@ -480,7 +480,7 @@ export default function HospitalDashboard() {
             {/* Notifications */}
             <NotificationsPanel
               isDark={isDark}
-              onNavigate={goTo}
+              onNavigate={navigate_to}  // ✅ matches your defined function
               onCountChange={() => { }}
             />
 
