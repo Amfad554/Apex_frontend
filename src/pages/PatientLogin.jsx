@@ -3,7 +3,7 @@ import { useState } from "react";
 import axios from "axios";
 import {
   Eye, EyeOff, Activity, Mail, Lock, Sun, Moon,
-  AlertCircle, BadgeCheck, ArrowLeft
+  AlertCircle, BadgeCheck, ArrowLeft, KeyRound, X,
 } from "lucide-react";
 
 /* ─── Brand Tokens ───────────────────────────────────────────────────────────── */
@@ -50,6 +50,13 @@ export default function PatientLogin() {
   const [message, setMessage]           = useState({ type: "", text: "" });
   const [formData, setFormData]         = useState({ email: "", password: "" });
 
+  // Forgot password state
+  const [showForgot, setShowForgot]       = useState(false);
+  const [forgotEmail, setForgotEmail]     = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError]     = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+
   const t = isDark ? themes.dark : themes.light;
 
   const toggleTheme = () => {
@@ -64,17 +71,16 @@ export default function PatientLogin() {
     setMessage({ type: "", text: "" });
   };
 
+  /* ── Login ── */
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
-
     try {
       const res  = await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/login`, formData);
       const data = res.data;
-
-      localStorage.setItem("token", data.token || "no-token");
-      localStorage.setItem("user", JSON.stringify({
+      localStorage.setItem("token",    data.token || "no-token");
+      localStorage.setItem("user",     JSON.stringify({
         ...data.user,
         role: 'patient',
         hospital_id: data.user?.hospitalId || data.user?.hospital_id,
@@ -87,6 +93,24 @@ export default function PatientLogin() {
       setMessage({ type: "error", text: errorMsg });
     } finally {
       setLoading(false);
+    }
+  };
+
+  /* ── Forgot Password ── */
+  const openForgot = () => { setShowForgot(true); setForgotError(''); setForgotSuccess(''); setForgotEmail(''); };
+  const closeForgot = () => { setShowForgot(false); setForgotError(''); setForgotSuccess(''); setForgotEmail(''); };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true); setForgotError(''); setForgotSuccess('');
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/forgot-password`, { email: forgotEmail });
+      setForgotSuccess('Reset link sent! Check your inbox.');
+    } catch (err) {
+      // Show success regardless to prevent email enumeration
+      setForgotSuccess('If this email exists, a reset link has been sent. Check your inbox.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -124,6 +148,9 @@ export default function PatientLogin() {
           border-color: ${ORANGE} !important;
           box-shadow: 0 0 0 3px rgba(255,90,31,0.12) !important;
         }
+        @keyframes overlayIn  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalIn    { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       {/* ── Theme Toggle ── */}
@@ -140,6 +167,120 @@ export default function PatientLogin() {
       >
         {isDark ? <Sun size={16} /> : <Moon size={16} />}
       </button>
+
+      {/* ── Forgot Password Modal ── */}
+      {showForgot && (
+        <>
+          {/* Overlay */}
+          <div
+            onClick={closeForgot}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+              animation: 'overlayIn 0.2s ease',
+            }}
+          />
+          {/* Modal */}
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', zIndex: 201,
+            transform: 'translate(-50%, -50%)',
+            width: '100%', maxWidth: 420,
+            background: t.card, borderRadius: 20,
+            border: `1px solid ${t.border}`,
+            boxShadow: t.shadow,
+            padding: '32px 28px',
+            animation: 'modalIn 0.25s cubic-bezier(0.34,1.2,0.64,1)',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={closeForgot}
+              style={{
+                position: 'absolute', top: 16, right: 16,
+                background: t.input, border: `1px solid ${t.border}`,
+                borderRadius: 8, width: 30, height: 30,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: t.textMuted,
+              }}
+            ><X size={14} /></button>
+
+            {/* Icon */}
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: `linear-gradient(135deg, ${ORANGE}, ${ORANGE2})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 16, boxShadow: '0 8px 24px rgba(255,90,31,0.35)',
+            }}>
+              <KeyRound size={22} color="#fff" />
+            </div>
+
+            <h2 style={{ fontWeight: 800, fontSize: 20, marginBottom: 4, color: t.text }}>Forgot Password?</h2>
+            <p style={{ fontSize: 13, color: t.textSub, marginBottom: 24 }}>
+              Enter your email and we'll send you a reset link.
+            </p>
+
+            {!forgotSuccess ? (
+              <form onSubmit={handleForgotPassword}>
+                <div style={{ marginBottom: 18 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: t.textSub, marginBottom: 8 }}>
+                    Email Address
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={15} color={t.textMuted} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                    <input
+                      type="email" value={forgotEmail}
+                      onChange={e => { setForgotEmail(e.target.value); setForgotError(''); }}
+                      required placeholder="your.email@example.com"
+                      className="input-field"
+                      style={{ ...inputStyle, paddingLeft: 42 }}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {forgotError && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, marginBottom: 18 }}>
+                    <AlertCircle size={15} color="#ef4444" />
+                    <span style={{ fontSize: 13, color: '#ef4444' }}>{forgotError}</span>
+                  </div>
+                )}
+
+                <button type="submit" disabled={forgotLoading} style={{
+                  width: '100%', padding: 13,
+                  background: forgotLoading ? 'rgba(255,90,31,0.45)' : `linear-gradient(135deg, ${ORANGE}, ${ORANGE2})`,
+                  color: '#fff', border: 'none', borderRadius: 12,
+                  fontWeight: 700, fontSize: 15,
+                  cursor: forgotLoading ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  boxShadow: forgotLoading ? 'none' : '0 4px 20px rgba(255,90,31,0.35)',
+                  transition: 'opacity 0.2s',
+                }}>
+                  {forgotLoading ? 'Sending…' : 'Send Reset Link'}
+                </button>
+              </form>
+            ) : (
+              <div style={{ animation: 'fadeSlideIn 0.3s ease' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '14px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 12, marginBottom: 20 }}>
+                  <BadgeCheck size={18} color="#10b981" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ fontSize: 13, color: '#10b981', lineHeight: 1.5 }}>{forgotSuccess}</span>
+                </div>
+                <button
+                  onClick={closeForgot}
+                  style={{
+                    width: '100%', padding: 13,
+                    background: `linear-gradient(135deg, ${ORANGE}, ${ORANGE2})`,
+                    color: '#fff', border: 'none', borderRadius: 12,
+                    fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    boxShadow: '0 4px 20px rgba(255,90,31,0.35)',
+                  }}
+                >
+                  Back to Login
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       <div style={{ width: '100%', maxWidth: 480 }}>
 
@@ -239,7 +380,7 @@ export default function PatientLogin() {
 
               {/* Forgot password */}
               <div style={{ textAlign: 'right', marginBottom: 20 }}>
-                <button type="button" style={{
+                <button type="button" onClick={openForgot} style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: ORANGE, fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
                   transition: 'color 0.15s',
@@ -311,8 +452,8 @@ export default function PatientLogin() {
         {/* ── Bottom Links ── */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24, flexWrap: 'wrap' }}>
           {[
-            { to: '/',            label: '← Back to Home' },
-            { to: '/stafflogin',  label: 'Staff Portal →' },
+            { to: '/',              label: '← Back to Home' },
+            { to: '/stafflogin',   label: 'Staff Portal →' },
             { to: '/hospital/auth', label: 'Hospital Login →' },
           ].map(({ to, label }) => (
             <Link key={to} to={to} style={{
