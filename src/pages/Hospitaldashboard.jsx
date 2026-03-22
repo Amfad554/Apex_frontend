@@ -117,15 +117,15 @@ export default function HospitalDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'dashboard': return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients': return <Patients        {...sectionProps} />;
+      case 'dashboard':    return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients':     return <Patients        {...sectionProps} />;
       case 'appointments': return <Appointments    {...sectionProps} />;
-      case 'staff': return <Staff           {...sectionProps} />;
-      case 'pharmacy': return <Pharmacy        {...sectionProps} />;
-      case 'records': return <RecordsSection  {...sectionProps} />;
-      case 'settings': return <DashSettings    {...sectionProps} />;
-      case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-      default: return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
+      case 'staff':        return <Staff           {...sectionProps} />;
+      case 'pharmacy':     return <Pharmacy        {...sectionProps} />;
+      case 'records':      return <RecordsSection  {...sectionProps} />;
+      case 'settings':     return <DashSettings    {...sectionProps} />;
+      case 'credentials':  return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />; // ← t={t} added
+      default:             return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
     }
   };
 
@@ -184,7 +184,6 @@ export default function HospitalDashboard() {
                   padding: showLabels ? '10px 12px' : '11px 0',
                   borderRadius: 10, cursor: 'pointer', border: 'none',
                   background: isActive ? t.active : 'transparent',
-                  /* ── Text colour: active = orange, inactive = textSub (dark in light mode) ── */
                   color: isActive ? t.activeText : t.textSub,
                   fontWeight: isActive ? 700 : 500,
                   fontSize: 14,
@@ -480,7 +479,7 @@ export default function HospitalDashboard() {
             {/* Notifications */}
             <NotificationsPanel
               isDark={isDark}
-              onNavigate={navigate_to}  // ✅ matches your defined function
+              onNavigate={navigate_to}
               onCountChange={() => { }}
             />
 
@@ -500,7 +499,6 @@ export default function HospitalDashboard() {
               {!isMobile && (
                 <>
                   <div style={{ minWidth: 0 }}>
-                    {/* Hospital name — must use t.text so it's dark on light bg */}
                     <span style={{ fontWeight: 600, fontSize: 13, color: t.text, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isTablet ? 90 : 130 }}>
                       {hospital?.name || 'Admin'}
                     </span>
@@ -540,7 +538,6 @@ export default function HospitalDashboard() {
                   padding: '6px 10px', borderRadius: 12,
                   border: 'none', cursor: 'pointer',
                   background: isActive ? t.active : 'transparent',
-                  /* Active = orange, inactive = textSub (dark enough on white) */
                   color: isActive ? t.activeText : t.textSub,
                   fontFamily: 'inherit', minWidth: 56, flex: 1,
                   transition: 'color 0.2s, background 0.2s',
