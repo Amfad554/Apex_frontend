@@ -63,76 +63,57 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
         </div>
     );
 
+    // ── exact same structure as Appointments modal ──
     return (
-        <div style={{
-            position: 'fixed', inset: 0, zIndex: 99999,
-            background: 'rgba(0,0,0,0.75)',
-            overflowY: 'auto',
-        }}>
-            {/* centering wrapper — always at least full viewport tall */}
-            <div style={{
-                minHeight: '100%', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                padding: isMobile ? '16px' : '24px',
-            }} onClick={e => e.target === e.currentTarget && onClose()}>
-                <div style={{
-                    background: t.card, borderRadius: 20, width: '100%', maxWidth: 440,
-                    border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-                    overflow: 'hidden',
-                }}>
-                    {/* Header */}
-                    <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <KeyRound size={18} color={T.orange} />
-                            </div>
-                            <div>
-                                <p style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Patient Registered!</p>
-                                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>Share these credentials with the patient</p>
-                            </div>
+        <div onClick={e => e.target === e.currentTarget && onClose()}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, overflowY: 'auto', padding: isMobile ? 16 : '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(3px)' }}>
+            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40 }}>
+                {/* Header */}
+                <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px', borderRadius: '20px 20px 0 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <KeyRound size={18} color={T.orange} />
+                        </div>
+                        <div>
+                            <p style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Patient Registered!</p>
+                            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>Share these credentials with the patient</p>
                         </div>
                     </div>
+                </div>
 
-                    <div style={{ padding: '20px 24px' }}>
-                        <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
-                            ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
-                        </p>
-
-                        <Row label="Patient Name">
-                            <p style={{ fontSize: 14, fontWeight: 800, color: t.text }}>{credentials.fullName}</p>
-                        </Row>
-
-                        <Row label="Patient Number (Login ID)" accent={T.orange}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
-                                <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
-                            </div>
-                        </Row>
-
-                        <Row label="Temporary Password" accent="#f59e0b">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
-                                <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
-                            </div>
-                        </Row>
-
-                        {credentials.email && (
-                            <Row label="Email">
-                                <p style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{credentials.email}</p>
-                            </Row>
-                        )}
-
-                        <div style={{ background: `${T.navy}14`, border: `1px solid ${T.navy}28`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub, lineHeight: 1.8 }}>
-                            <strong style={{ color: t.text }}>How to log in:</strong><br />
-                            Go to <strong>/patientlogin</strong> → use <strong>email</strong> + password, or <strong>patient number</strong> as identifier.
+                <div style={{ padding: '20px 24px' }}>
+                    <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
+                        ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
+                    </p>
+                    <Row label="Patient Name">
+                        <p style={{ fontSize: 14, fontWeight: 800, color: t.text }}>{credentials.fullName}</p>
+                    </Row>
+                    <Row label="Patient Number (Login ID)" accent={T.orange}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
+                            <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
                         </div>
-
-                        <button onClick={onClose}
-                            style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44` }}
-                            onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = ''; }}
-                        >Done</button>
+                    </Row>
+                    <Row label="Temporary Password" accent="#f59e0b">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
+                        </div>
+                    </Row>
+                    {credentials.email && (
+                        <Row label="Email">
+                            <p style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{credentials.email}</p>
+                        </Row>
+                    )}
+                    <div style={{ background: `${T.navy}14`, border: `1px solid ${T.navy}28`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub, lineHeight: 1.8 }}>
+                        <strong style={{ color: t.text }}>How to log in:</strong><br />
+                        Go to <strong>/patientlogin</strong> → use <strong>email</strong> + password, or <strong>patient number</strong> as identifier.
                     </div>
+                    <button onClick={onClose}
+                        style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44` }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = ''; }}
+                    >Done</button>
                 </div>
             </div>
         </div>
@@ -180,32 +161,24 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         boxShadow: focused === name ? `0 0 0 3px ${T.orange}18` : 'none',
         transition: 'border-color .18s, box-shadow .18s',
     });
-
     const labelStyle = {
         display: 'block', fontSize: 11, fontWeight: 700,
         color: t.textMuted, marginBottom: 6,
         letterSpacing: '0.07em', textTransform: 'uppercase',
     };
 
-    // ─── The key pattern: scrollable outer, centering inner ───────────────────
-    const modalOverlay = {
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.65)',
-        overflowY: 'auto',
-    };
-
-    // inner div that does the actual centering — minHeight: '100%' makes it
-    // at least viewport-tall so flexbox centering works on mobile browsers
-    const modalInner = {
-        minHeight: '100%',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: isMobile ? '16px' : '40px 20px',
-    };
-
-    const modalBox = (maxW = 560) => ({
+    // ── exact same overlay + card as Appointments ──
+    const overlayStyle = (isMob) => ({
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+        zIndex: 9999, overflowY: 'auto',
+        padding: isMob ? 16 : '40px 20px',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        backdropFilter: 'blur(3px)',
+    });
+    const cardStyle = (maxW, isMob) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
-        border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-        flexShrink: 0,
+        border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(10,26,63,0.2)',
+        flexShrink: 0, marginTop: isMob ? 16 : 40, marginBottom: 40,
     });
 
     const loadPatients = async (q = '') => {
@@ -263,7 +236,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
             onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
         ><Eye size={size === 32 ? 15 : 14} /></button>
     );
-
     const DelBtn = ({ onClick, size = 30 }) => (
         <button onClick={onClick}
             style={{ width: size, height: size, borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
@@ -303,10 +275,8 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 <Search size={15} color={t.textMuted} />
                 <input
                     placeholder="Search by name or patient number…"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    onFocus={() => setFocused('search')}
-                    onBlur={() => setFocused(null)}
+                    value={search} onChange={e => setSearch(e.target.value)}
+                    onFocus={() => setFocused('search')} onBlur={() => setFocused(null)}
                     style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }}
                 />
                 {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex' }}><X size={14} /></button>}
@@ -348,7 +318,6 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                     })}
                 </div>
             ) : (
-                /* ── Desktop table ── */
                 <div style={{ background: t.card, borderRadius: 18, border: `1.5px solid ${t.border}`, boxShadow: t.shadow, overflow: 'hidden' }}>
                     {loading ? (
                         <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
@@ -410,142 +379,138 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 </div>
             )}
 
-            {/* ── Register Modal ── */}
+            {/* ── Register Modal — identical structure to Appointments book modal ── */}
             {showRegister && (
-                <div style={modalOverlay}>
-                    <div style={modalInner} onClick={e => e.target === e.currentTarget && setShowReg(false)}>
-                        <div style={modalBox(560)}>
-                            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <UserPlus size={16} color={T.orange} />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontWeight: 800, fontSize: 15, color: t.text }}>Register New Patient</h2>
-                                        <p style={{ fontSize: 11, color: t.textMuted, marginTop: 1 }}>Credentials shown after registration</p>
-                                    </div>
+                <div onClick={e => e.target === e.currentTarget && setShowReg(false)}
+                    style={overlayStyle(isMobile)}>
+                    <div style={cardStyle(560, isMobile)}>
+                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <UserPlus size={16} color={T.orange} />
                                 </div>
-                                <CloseBtn onClick={() => setShowReg(false)} />
+                                <div>
+                                    <h2 style={{ fontWeight: 800, fontSize: 15, color: t.text }}>Register New Patient</h2>
+                                    <p style={{ fontSize: 11, color: t.textMuted, marginTop: 1 }}>Credentials shown after registration</p>
+                                </div>
                             </div>
-
-                            <form onSubmit={handleRegister} style={{ padding: '20px' }}>
-                                {formError && (
-                                    <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                                        <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />{formError}
-                                    </div>
-                                )}
-                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
-                                    <div style={{ gridColumn: '1/-1' }}>
-                                        <label style={labelStyle}>Full Name *</label>
-                                        <input required style={inputStyle('fullName')} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Amara Okafor"
-                                            onFocus={() => setFocused('fullName')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Date of Birth *</label>
-                                        <input type="date" required style={inputStyle('dob')} value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })}
-                                            onFocus={() => setFocused('dob')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Gender *</label>
-                                        <select style={inputStyle('gender')} value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
-                                            onFocus={() => setFocused('gender')} onBlur={() => setFocused(null)}>
-                                            <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Phone *</label>
-                                        <input required style={inputStyle('phone')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="0801-234-5678"
-                                            onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Email</label>
-                                        <input type="email" style={inputStyle('email')} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="patient@email.com"
-                                            onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Blood Group</label>
-                                        <select style={inputStyle('bloodGroup')} value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}
-                                            onFocus={() => setFocused('bloodGroup')} onBlur={() => setFocused(null)}>
-                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => <option key={b}>{b}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Medical Conditions</label>
-                                        <input style={inputStyle('medCond')} value={form.medicalConditions} onChange={e => setForm({ ...form, medicalConditions: e.target.value })} placeholder="e.g. Hypertension, Diabetes"
-                                            onFocus={() => setFocused('medCond')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div style={{ gridColumn: '1/-1' }}>
-                                        <label style={labelStyle}>Address *</label>
-                                        <input required style={inputStyle('address')} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Patient's home address"
-                                            onFocus={() => setFocused('address')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Next of Kin Name</label>
-                                        <input style={inputStyle('kinName')} value={form.nextOfKinName} onChange={e => setForm({ ...form, nextOfKinName: e.target.value })}
-                                            onFocus={() => setFocused('kinName')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                    <div>
-                                        <label style={labelStyle}>Next of Kin Phone</label>
-                                        <input style={inputStyle('kinPhone')} value={form.nextOfKinPhone} onChange={e => setForm({ ...form, nextOfKinPhone: e.target.value })}
-                                            onFocus={() => setFocused('kinPhone')} onBlur={() => setFocused(null)} />
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                                    <button type="button" onClick={() => setShowReg(false)}
-                                        style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'background .15s' }}
-                                        onMouseEnter={e => e.currentTarget.style.background = t.hover}
-                                        onMouseLeave={e => e.currentTarget.style.background = t.input}
-                                    >Cancel</button>
-                                    <button type="submit" disabled={submitting}
-                                        style={{ flex: 2, padding: '11px', background: submitting ? `${T.orange}88` : T.orange, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, boxShadow: submitting ? 'none' : `0 4px 16px ${T.orange}44`, transition: 'all .15s' }}
-                                        onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${T.orange}55`; } }}
-                                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px ${T.orange}44`; }}
-                                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
-                                    >{submitting ? 'Registering…' : 'Register Patient'}</button>
-                                </div>
-                            </form>
+                            <CloseBtn onClick={() => setShowReg(false)} />
                         </div>
+                        <form onSubmit={handleRegister} style={{ padding: '20px' }}>
+                            {formError && (
+                                <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                    <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />{formError}
+                                </div>
+                            )}
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={labelStyle}>Full Name *</label>
+                                    <input required style={inputStyle('fullName')} value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} placeholder="e.g. Amara Okafor"
+                                        onFocus={() => setFocused('fullName')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Date of Birth *</label>
+                                    <input type="date" required style={inputStyle('dob')} value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })}
+                                        onFocus={() => setFocused('dob')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Gender *</label>
+                                    <select style={inputStyle('gender')} value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
+                                        onFocus={() => setFocused('gender')} onBlur={() => setFocused(null)}>
+                                        <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Phone *</label>
+                                    <input required style={inputStyle('phone')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="0801-234-5678"
+                                        onFocus={() => setFocused('phone')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Email</label>
+                                    <input type="email" style={inputStyle('email')} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="patient@email.com"
+                                        onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Blood Group</label>
+                                    <select style={inputStyle('bloodGroup')} value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })}
+                                        onFocus={() => setFocused('bloodGroup')} onBlur={() => setFocused(null)}>
+                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => <option key={b}>{b}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Medical Conditions</label>
+                                    <input style={inputStyle('medCond')} value={form.medicalConditions} onChange={e => setForm({ ...form, medicalConditions: e.target.value })} placeholder="e.g. Hypertension, Diabetes"
+                                        onFocus={() => setFocused('medCond')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div style={{ gridColumn: '1/-1' }}>
+                                    <label style={labelStyle}>Address *</label>
+                                    <input required style={inputStyle('address')} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Patient's home address"
+                                        onFocus={() => setFocused('address')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Next of Kin Name</label>
+                                    <input style={inputStyle('kinName')} value={form.nextOfKinName} onChange={e => setForm({ ...form, nextOfKinName: e.target.value })}
+                                        onFocus={() => setFocused('kinName')} onBlur={() => setFocused(null)} />
+                                </div>
+                                <div>
+                                    <label style={labelStyle}>Next of Kin Phone</label>
+                                    <input style={inputStyle('kinPhone')} value={form.nextOfKinPhone} onChange={e => setForm({ ...form, nextOfKinPhone: e.target.value })}
+                                        onFocus={() => setFocused('kinPhone')} onBlur={() => setFocused(null)} />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                                <button type="button" onClick={() => setShowReg(false)}
+                                    style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'background .15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = t.hover}
+                                    onMouseLeave={e => e.currentTarget.style.background = t.input}
+                                >Cancel</button>
+                                <button type="submit" disabled={submitting}
+                                    style={{ flex: 2, padding: '11px', background: submitting ? `${T.orange}88` : T.orange, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, boxShadow: submitting ? 'none' : `0 4px 16px ${T.orange}44`, transition: 'all .15s' }}
+                                    onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${T.orange}55`; } }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px ${T.orange}44`; }}
+                                    onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
+                                >{submitting ? 'Registering…' : 'Register Patient'}</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
 
-            {/* ── View Patient Modal ── */}
+            {/* ── View Patient Modal — identical structure to Appointments book modal ── */}
             {viewPatient && (
-                <div style={modalOverlay}>
-                    <div style={modalInner} onClick={e => e.target === e.currentTarget && setViewPatient(null)}>
-                        <div style={modalBox(480)}>
-                            {/* header with navy bg */}
-                            <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                    <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                        {viewPatient.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{viewPatient.fullName}</h2>
-                                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{viewPatient.patientNumber}</p>
-                                    </div>
+                <div onClick={e => e.target === e.currentTarget && setViewPatient(null)}
+                    style={overlayStyle(isMobile)}>
+                    <div style={cardStyle(480, isMobile)}>
+                        <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    {viewPatient.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
-                                <CloseBtn onClick={() => setViewPatient(null)} />
+                                <div>
+                                    <h2 style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{viewPatient.fullName}</h2>
+                                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{viewPatient.patientNumber}</p>
+                                </div>
                             </div>
-                            <div style={{ padding: 20 }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                    {[
-                                        { label: 'Phone', value: viewPatient.phone },
-                                        { label: 'Email', value: viewPatient.email || '—' },
-                                        { label: 'Gender', value: viewPatient.gender, cap: true },
-                                        { label: 'Blood Group', value: viewPatient.bloodGroup || '—' },
-                                        { label: 'Date of Birth', value: new Date(viewPatient.dateOfBirth).toLocaleDateString() },
-                                        { label: 'Next of Kin', value: viewPatient.nextOfKinName || '—' },
-                                        { label: 'Kin Phone', value: viewPatient.nextOfKinPhone || '—' },
-                                        { label: 'Conditions', value: viewPatient.medicalConditions || '—' },
-                                        { label: 'Address', value: viewPatient.address, full: true },
-                                    ].map(({ label, value, full, cap }) => (
-                                        <div key={label} style={{ gridColumn: full ? '1/-1' : 'auto', background: t.cardAlt, borderRadius: 10, padding: '11px 13px', border: `1px solid ${t.border}` }}>
-                                            <p style={{ fontSize: 10.5, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>
-                                            <p style={{ fontSize: 13, fontWeight: 700, color: t.text, textTransform: cap ? 'capitalize' : 'none' }}>{value}</p>
-                                        </div>
-                                    ))}
-                                </div>
+                            <CloseBtn onClick={() => setViewPatient(null)} />
+                        </div>
+                        <div style={{ padding: 20 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                {[
+                                    { label: 'Phone', value: viewPatient.phone },
+                                    { label: 'Email', value: viewPatient.email || '—' },
+                                    { label: 'Gender', value: viewPatient.gender, cap: true },
+                                    { label: 'Blood Group', value: viewPatient.bloodGroup || '—' },
+                                    { label: 'Date of Birth', value: new Date(viewPatient.dateOfBirth).toLocaleDateString() },
+                                    { label: 'Next of Kin', value: viewPatient.nextOfKinName || '—' },
+                                    { label: 'Kin Phone', value: viewPatient.nextOfKinPhone || '—' },
+                                    { label: 'Conditions', value: viewPatient.medicalConditions || '—' },
+                                    { label: 'Address', value: viewPatient.address, full: true },
+                                ].map(({ label, value, full, cap }) => (
+                                    <div key={label} style={{ gridColumn: full ? '1/-1' : 'auto', background: t.cardAlt, borderRadius: 10, padding: '11px 13px', border: `1px solid ${t.border}` }}>
+                                        <p style={{ fontSize: 10.5, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>
+                                        <p style={{ fontSize: 13, fontWeight: 700, color: t.text, textTransform: cap ? 'capitalize' : 'none' }}>{value}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
