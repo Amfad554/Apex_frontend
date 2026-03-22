@@ -2,45 +2,30 @@ import { useState, useEffect, useRef } from 'react';
 import { Calendar, Users, DollarSign, Zap, UserPlus, Pill, FileText, ArrowUpRight, Loader } from 'lucide-react';
 import { hospitalsAPI, patientsAPI, appointmentsAPI } from '../../Services/api.js';
 
-/* ─── Brand Tokens ─────────────────────────────────────────────────────────────
-   Light surface — dark navy text on white/F5F7FA so everything is visible.
-───────────────────────────────────────────────────────────────────────────── */
-const ORANGE  = '#FF5A1F';
+/* ─── Brand Tokens ───────────────────────────────────────────────────────────── */
+const ORANGE = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 
-const C = {
-    pageBg:    '#F5F7FA',
-    card:      '#ffffff',
-    cardAlt:   '#F5F7FA',
-    border:    'rgba(10,26,63,0.08)',
-    shadow:    '0 2px 12px rgba(10,26,63,0.06)',
-    shadowLg:  '0 6px 24px rgba(10,26,63,0.1)',
-    text:      '#0A1A3F',
-    textSub:   '#374151',
-    textMuted: '#6B7280',
-    hover:     'rgba(255,90,31,0.04)',
-};
-
-/* ─── Gradients for stat cards (coloured, not light) ──────────────────────── */
+/* ─── Gradients for stat cards (coloured, keep white text inside) ────────────── */
 const GRADIENTS = {
     orange: `linear-gradient(135deg, ${ORANGE} 0%, #FF8C55 100%)`,
-    navy:   'linear-gradient(135deg, #1F2A44 0%, #2E3D5F 100%)',
-    teal:   'linear-gradient(135deg, #0E6E77 0%, #18A8B5 100%)',
+    navy: 'linear-gradient(135deg, #1F2A44 0%, #2E3D5F 100%)',
+    teal: 'linear-gradient(135deg, #0E6E77 0%, #18A8B5 100%)',
     violet: 'linear-gradient(135deg, #3B2A6E 0%, #6847C2 100%)',
-    amber:  'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)',
+    amber: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)',
 };
 
 const ACCENT = {
     orange: ORANGE,
-    teal:   '#18A8B5',
+    teal: '#18A8B5',
     violet: '#6847C2',
-    amber:  '#F59E0B',
-    green:  '#10B981',
+    amber: '#F59E0B',
+    green: '#10B981',
 };
 
 const AVATAR_COLORS = [ORANGE, ACCENT.teal, ACCENT.violet, ACCENT.amber, ACCENT.green, '#3B82F6'];
 
-/* ─── useCountUp ───────────────────────────────────────────────────────────── */
+/* ─── useCountUp ─────────────────────────────────────────────────────────────── */
 function useCountUp(target, duration = 900, enabled = true) {
     const [val, setVal] = useState(0);
     useEffect(() => {
@@ -57,7 +42,7 @@ function useCountUp(target, duration = 900, enabled = true) {
     return val;
 }
 
-/* ─── Sparkline ────────────────────────────────────────────────────────────── */
+/* ─── Sparkline ──────────────────────────────────────────────────────────────── */
 function Sparkline({ data, color, width = 80, height = 30, animate = false }) {
     const pathRef = useRef(null);
     const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
@@ -79,8 +64,8 @@ function Sparkline({ data, color, width = 80, height = 30, animate = false }) {
     );
 }
 
-/* ─── LineGraph ────────────────────────────────────────────────────────────── */
-function LineGraph({ datasets, labels, height = 160, animate = false }) {
+/* ─── LineGraph ──────────────────────────────────────────────────────────────── */
+function LineGraph({ datasets, labels, height = 160, animate = false, t }) {
     const W = 400, pad = { t: 10, r: 10, b: 28, l: 28 };
     const gw = W - pad.l - pad.r, gh = height - pad.t - pad.b;
     const max = Math.max(...datasets.flatMap(d => d.data)) || 1;
@@ -102,7 +87,7 @@ function LineGraph({ datasets, labels, height = 160, animate = false }) {
         <svg viewBox={`0 0 ${W} ${height}`} style={{ width: '100%', height, animation: animate ? 'fadeInUp 0.5s ease both' : 'none' }}>
             <style>{`@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
             {[0, .25, .5, .75, 1].map((f, i) => (
-                <line key={i} x1={pad.l} x2={W - pad.r} y1={pad.t + gh * (1 - f)} y2={pad.t + gh * (1 - f)} stroke={C.border} strokeWidth="1" />
+                <line key={i} x1={pad.l} x2={W - pad.r} y1={pad.t + gh * (1 - f)} y2={pad.t + gh * (1 - f)} stroke={t.border} strokeWidth="1" />
             ))}
             {datasets.map((ds, di) => {
                 const p = pts(ds.data);
@@ -119,18 +104,18 @@ function LineGraph({ datasets, labels, height = 160, animate = false }) {
                 );
             })}
             {labels.map((l, i) => (
-                <text key={i} x={pad.l + (i / (labels.length - 1)) * gw} y={height - 4} textAnchor="middle" fill={C.textMuted} fontSize="10">{l}</text>
+                <text key={i} x={pad.l + (i / (labels.length - 1)) * gw} y={height - 4} textAnchor="middle" fill={t.textMuted} fontSize="10">{l}</text>
             ))}
         </svg>
     );
 }
 
-/* ─── DonutChart ───────────────────────────────────────────────────────────── */
-function DonutChart({ value, total, color, size = 86, animate = false }) {
+/* ─── DonutChart ─────────────────────────────────────────────────────────────── */
+function DonutChart({ value, total, color, size = 86, animate = false, t }) {
     const r = (size - 12) / 2, circ = 2 * Math.PI * r, dash = (value / total) * circ;
     return (
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={C.border} strokeWidth={10} />
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={t.border} strokeWidth={10} />
             <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={10}
                 strokeDasharray={animate ? `0 ${circ}` : `${dash} ${circ - dash}`} strokeLinecap="round"
                 style={animate ? { animation: `donutFill 1s cubic-bezier(0.4,0,0.2,1) 0.4s forwards` } : {}} />
@@ -139,7 +124,7 @@ function DonutChart({ value, total, color, size = 86, animate = false }) {
     );
 }
 
-/* ─── StatCard — keeps its gradient background, white text inside ─────────── */
+/* ─── StatCard — keeps its gradient background, white text inside ────────────── */
 function StatCard({ label, value, gradient, icon: Icon, spark, delay, isMobile }) {
     const [visible, setVisible] = useState(false);
     const displayVal = useCountUp(value, 900, visible);
@@ -163,13 +148,13 @@ function StatCard({ label, value, gradient, icon: Icon, spark, delay, isMobile }
     );
 }
 
-/* ─── Main Component ───────────────────────────────────────────────────────── */
-export default function DashboardHome({ hospital, onNavigate, isMobile }) {
-    const [stats, setStats]        = useState(null);
-    const [patients, setPatients]  = useState([]);
+/* ─── Main Component ─────────────────────────────────────────────────────────── */
+export default function DashboardHome({ isDark, t, hospital, onNavigate, isMobile }) {
+    const [stats, setStats] = useState(null);
+    const [patients, setPatients] = useState([]);
     const [appointments, setAppts] = useState([]);
-    const [loading, setLoading]    = useState(true);
-    const [error, setError]        = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [chartsReady, setCharts] = useState(false);
     const [bottomReady, setBottom] = useState(false);
     const hospitalId = hospital?.id;
@@ -198,10 +183,10 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
     }, [loading]);
 
     if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12, color: C.textMuted }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12, color: t.textMuted }}>
             <Loader size={20} style={{ animation: 'spin 1s linear infinite', color: ORANGE }} />
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-            <span style={{ color: C.textSub }}>Loading dashboard…</span>
+            <span style={{ color: t.textSub }}>Loading dashboard…</span>
         </div>
     );
 
@@ -211,17 +196,17 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
         </div>
     );
 
-    const todayAppts = stats?.todayAppointments   || 0;
-    const totalPts   = stats?.totalPatients       || 0;
-    const totalStaff = stats?.totalStaff          || 0;
-    const activeRx   = stats?.activePrescriptions || 0;
+    const todayAppts = stats?.todayAppointments || 0;
+    const totalPts = stats?.totalPatients || 0;
+    const totalStaff = stats?.totalStaff || 0;
+    const activeRx = stats?.activePrescriptions || 0;
 
     return (
-        <div style={{ color: C.text, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
+        <div style={{ color: t.text, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
             <style>{`
-                @keyframes popIn    { from{opacity:0;transform:scale(0)}   to{opacity:1;transform:scale(1)} }
-                @keyframes greetingPop { 0%{opacity:0;transform:translateY(-12px)} 60%{transform:translateY(3px)} 100%{opacity:1;transform:translateY(0)} }
-                @keyframes rowFadeIn   { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+                @keyframes popIn       { from{opacity:0;transform:scale(0)}         to{opacity:1;transform:scale(1)} }
+                @keyframes greetingPop { 0%{opacity:0;transform:translateY(-12px)}  60%{transform:translateY(3px)} 100%{opacity:1;transform:translateY(0)} }
+                @keyframes rowFadeIn   { from{opacity:0;transform:translateX(-6px)}  to{opacity:1;transform:translateX(0)} }
                 @keyframes spin        { to{transform:rotate(360deg)} }
                 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
             `}</style>
@@ -229,19 +214,19 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
             {/* ── Greeting ── */}
             <div style={{ marginBottom: isMobile ? 20 : 32, animation: 'greetingPop 0.5s ease both' }}>
                 <div style={{ width: 40, height: 4, borderRadius: 2, background: ORANGE, marginBottom: 12 }} />
-                <h1 style={{ fontSize: isMobile ? 22 : 27, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4, color: C.text }}>
+                <h1 style={{ fontSize: isMobile ? 22 : 27, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4, color: t.text }}>
                     Hello, {hospital?.adminName || hospital?.hospitalName || 'Admin'} 👋
                 </h1>
-                <p style={{ color: C.textSub, fontSize: 14 }}>Here's what's happening at your hospital today.</p>
+                <p style={{ color: t.textSub, fontSize: 14 }}>Here's what's happening at your hospital today.</p>
             </div>
 
-            {/* ── Stat Cards — gradient, keep white text ── */}
+            {/* ── Stat Cards — gradient bg, always white text inside ── */}
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit,minmax(220px,1fr))', gap: isMobile ? 10 : 20, marginBottom: isMobile ? 20 : 28 }}>
                 {[
-                    { label: 'Appointments Today',  value: todayAppts, gradient: GRADIENTS.orange, icon: Calendar,   spark: [4,5,4,7,6,8,todayAppts] },
-                    { label: 'Total Patients',       value: totalPts,   gradient: GRADIENTS.navy,   icon: Users,      spark: [4,5,5,6,6,7,totalPts]   },
-                    { label: 'Active Staff',         value: totalStaff, gradient: GRADIENTS.teal,   icon: Zap,        spark: [2,3,2,3,3,4,totalStaff] },
-                    { label: 'Active Prescriptions', value: activeRx,   gradient: GRADIENTS.violet, icon: DollarSign, spark: [3,4,5,4,6,5,activeRx]   },
+                    { label: 'Appointments Today', value: todayAppts, gradient: GRADIENTS.orange, icon: Calendar, spark: [4, 5, 4, 7, 6, 8, todayAppts] },
+                    { label: 'Total Patients', value: totalPts, gradient: GRADIENTS.navy, icon: Users, spark: [4, 5, 5, 6, 6, 7, totalPts] },
+                    { label: 'Active Staff', value: totalStaff, gradient: GRADIENTS.teal, icon: Zap, spark: [2, 3, 2, 3, 3, 4, totalStaff] },
+                    { label: 'Active Prescriptions', value: activeRx, gradient: GRADIENTS.violet, icon: DollarSign, spark: [3, 4, 5, 4, 6, 5, activeRx] },
                 ].map(({ label, value, gradient, icon, spark }, i) => (
                     <StatCard key={label} label={label} value={value} gradient={gradient} icon={icon} spark={spark} delay={i * 100} isMobile={isMobile} />
                 ))}
@@ -251,12 +236,12 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr', gap: isMobile ? 10 : 20, marginBottom: isMobile ? 20 : 28, opacity: chartsReady ? 1 : 0, transform: chartsReady ? 'translateY(0)' : 'translateY(20px)', transition: 'opacity 0.5s ease,transform 0.5s ease' }}>
 
                 {/* Patient Trends */}
-                <div style={{ background: C.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
+                <div style={{ background: t.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${t.border}`, boxShadow: '0 2px 12px rgba(10,26,63,0.06)' }}>
                     <div style={{ marginBottom: 20 }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: C.text }}>Patient Trends</h3>
+                        <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: t.text }}>Patient Trends</h3>
                         <div style={{ display: 'flex', gap: 16 }}>
                             {[{ label: 'New Patients', color: ORANGE }, { label: 'Appointments', color: ACCENT.teal }].map(({ label, color }) => (
-                                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.textSub }}>
+                                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: t.textSub }}>
                                     <div style={{ width: 8, height: 8, borderRadius: 2, background: color }} />{label}
                                 </div>
                             ))}
@@ -264,39 +249,40 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
                     </div>
                     <LineGraph
                         datasets={[
-                            { data: [120, 180, 140, 200, 160, 220, totalPts],     color: ORANGE       },
-                            { data: [20, 26, 30, 24, 35, 31, todayAppts * 10],    color: ACCENT.teal  },
+                            { data: [120, 180, 140, 200, 160, 220, totalPts], color: ORANGE },
+                            { data: [20, 26, 30, 24, 35, 31, todayAppts * 10], color: ACCENT.teal },
                         ]}
-                        labels={['Sun','Mon','Tue','Wed','Thu','Fri','Sat']}
+                        labels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
                         height={isMobile ? 130 : 160}
                         animate={chartsReady}
+                        t={t}
                     />
                 </div>
 
                 {/* Staff & Patients donut */}
-                <div style={{ background: C.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: C.text }}>Staff & Patients</h3>
+                <div style={{ background: t.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${t.border}`, boxShadow: '0 2px 12px rgba(10,26,63,0.06)' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: t.text }}>Staff & Patients</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                         <div style={{ position: 'relative', flexShrink: 0 }}>
-                            <DonutChart value={totalPts} total={Math.max(totalPts + 10, 1)} color={ORANGE} size={86} animate={chartsReady} />
+                            <DonutChart value={totalPts} total={Math.max(totalPts + 10, 1)} color={ORANGE} size={86} animate={chartsReady} t={t} />
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontWeight: 800, fontSize: 16, color: C.text }}>{totalPts}</span>
-                                <span style={{ fontSize: 9, color: C.textMuted }}>Patients</span>
+                                <span style={{ fontWeight: 800, fontSize: 16, color: t.text }}>{totalPts}</span>
+                                <span style={{ fontSize: 9, color: t.textMuted }}>Patients</span>
                             </div>
                         </div>
                         <div style={{ flex: 1 }}>
                             {[
-                                { label: 'Total Patients',       value: totalPts,   color: ORANGE        },
-                                { label: 'Active Staff',         value: totalStaff, color: ACCENT.teal   },
-                                { label: "Today's Appointments", value: todayAppts, color: ACCENT.violet  },
-                                { label: 'Active Prescriptions', value: activeRx,   color: ACCENT.amber  },
+                                { label: 'Total Patients', value: totalPts, color: ORANGE },
+                                { label: 'Active Staff', value: totalStaff, color: ACCENT.teal },
+                                { label: "Today's Appointments", value: todayAppts, color: ACCENT.violet },
+                                { label: 'Active Prescriptions', value: activeRx, color: ACCENT.amber },
                             ].map(({ label, value, color }, i) => (
                                 <div key={label} style={{ marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: chartsReady ? 1 : 0, transform: chartsReady ? 'translateX(0)' : 'translateX(12px)', transition: `opacity 0.4s ease ${0.1 + i * 0.08}s,transform 0.4s ease ${0.1 + i * 0.08}s` }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-                                        <span style={{ fontSize: 12, color: C.textSub }}>{label}</span>
+                                        <span style={{ fontSize: 12, color: t.textSub }}>{label}</span>
                                     </div>
-                                    <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{value}</span>
+                                    <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{value}</span>
                                 </div>
                             ))}
                         </div>
@@ -308,9 +294,9 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? 10 : 20, opacity: bottomReady ? 1 : 0, transform: bottomReady ? 'translateY(0)' : 'translateY(20px)', transition: 'opacity 0.5s ease,transform 0.5s ease' }}>
 
                 {/* Recent Patients */}
-                <div style={{ background: C.card, borderRadius: 18, border: `1px solid ${C.border}`, boxShadow: C.shadow, overflow: 'hidden' }}>
-                    <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${C.border}` }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 16, color: C.text }}>Recent Patients</h3>
+                <div style={{ background: t.card, borderRadius: 18, border: `1px solid ${t.border}`, boxShadow: '0 2px 12px rgba(10,26,63,0.06)', overflow: 'hidden' }}>
+                    <div style={{ padding: isMobile ? '14px 16px' : '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${t.border}` }}>
+                        <h3 style={{ fontWeight: 700, fontSize: 16, color: t.text }}>Recent Patients</h3>
                         <button onClick={() => onNavigate('patients')}
                             style={{ fontSize: 12, color: ORANGE, background: 'rgba(255,90,31,0.08)', border: 'none', padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4, transition: 'background 0.2s,transform 0.15s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,90,31,0.16)'; e.currentTarget.style.transform = 'scale(1.04)'; }}
@@ -318,37 +304,37 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
                         >View All <ArrowUpRight size={13} /></button>
                     </div>
                     {patients.length === 0 ? (
-                        <div style={{ padding: 30, textAlign: 'center', color: C.textMuted, fontSize: 14 }}>No patients yet</div>
+                        <div style={{ padding: 30, textAlign: 'center', color: t.textMuted, fontSize: 14 }}>No patients yet</div>
                     ) : (
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ background: C.cardAlt }}>
+                                <tr style={{ background: t.cardAlt }}>
                                     {['Patient', 'Gender', !isMobile && 'Blood Group'].filter(Boolean).map(h => (
-                                        <th key={h} style={{ padding: isMobile ? '9px 12px' : '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
+                                        <th key={h} style={{ padding: isMobile ? '9px 12px' : '10px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {patients.slice(0, 5).map((p, i) => {
-                                    const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                                    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                                     const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                                     return (
                                         <tr key={p.id}
-                                            style={{ borderBottom: `1px solid ${C.border}`, transition: 'background 0.15s', animation: bottomReady ? `rowFadeIn 0.35s ease both ${i * 0.07}s` : 'none' }}
-                                            onMouseEnter={e => e.currentTarget.style.background = C.hover}
+                                            style={{ borderBottom: `1px solid ${t.border}`, transition: 'background 0.15s', animation: bottomReady ? `rowFadeIn 0.35s ease both ${i * 0.07}s` : 'none' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = t.hover}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
                                             <td style={{ padding: isMobile ? '10px 12px' : '12px 20px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                     <div style={{ width: 32, height: 32, borderRadius: 9, background: color + '20', color, fontWeight: 700, fontSize: 11, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{avatar}</div>
                                                     <div style={{ minWidth: 0 }}>
-                                                        <p style={{ fontWeight: 600, fontSize: 13, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.fullName}</p>
-                                                        <p style={{ fontSize: 11, color: C.textMuted }}>{p.patientNumber}</p>
+                                                        <p style={{ fontWeight: 600, fontSize: 13, color: t.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.fullName}</p>
+                                                        <p style={{ fontSize: 11, color: t.textMuted }}>{p.patientNumber}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: isMobile ? '10px 12px' : '12px 20px', fontSize: 13, color: C.textSub, textTransform: 'capitalize' }}>{p.gender}</td>
-                                            {!isMobile && <td style={{ padding: '12px 20px', fontSize: 13, color: C.textSub }}>{p.bloodGroup || '—'}</td>}
+                                            <td style={{ padding: isMobile ? '10px 12px' : '12px 20px', fontSize: 13, color: t.textSub, textTransform: 'capitalize' }}>{p.gender}</td>
+                                            {!isMobile && <td style={{ padding: '12px 20px', fontSize: 13, color: t.textSub }}>{p.bloodGroup || '—'}</td>}
                                         </tr>
                                     );
                                 })}
@@ -358,14 +344,14 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
                 </div>
 
                 {/* Quick Actions */}
-                <div style={{ background: C.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${C.border}`, boxShadow: C.shadow }}>
-                    <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: C.text }}>Quick Actions</h3>
+                <div style={{ background: t.card, borderRadius: 18, padding: isMobile ? 16 : 24, border: `1px solid ${t.border}`, boxShadow: '0 2px 12px rgba(10,26,63,0.06)' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: t.text }}>Quick Actions</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                         {[
-                            { label: 'Register Patient', icon: UserPlus, gradient: GRADIENTS.orange, section: 'patients'     },
-                            { label: 'Book Appointment', icon: Calendar, gradient: GRADIENTS.teal,   section: 'appointments' },
-                            { label: 'Prescription',     icon: Pill,     gradient: GRADIENTS.violet, section: 'pharmacy'     },
-                            { label: 'Medical Record',   icon: FileText, gradient: GRADIENTS.amber,  section: 'records'      },
+                            { label: 'Register Patient', icon: UserPlus, gradient: GRADIENTS.orange, section: 'patients' },
+                            { label: 'Book Appointment', icon: Calendar, gradient: GRADIENTS.teal, section: 'appointments' },
+                            { label: 'Prescription', icon: Pill, gradient: GRADIENTS.violet, section: 'pharmacy' },
+                            { label: 'Medical Record', icon: FileText, gradient: GRADIENTS.amber, section: 'records' },
                         ].map(({ label, icon: Icon, gradient, section }, i) => (
                             <button key={label} onClick={() => onNavigate(section)}
                                 style={{ background: gradient, border: 'none', borderRadius: 12, padding: isMobile ? '14px 8px' : '16px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, fontFamily: 'inherit', transition: 'transform 0.2s,box-shadow 0.2s', opacity: bottomReady ? 1 : 0, animation: bottomReady ? `popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both ${i * 0.07}s` : 'none' }}
@@ -381,19 +367,19 @@ export default function DashboardHome({ hospital, onNavigate, isMobile }) {
                     </div>
 
                     {/* Today's Appointments */}
-                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Today's Appointments</p>
+                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${t.border}` }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Today's Appointments</p>
                         {appointments.length === 0 ? (
-                            <p style={{ fontSize: 13, color: C.textMuted }}>No appointments today</p>
+                            <p style={{ fontSize: 13, color: t.textMuted }}>No appointments today</p>
                         ) : appointments.slice(0, 3).map((a, i) => {
-                            const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                            const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
                             const avatar = a.patient?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                             return (
                                 <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, opacity: bottomReady ? 1 : 0, transform: bottomReady ? 'translateX(0)' : 'translateX(10px)', transition: `opacity 0.35s ease ${0.1 + i * 0.1}s,transform 0.35s ease ${0.1 + i * 0.1}s` }}>
                                     <div style={{ width: 28, height: 28, borderRadius: 8, background: color + '20', color, fontWeight: 700, fontSize: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{avatar}</div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ fontSize: 12, fontWeight: 600, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.patient?.fullName}</p>
-                                        <p style={{ fontSize: 11, color: C.textMuted }}>{a.doctor?.fullName} · {a.doctor?.department}</p>
+                                        <p style={{ fontSize: 12, fontWeight: 600, color: t.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.patient?.fullName}</p>
+                                        <p style={{ fontSize: 11, color: t.textMuted }}>{a.doctor?.fullName} · {a.doctor?.department}</p>
                                     </div>
                                 </div>
                             );
