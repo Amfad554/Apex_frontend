@@ -64,8 +64,8 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
     );
 
     return (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24 }}>
-            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? 16 : 24, overflowY: 'auto' }}>
+            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', overflow: 'hidden', margin: 'auto' }}>
                 {/* Header */}
                 <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -79,7 +79,7 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
                     </div>
                 </div>
 
-                <div style={{ padding: '20px 24px' }}>
+                <div style={{ padding: isMobile ? '16px' : '20px 24px' }}>
                     <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
                         ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
                     </p>
@@ -90,14 +90,14 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
 
                     <Row label="Patient Number (Login ID)" accent={T.orange}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
+                            <p style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
                             <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
                         </div>
                     </Row>
 
                     <Row label="Temporary Password" accent="#f59e0b">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
+                            <p style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
                             <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
                         </div>
                     </Row>
@@ -170,15 +170,19 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         color: t.textMuted, marginBottom: 6,
         letterSpacing: '0.07em', textTransform: 'uppercase',
     };
+
+    /* ── FIXED: centered overlay, proper mobile padding ── */
     const modalOverlay = {
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999,
-        overflowY: 'auto', padding: isMobile ? '16px' : '40px 20px',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center', minHeight: '100vh',
+        overflowY: 'auto',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: isMobile ? '16px' : '40px 20px',
     };
     const modalBox = (maxW = 560) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
         border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-        flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40,
+        flexShrink: 0,
+        margin: isMobile ? '16px auto' : '40px auto',
     });
 
     const loadPatients = async (q = '') => {
@@ -386,7 +390,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
             {showRegister && (
                 <div onClick={e => e.target === e.currentTarget && setShowReg(false)} style={modalOverlay}>
                     <div style={modalBox(560)}>
-                        <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: isMobile ? '14px 16px' : '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <UserPlus size={16} color={T.orange} />
@@ -399,7 +403,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                             <CloseBtn onClick={() => setShowReg(false)} />
                         </div>
 
-                        <form onSubmit={handleRegister} style={{ padding: '20px' }}>
+                        <form onSubmit={handleRegister} style={{ padding: isMobile ? '16px' : '20px' }}>
                             {formError && (
                                 <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                                     <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />{formError}
@@ -484,19 +488,19 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={modalOverlay}>
                     <div style={modalBox(480)}>
                         {/* header with navy bg */}
-                        <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
+                        <div style={{ padding: isMobile ? '16px' : 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                 <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     {viewPatient.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
                                 <div>
-                                    <h2 style={{ fontWeight: 800, fontSize: 17, color: '#fff' }}>{viewPatient.fullName}</h2>
+                                    <h2 style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, color: '#fff' }}>{viewPatient.fullName}</h2>
                                     <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{viewPatient.patientNumber}</p>
                                 </div>
                             </div>
                             <CloseBtn onClick={() => setViewPatient(null)} />
                         </div>
-                        <div style={{ padding: 20 }}>
+                        <div style={{ padding: isMobile ? '16px' : 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 {[
                                     { label: 'Phone', value: viewPatient.phone },
