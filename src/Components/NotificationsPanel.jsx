@@ -27,24 +27,24 @@ function timeAgo(iso) {
 
 export default function NotificationsPanel({ isDark, onNavigate, onCountChange }) {
     const [open, setOpen] = useState(false);
-    const [notifications, setNotifs] = useState([]);
+    const [notifs, setNotifs] = useState([]);       // ← single source of truth
     const [unread, setUnread] = useState(0);
     const [loading, setLoading] = useState(false);
     const [markingAll, setMarkingAll] = useState(false);
     const panelRef = useRef(null);
 
     const ORANGE = '#FF5A1F';
-    const bg = isDark ? '#1F2A44' : '#ffffff';
-    const bgAlt = isDark ? '#0A1A3F' : '#F5F7FA';
-    const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,26,63,0.09)';
-    const text = isDark ? '#F5F7FA' : '#0A1A3F';
-    const textSub = isDark ? 'rgba(245,247,250,0.6)' : 'rgba(10,26,63,0.6)';
-    const textMuted = isDark ? 'rgba(245,247,250,0.35)' : 'rgba(10,26,63,0.38)';
+    const bg       = isDark ? '#1F2A44' : '#ffffff';
+    const bgAlt    = isDark ? '#0A1A3F' : '#F5F7FA';
+    const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,26,63,0.09)';
+    const text     = isDark ? '#F5F7FA' : '#0A1A3F';
+    const textSub  = isDark ? 'rgba(245,247,250,0.6)'  : 'rgba(10,26,63,0.6)';
+    const textMuted= isDark ? 'rgba(245,247,250,0.35)' : 'rgba(10,26,63,0.38)';
 
     const fetchNotifications = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${BASE_URL}/api/notifications`, { headers: { Authorization: `Bearer ${getToken()}` } });
+            const res  = await fetch(`${BASE_URL}/api/notifications`, { headers: { Authorization: `Bearer ${getToken()}` } });
             const data = await res.json();
             if (res.ok) {
                 setNotifs(data.notifications || []);
@@ -76,8 +76,11 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
         try {
             await fetch(`${BASE_URL}/api/notifications/${id}/read`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}` } });
             setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-            setUnread(prev => Math.max(0, prev - 1));
-            onCountChange?.(Math.max(0, unread - 1));
+            setUnread(prev => {
+                const next = Math.max(0, prev - 1);
+                onCountChange?.(next);
+                return next;
+            });
         } catch (err) { console.error(err); }
     };
 
@@ -96,9 +99,16 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
         e.stopPropagation();
         try {
             await fetch(`${BASE_URL}/api/notifications/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+            // ✅ use notifs (the state variable), not the old undefined `notifications`
+            const wasUnread = notifs.find(n => n.id === id && !n.read);
             setNotifs(prev => prev.filter(n => n.id !== id));
-            const wasUnread = notifications.find(n => n.id === id && !n.read);
-            if (wasUnread) { setUnread(prev => Math.max(0, prev - 1)); onCountChange?.(Math.max(0, unread - 1)); }
+            if (wasUnread) {
+                setUnread(prev => {
+                    const next = Math.max(0, prev - 1);
+                    onCountChange?.(next);
+                    return next;
+                });
+            }
         } catch (err) { console.error(err); }
     };
 
@@ -134,9 +144,9 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
                     animation: 'fadeDropdown 0.18s ease',
                 }}>
                     <style>{`
-            @keyframes fadeDropdown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-            @keyframes badgePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
-          `}</style>
+                        @keyframes fadeDropdown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+                        @keyframes badgePulse   { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+                    `}</style>
 
                     {/* Header */}
                     <div style={{ padding: '14px 16px', borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -162,11 +172,11 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
                         </div>
                     </div>
 
-                    {/* List */}
+                    {/* List — ✅ render notifs, not the undefined `notifications` */}
                     <div style={{ maxHeight: 380, overflowY: 'auto' }}>
-                        {loading && notifications.length === 0 ? (
+                        {loading && notifs.length === 0 ? (
                             <div style={{ padding: '40px 20px', textAlign: 'center', color: textMuted, fontSize: 13 }}>Loading...</div>
-                        ) : notifications.length === 0 ? (
+                        ) : notifs.length === 0 ? (
                             <div style={{ padding: '48px 20px', textAlign: 'center' }}>
                                 <div style={{ width: 48, height: 48, borderRadius: 14, background: `rgba(255,90,31,0.08)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                                     <Bell size={20} color={ORANGE} strokeWidth={1.5} />
@@ -175,7 +185,7 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
                                 <p style={{ fontSize: 12, color: textMuted }}>No notifications yet</p>
                             </div>
                         ) : (
-                            notifications.map(notif => {
+                            notifs.map(notif => {
                                 const meta = TYPE_META[notif.type] || TYPE_META.info;
                                 const Icon = meta.icon;
                                 return (
@@ -227,9 +237,9 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
                     </div>
 
                     {/* Footer */}
-                    {notifications.length > 0 && (
+                    {notifs.length > 0 && (
                         <div style={{ padding: '10px 14px', borderTop: `1px solid ${border}`, textAlign: 'center' }}>
-                            <p style={{ fontSize: 11, color: textMuted }}>Showing last {notifications.length} notifications</p>
+                            <p style={{ fontSize: 11, color: textMuted }}>Showing last {notifs.length} notifications</p>
                         </div>
                     )}
                 </div>
