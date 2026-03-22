@@ -63,10 +63,17 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
         </div>
     );
 
-    // ── exact same structure as Appointments modal ──
     return (
         <div onClick={e => e.target === e.currentTarget && onClose()}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999, overflowY: 'auto', padding: isMobile ? 16 : '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(3px)' }}>
+            style={{
+                position: 'fixed', inset: 0,
+                background: 'rgba(0,0,0,0.65)',
+                zIndex: 99999, overflowY: 'auto',
+                padding: isMobile ? 16 : '40px 20px',
+                display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+            }}>
             <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40 }}>
                 {/* Header */}
                 <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px', borderRadius: '20px 20px 0 0' }}>
@@ -167,14 +174,16 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
         letterSpacing: '0.07em', textTransform: 'uppercase',
     };
 
-    // ── exact same overlay + card as Appointments ──
     const overlayStyle = (isMob) => ({
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.65)',
         zIndex: 9999, overflowY: 'auto',
         padding: isMob ? 16 : '40px 20px',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        backdropFilter: 'blur(3px)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
     });
+
     const cardStyle = (maxW, isMob) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
         border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(10,26,63,0.2)',
@@ -379,7 +388,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 </div>
             )}
 
-            {/* ── Register Modal — identical structure to Appointments book modal ── */}
+            {/* ── Register Modal ── */}
             {showRegister && (
                 <div onClick={e => e.target === e.currentTarget && setShowReg(false)}
                     style={overlayStyle(isMobile)}>
@@ -476,7 +485,7 @@ export default function Patients({ isDark, t, hospital, isMobile }) {
                 </div>
             )}
 
-            {/* ── View Patient Modal — identical structure to Appointments book modal ── */}
+            {/* ── View Patient Modal ── */}
             {viewPatient && (
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)}
                     style={overlayStyle(isMobile)}>
