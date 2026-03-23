@@ -137,17 +137,26 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
 
     useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
+    // ── Dark-mode aware input/select style ────────────────────────────────────
     const inputStyle = (name) => ({
-        width: '100%', background: t.input,
+        width: '100%',
+        background: t.input,
         border: `1.5px solid ${focused === name ? T.orange : t.border}`,
-        borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13,
-        outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+        borderRadius: 10,
+        padding: '10px 14px',
+        color: t.text,
+        fontSize: 13,
+        outline: 'none',
+        fontFamily: 'inherit',
+        boxSizing: 'border-box',
         boxShadow: focused === name ? `0 0 0 3px ${T.orange}18` : 'none',
         transition: 'border-color .18s, box-shadow .18s',
+        // ✅ Makes the native dropdown (select + options) respect dark/light mode
+        colorScheme: isDark ? 'dark' : 'light',
     });
+
     const labelStyle = { display: 'block', fontSize: 11, fontWeight: 700, color: t.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' };
 
-    // ✅ Fixed: removed display:flex from overlay, use margin:auto on card
     const overlayStyle = (isMob) => ({
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
         zIndex: 9999, overflowY: 'auto',
@@ -219,6 +228,15 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
 
     return (
         <div>
+            {/* ✅ Global style: force select options to match dark/light theme */}
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                select option {
+                    background: ${isDark ? '#1F2A44' : '#ffffff'};
+                    color: ${isDark ? '#F5F7FA' : '#0A1A3F'};
+                }
+            `}</style>
+
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             {credentials && (
                 <CredentialsModal credentials={credentials} t={t} isMobile={isMobile}
@@ -402,7 +420,9 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                                 <div>
                                     <label style={labelStyle}>Gender *</label>
                                     <select style={inputStyle('gender')} value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} onFocus={() => setFocused('gender')} onBlur={() => setFocused(null)}>
-                                        <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                                 <div>
