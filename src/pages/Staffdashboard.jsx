@@ -148,7 +148,6 @@ function PatientsSection({ t, hospitalId, accent, externalSearch = '' }) {
     const [viewPatient, setViewPatient] = useState(null);
     const [error, setError] = useState('');
 
-    // Sync external search
     useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = useCallback(async (q = '') => {
@@ -360,8 +359,8 @@ function AppointmentsSection({ t, hospitalId, accent, isMobile, role, externalSe
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40, margin: '0 auto', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Book Appointment</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
@@ -496,8 +495,8 @@ function PrescriptionsSection({ t, hospitalId, accent, isMobile, role, externalS
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', margin: '0 auto', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Issue Prescription</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
@@ -650,8 +649,8 @@ function RecordsSection({ t, hospitalId, accent, isMobile, role, externalSearch 
                 </div>
             )}
             {showAdd && (
-                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', marginBottom: 40 }}>
+                <div onClick={e => e.target === e.currentTarget && setShowAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999, overflowY: 'auto', padding: '40px 20px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div style={{ background: t.surface, borderRadius: 20, width: '100%', maxWidth: 500, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', margin: '0 auto', marginBottom: 40 }}>
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `3px solid ${ORANGE}` }}>
                             <h2 style={{ fontWeight: 700, fontSize: 16 }}>Add Medical Record</h2>
                             <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
@@ -822,7 +821,6 @@ const NAV_BY_ROLE = {
     receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
 };
 
-// Sections that support search
 const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'prescriptions', 'records'];
 
 export default function StaffDashboard() {
@@ -859,13 +857,11 @@ export default function StaffDashboard() {
     const goTo = (id) => {
         setSection(id);
         setMobileMenu(false);
-        // Clear search when navigating manually
         if (!SEARCHABLE_SECTIONS.includes(id)) setSearchQuery('');
     };
 
     const handleSearchChange = (value) => {
         setSearchQuery(value);
-        // Auto-navigate to patients when searching from a non-searchable section
         if (value.trim() && !SEARCHABLE_SECTIONS.includes(section)) {
             setSection('patients');
         }
@@ -876,13 +872,13 @@ export default function StaffDashboard() {
     const renderSection = () => {
         const externalSearch = SEARCHABLE_SECTIONS.includes(section) ? searchQuery : '';
         switch (section) {
-            case 'home':          return <HomeDashboard       {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients':      return <PatientsSection     {...sharedProps} externalSearch={externalSearch} />;
-            case 'appointments':  return <AppointmentsSection {...sharedProps} externalSearch={externalSearch} />;
+            case 'home':          return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients':      return <PatientsSection      {...sharedProps} externalSearch={externalSearch} />;
+            case 'appointments':  return <AppointmentsSection  {...sharedProps} externalSearch={externalSearch} />;
             case 'prescriptions': return <PrescriptionsSection {...sharedProps} externalSearch={externalSearch} />;
-            case 'records':       return <RecordsSection      {...sharedProps} externalSearch={externalSearch} />;
+            case 'records':       return <RecordsSection       {...sharedProps} externalSearch={externalSearch} />;
             case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
-            default:              return <HomeDashboard       {...sharedProps} staff={staff} onNavigate={goTo} />;
+            default:              return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
         }
     };
 
@@ -931,10 +927,11 @@ export default function StaffDashboard() {
                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,90,31,0.08)'}>
                     <Lock size={18} style={{ flexShrink: 0 }} /><span>Change Password</span>
                 </button>
+                {/* ✅ FIXED: was missing } before > on onMouseLeave */}
                 <button onClick={handleLogout}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', color: ROSE, fontSize: 14, fontWeight: 500, background: 'none', border: 'none', width: '100%', fontFamily: 'inherit', minHeight: 44, transition: 'background 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(225,29,72,0.08)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'>
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <LogOut size={18} style={{ flexShrink: 0 }} /><span>Logout</span>
                 </button>
             </div>
@@ -976,19 +973,14 @@ export default function StaffDashboard() {
                 </>
             )}
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100dvh', overflow: 'hidden' }}>
                 {/* Header */}
                 <header style={{ height: isMobile ? 56 : 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 12px' : '0 20px', background: t.sidebar, borderBottom: `1px solid ${t.border}`, position: 'sticky', top: 0, zIndex: 50, gap: 8, flexShrink: 0, animation: 'headerSlide 0.35s ease both 0.05s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                         <button onClick={() => isMobile && setMobileMenu(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textSub, display: 'flex', padding: 6, borderRadius: 8, minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}><Menu size={20} /></button>
                         {isMobile && <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>Apex<span style={{ color: ORANGE }}>HMS</span></span>}
                         {!isMobile && (
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10,
-                                padding: '8px 14px', border: `1.5px solid ${searchQuery ? ORANGE : t.border}`,
-                                transition: 'border-color 0.2s, box-shadow 0.2s',
-                                boxShadow: searchQuery ? `0 0 0 3px ${ORANGE}12` : 'none',
-                            }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${searchQuery ? ORANGE : t.border}`, transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: searchQuery ? `0 0 0 3px ${ORANGE}12` : 'none' }}>
                                 <Search size={14} color={searchQuery ? ORANGE : t.textMuted} />
                                 <input
                                     placeholder="Search patients, records..."
@@ -1025,10 +1017,12 @@ export default function StaffDashboard() {
                     </div>
                 </header>
 
-                {/* Content */}
-                <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px 12px 80px' : '24px', height: 0 }}>
-                    <div style={{ maxWidth: 960, width: '100%', animation: 'fadeUp 0.3s ease' }} key={section}>
-                        {renderSection()}
+                {/* ✅ Fixed: main overflow:visible so position:fixed modals escape correctly */}
+                <main style={{ flex: 1, minHeight: 0, overflow: 'visible' }}>
+                    <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px 12px 80px' : '24px' }}>
+                        <div style={{ maxWidth: 960, width: '100%', animation: 'fadeUp 0.3s ease' }} key={section}>
+                            {renderSection()}
+                        </div>
                     </div>
                 </main>
 
