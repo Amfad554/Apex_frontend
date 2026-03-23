@@ -46,13 +46,13 @@ function Toast({ message, type = 'success', onClose }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function Pharmacy({ isDark, t, hospital, isMobile }) {
+export default function Pharmacy({ isDark, t, hospital, isMobile, externalSearch = '' }) {
     const [prescriptions, setRx]       = useState([]);
     const [patients,      setPatients] = useState([]);
     const [doctors,       setDoctors]  = useState([]);
     const [loading,       setLoading]  = useState(true);
     const [error,         setError]    = useState('');
-    const [search,        setSearch]   = useState('');
+    const [search,        setSearch]   = useState(externalSearch);
     const [filter,        setFilter]   = useState('All');
     const [showAdd,       setShowAdd]  = useState(false);
     const [submitting,    setSubmitting] = useState(false);
@@ -66,6 +66,9 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
 
     const hospitalId = hospital?.id;
     const showToast  = (message, type = 'success') => setToast({ message, type });
+
+    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     // ✅ Dark-mode aware input/select style
     const inputStyle = (name) => ({
@@ -264,6 +267,9 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
                         onBlur={() => setFocused(null)}
                         style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }}
                     />
+                    {search && (
+                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}><X size={14} /></button>
+                    )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: isMobile ? 2 : 0 }}>
                     {['All', 'Active', 'Completed', 'Cancelled'].map(s => (

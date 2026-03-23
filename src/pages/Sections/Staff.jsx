@@ -172,11 +172,11 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function Staff({ isDark, t, hospital, isMobile }) {
+export default function Staff({ isDark, t, hospital, isMobile, externalSearch = '' }) {
     const [staff, setStaff]           = useState([]);
     const [loading, setLoading]       = useState(true);
     const [error, setError]           = useState('');
-    const [search, setSearch]         = useState('');
+    const [search, setSearch]         = useState(externalSearch);
     const [filterRole, setFilter]     = useState('All');
     const [showAdd, setShowAdd]       = useState(false);
     const [viewStaff, setViewStaff]   = useState(null);
@@ -188,6 +188,9 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
 
     const hospitalId = hospital?.id;
     const showToast = (message, type = 'success') => setToast({ message, type });
+
+    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const modalOverlay = {
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999,

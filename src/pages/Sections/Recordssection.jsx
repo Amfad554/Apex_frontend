@@ -48,13 +48,13 @@ function Toast({ message, type = 'success', onClose }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function RecordsSection({ isDark, t, hospital, isMobile }) {
+export default function RecordsSection({ isDark, t, hospital, isMobile, externalSearch = '' }) {
     const [records,    setRecords]   = useState([]);
     const [doctors,    setDoctors]   = useState([]);
     const [patients,   setPatients]  = useState([]);
     const [loading,    setLoading]   = useState(true);
     const [error,      setError]     = useState('');
-    const [search,     setSearch]    = useState('');
+    const [search,     setSearch]    = useState(externalSearch);
     const [filter,     setFilter]    = useState('All');
     const [showAdd,    setShowAdd]   = useState(false);
     const [viewRec,    setViewRec]   = useState(null);
@@ -69,6 +69,9 @@ export default function RecordsSection({ isDark, t, hospital, isMobile }) {
 
     const hospitalId = hospital?.id;
     const showToast  = (message, type = 'success') => setToast({ message, type });
+
+    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const modalOverlay = {
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 9999,

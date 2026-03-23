@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Home, Users, Calendar, Stethoscope, Pill, FileText,
-  Settings, LogOut, Activity, Bell, Search, Sun, Moon,
+  Settings, LogOut, Activity, Sun, Moon,
   Menu, ChevronDown, X, MoreHorizontal, KeyRound
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
@@ -15,22 +15,21 @@ import RecordsSection from './Sections/Recordssection.jsx';
 import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
 import CredentialsHistory from './Sections/CredentialsHistory.jsx';
+import { SmartSearchBar, MobileSearchOverlay } from './Sections/SmartSearchBar.jsx';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', icon: Home, label: 'Dashboard' },
-  { id: 'patients', icon: Users, label: 'Patients' },
-  { id: 'appointments', icon: Calendar, label: 'Appointments' },
-  { id: 'staff', icon: Stethoscope, label: 'Staff' },
-  { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
-  { id: 'records', icon: FileText, label: 'Records' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
-  { id: 'credentials', icon: KeyRound, label: 'Credentials Log' },
+  { id: 'dashboard',    icon: Home,       label: 'Dashboard'       },
+  { id: 'patients',     icon: Users,      label: 'Patients'        },
+  { id: 'appointments', icon: Calendar,   label: 'Appointments'    },
+  { id: 'staff',        icon: Stethoscope,label: 'Staff'           },
+  { id: 'pharmacy',     icon: Pill,       label: 'Pharmacy'        },
+  { id: 'records',      icon: FileText,   label: 'Records'         },
+  { id: 'settings',     icon: Settings,   label: 'Settings'        },
+  { id: 'credentials',  icon: KeyRound,   label: 'Credentials Log' },
 ];
 
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
-const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
-
-const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'staff', 'pharmacy', 'records'];
+const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
 
 function ActivePill() {
   return (
@@ -44,19 +43,19 @@ function ActivePill() {
 
 export default function HospitalDashboard() {
   const navigate = useNavigate();
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
-  const [activeSection, setActive] = useState('dashboard');
-  const [transitioning, setTrans] = useState(false);
-  const [sidebarOpen, setSidebar] = useState(true);
-  const [mobileSidebar, setMobile] = useState(false);
-  const [moreDrawer, setMoreDrawer] = useState(false);
-  const [hospital, setHospital] = useState(null);
-  const [searchQuery, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const [headerIn, setHeaderIn] = useState(false);
-  const [navMounted, setNavMounted] = useState(false);
+  const [isDark,        setIsDark]    = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeSection, setActive]    = useState('dashboard');
+  const [transitioning, setTrans]     = useState(false);
+  const [sidebarOpen,   setSidebar]   = useState(true);
+  const [mobileSidebar, setMobile]    = useState(false);
+  const [moreDrawer,    setMoreDrawer]= useState(false);
+  const [hospital,      setHospital]  = useState(null);
+  const [searchQuery,   setSearch]    = useState('');
+  const [searchOpen,    setSearchOpen]= useState(false);
+  const [isMobile,      setIsMobile]  = useState(false);
+  const [isTablet,      setIsTablet]  = useState(false);
+  const [headerIn,      setHeaderIn]  = useState(false);
+  const [navMounted,    setNavMounted]= useState(false);
 
   const t = isDark ? themes.dark : themes.light;
 
@@ -85,25 +84,13 @@ export default function HospitalDashboard() {
     setHospital(user);
   }, []);
 
-  const navigate_to = (id) => {
-    if (id === activeSection) return;
+  const navigate_to = (id, query = '') => {
+    if (id === activeSection && !query) return;
     setTrans(true);
-    setSearch('');
+    if (query) setSearch(query);
     setTimeout(() => { setActive(id); setTrans(false); }, 180);
     setMobile(false);
     setMoreDrawer(false);
-  };
-
-  const handleSearchChange = (value) => {
-    setSearch(value);
-    if (value.trim() && !SEARCHABLE_SECTIONS.includes(activeSection)) {
-      setTrans(true);
-      setTimeout(() => { setActive('patients'); setTrans(false); }, 180);
-    }
-  };
-
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); }
   };
 
   const clearSearch = () => { setSearch(''); setSearchOpen(false); };
@@ -127,19 +114,19 @@ export default function HospitalDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'dashboard':   return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients':    return <Patients         {...sectionProps} externalSearch={searchQuery} />;
-      case 'appointments':return <Appointments     {...sectionProps} externalSearch={searchQuery} />;
-      case 'staff':       return <Staff            {...sectionProps} externalSearch={searchQuery} />;
-      case 'pharmacy':    return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
-      case 'records':     return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
-      case 'settings':    return <DashSettings     {...sectionProps} />;
-      case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-      default:            return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+      case 'dashboard':    return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients':     return <Patients         {...sectionProps} externalSearch={searchQuery} />;
+      case 'appointments': return <Appointments     {...sectionProps} externalSearch={searchQuery} />;
+      case 'staff':        return <Staff            {...sectionProps} externalSearch={searchQuery} />;
+      case 'pharmacy':     return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
+      case 'records':      return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
+      case 'settings':     return <DashSettings     {...sectionProps} />;
+      case 'credentials':  return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
+      default:             return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
     }
   };
 
-  /* ─── Sidebar Content ─────────────────────────────────────────────────────── */
+  /* ─── Sidebar Content ──────────────────────────────────────────────────────── */
   const SidebarContent = ({ forceFull = false }) => {
     const showLabels = forceFull || sidebarOpen;
     return (
@@ -193,8 +180,7 @@ export default function HospitalDashboard() {
                   background: isActive ? t.active : 'transparent',
                   color: isActive ? t.activeText : t.textSub,
                   fontWeight: isActive ? 700 : 500,
-                  fontSize: 14,
-                  width: '100%', textAlign: 'left', fontFamily: 'inherit',
+                  fontSize: 14, width: '100%', textAlign: 'left', fontFamily: 'inherit',
                   minHeight: 44,
                   opacity: navMounted ? 1 : 0,
                   transform: navMounted ? 'translateX(0)' : 'translateX(-14px)',
@@ -215,11 +201,7 @@ export default function HospitalDashboard() {
                   }
                 }}
               >
-                <Icon size={18} style={{
-                  flexShrink: 0,
-                  transition: 'transform 0.2s ease',
-                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                }} />
+                <Icon size={18} style={{ flexShrink: 0, transition: 'transform 0.2s ease', transform: isActive ? 'scale(1.1)' : 'scale(1)' }} />
                 {showLabels && <span style={{ flex: 1 }}>{label}</span>}
                 {showLabels && isActive && <ActivePill />}
               </button>
@@ -227,11 +209,7 @@ export default function HospitalDashboard() {
           })}
         </nav>
 
-        <div style={{
-          padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0,
-          opacity: navMounted ? 1 : 0,
-          transition: 'opacity 0.4s ease 0.4s',
-        }}>
+        <div style={{ padding: '10px 8px', borderTop: `1px solid ${t.border}`, flexShrink: 0, opacity: navMounted ? 1 : 0, transition: 'opacity 0.4s ease 0.4s' }}>
           <button onClick={handleLogout}
             title={!sidebarOpen && !forceFull ? 'Logout' : undefined}
             style={{
@@ -255,7 +233,7 @@ export default function HospitalDashboard() {
     );
   };
 
-  /* ─── More Drawer ─────────────────────────────────────────────────────────── */
+  /* ─── More Drawer ──────────────────────────────────────────────────────────── */
   const MoreDrawer = () => (
     <>
       <div onClick={() => setMoreDrawer(false)}
@@ -310,48 +288,7 @@ export default function HospitalDashboard() {
     </>
   );
 
-  /* ─── Mobile Search Overlay ───────────────────────────────────────────────── */
-  const SearchOverlay = () => (
-    <>
-      <div onClick={clearSearch}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 400, backdropFilter: 'blur(2px)' }} />
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
-        background: t.sidebar, zIndex: 401,
-        padding: '12px 16px',
-        boxShadow: `0 4px 24px rgba(10,26,63,0.1)`,
-        animation: 'slideDown 0.2s ease',
-        borderBottom: `1px solid ${t.border}`,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 12, padding: '10px 14px', border: `1px solid ${t.border}` }}>
-            <Search size={16} color={t.textMuted} />
-            <input autoFocus placeholder="Search patients, staff..."
-              value={searchQuery}
-              onChange={e => handleSearchChange(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 15, flex: 1, fontFamily: 'inherit' }} />
-            {searchQuery && (
-              <button onClick={clearSearch} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}>
-                <X size={15} />
-              </button>
-            )}
-          </div>
-          <button onClick={clearSearch}
-            style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: BLUE, fontFamily: 'inherit', fontSize: 14, whiteSpace: 'nowrap', fontWeight: 600 }}>
-            Cancel
-          </button>
-        </div>
-        {searchQuery && (
-          <p style={{ fontSize: 12, color: t.textMuted, marginTop: 8, paddingLeft: 2 }}>
-            Searching in <strong style={{ color: t.text }}>{activeSection}</strong>…
-          </p>
-        )}
-      </div>
-    </>
-  );
-
-  /* ─── Render ──────────────────────────────────────────────────────────────── */
+  /* ─── Render ───────────────────────────────────────────────────────────────── */
   return (
     <div style={{
       display: 'flex', height: '100dvh', maxHeight: '100dvh',
@@ -366,9 +303,7 @@ export default function HospitalDashboard() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,90,31,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,90,31,0.4); }
-
         @keyframes slideUp    { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes slideDown  { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes fadeIn     { from{opacity:0} to{opacity:1} }
         @keyframes slideRight { from{transform:translateX(-100%)} to{transform:translateX(0)} }
         @keyframes slideInRow { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
@@ -418,7 +353,19 @@ export default function HospitalDashboard() {
       )}
 
       {isMobile && moreDrawer && <MoreDrawer />}
-      {isMobile && searchOpen && <SearchOverlay />}
+
+      {/* ✅ Mobile search overlay — now uses MobileSearchOverlay with suggestions */}
+      {isMobile && searchOpen && (
+        <MobileSearchOverlay
+          hospital={hospital}
+          t={t}
+          isDark={isDark}
+          onNavigate={(section, query) => {
+            navigate_to(section, query);
+          }}
+          onClose={clearSearch}
+        />
+      )}
 
       {/* Right column */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100dvh', overflow: 'hidden' }}>
@@ -441,8 +388,7 @@ export default function HospitalDashboard() {
             <button
               onClick={() => isMobile ? setMobile(true) : setSidebar(!sidebarOpen)}
               style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: t.textSub,
+                background: 'none', border: 'none', cursor: 'pointer', color: t.textSub,
                 display: 'flex', padding: 6, borderRadius: 8, flexShrink: 0,
                 minWidth: 36, minHeight: 36, alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.15s, color 0.15s, transform 0.2s',
@@ -459,47 +405,35 @@ export default function HospitalDashboard() {
               </span>
             )}
 
-            {/* Desktop search bar */}
+            {/* ✅ Desktop SmartSearchBar — live suggestions dropdown */}
             {!isMobile && (
-              <div
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  background: t.input, borderRadius: 10,
-                  padding: '8px 14px', border: `1.5px solid ${searchQuery ? BLUE : t.border}`,
-                  transition: 'border-color 0.2s, box-shadow 0.2s',
-                  boxShadow: searchQuery ? `0 0 0 3px rgba(255,90,31,0.1)` : 'none',
+              <SmartSearchBar
+                hospital={hospital}
+                t={t}
+                isDark={isDark}
+                isTablet={isTablet}
+                onNavigate={(section, query) => {
+                  navigate_to(section, query);
                 }}
-                onFocusCapture={e => { e.currentTarget.style.borderColor = BLUE; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(255,90,31,0.12)`; }}
-                onBlurCapture={e => { e.currentTarget.style.borderColor = searchQuery ? BLUE : t.border; e.currentTarget.style.boxShadow = searchQuery ? `0 0 0 3px rgba(255,90,31,0.1)` : 'none'; }}
-              >
-                <Search size={14} color={searchQuery ? BLUE : t.textMuted} />
-                <input
-                  placeholder="Search patients, staff..."
-                  value={searchQuery}
-                  onChange={e => handleSearchChange(e.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: isTablet ? 140 : 200, fontFamily: 'inherit' }}
-                />
-                {searchQuery && (
-                  <button onClick={clearSearch} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0, transition: 'color 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.color = t.text}
-                    onMouseLeave={e => e.currentTarget.style.color = t.textMuted}
-                  >
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
+              />
             )}
           </div>
 
           {/* Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 8, flexShrink: 0 }}>
+
+            {/* ✅ Mobile search icon — opens MobileSearchOverlay */}
             {isMobile && (
               <button onClick={() => setSearchOpen(true)}
                 style={{ width: 36, height: 36, borderRadius: 10, background: t.input, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: t.textSub, transition: 'transform 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              ><Search size={16} /></button>
+              >
+                {/* Search icon inline to avoid extra import */}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+              </button>
             )}
 
             <button onClick={toggleTheme}
@@ -539,7 +473,7 @@ export default function HospitalDashboard() {
           </div>
         </header>
 
-        {/* ✅ Fixed: main has no overflow so position:fixed modals escape freely */}
+        {/* Main content */}
         <main style={{ flex: 1, minHeight: 0, overflow: 'visible' }}>
           <div style={{
             height: '100%',

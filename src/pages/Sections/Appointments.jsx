@@ -36,14 +36,14 @@ function Toast({ message, type = 'success', onClose, t }) {
 }
 
 /* ─── Main Component ─────────────────────────────────────────────────────────── */
-export function Appointments({ isDark, t, hospital, isMobile }) {
+export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '' }) {
     const [appointments, setAppts]    = useState([]);
     const [doctors,      setDoctors]  = useState([]);
     const [patients,     setPatients] = useState([]);
     const [loading,      setLoading]  = useState(true);
     const [error,        setError]    = useState('');
     const [filter,       setFilter]   = useState('All');
-    const [search,       setSearch]   = useState('');
+    const [search,       setSearch]   = useState(externalSearch);
     const [showBook,     setShowBook] = useState(false);
     const [submitting,   setSubmit]   = useState(false);
     const [formError,    setFormError]= useState('');
@@ -55,6 +55,9 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
 
     const hospitalId = hospital?.id;
     const showToast  = (message, type = 'success') => setToast({ message, type });
+
+    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const load = async () => {
         if (!hospitalId) return;
@@ -100,10 +103,16 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
         } catch (err) { showToast(err.message, 'error'); }
     };
 
-    const filtered = appointments.filter(a =>
-        a.patient?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        a.doctor?.fullName?.toLowerCase().includes(search.toLowerCase())
-    );
+    // ✅ CHANGED: also searches reason field, and handles empty search correctly
+    const filtered = appointments.filter(a => {
+        if (!search.trim()) return true;
+        const q = search.toLowerCase();
+        return (
+            a.patient?.fullName?.toLowerCase().includes(q) ||
+            a.doctor?.fullName?.toLowerCase().includes(q) ||
+            a.reason?.toLowerCase().includes(q)
+        );
+    });
 
     const counts = { scheduled: 0, completed: 0, cancelled: 0 };
     appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
@@ -170,6 +179,9 @@ export function Appointments({ isDark, t, hospital, isMobile }) {
                     <Search size={15} color={t.textMuted} />
                     <input placeholder="Search by patient or doctor…" value={search} onChange={e => setSearch(e.target.value)}
                         style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    {search && (
+                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}><X size={14} /></button>
+                    )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: isMobile ? 2 : 0 }}>
                     {['All', 'Scheduled', 'Completed', 'Cancelled'].map(s => {

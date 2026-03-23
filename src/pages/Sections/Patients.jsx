@@ -135,6 +135,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
     const hospitalId = hospital?.id;
     const showToast = (message, type = 'success') => setToast({ message, type });
 
+    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
     useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     // ── Dark-mode aware input/select style ────────────────────────────────────
@@ -151,7 +152,6 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
         boxSizing: 'border-box',
         boxShadow: focused === name ? `0 0 0 3px ${T.orange}18` : 'none',
         transition: 'border-color .18s, box-shadow .18s',
-        // ✅ Makes the native dropdown (select + options) respect dark/light mode
         colorScheme: isDark ? 'dark' : 'light',
     });
 
