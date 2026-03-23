@@ -381,7 +381,7 @@ export default function RecordsSection({ isDark, t, hospital, isMobile, external
                 </div>
             )}
 
-            {/* ── View Record Modal ──  h*/}
+            {/* ── View Record Modal m──  h*/}
             {viewRec && (
                 <div onClick={e => e.target === e.currentTarget && setViewRec(null)} style={modalOverlay}>
                     <div style={modalBox(440)}>
