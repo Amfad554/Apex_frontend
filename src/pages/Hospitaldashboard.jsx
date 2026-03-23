@@ -126,7 +126,7 @@ export default function HospitalDashboard() {
     }
   };
 
-  /* ─── Sidebar Content ──────────────────────────────────────────────────────── */
+  /* ─── Sidebar Contentt ──────────────────────────────────────────────────────── */
   const SidebarContent = ({ forceFull = false }) => {
     const showLabels = forceFull || sidebarOpen;
     return (
