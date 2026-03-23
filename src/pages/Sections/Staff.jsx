@@ -200,11 +200,13 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
         flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40,
     });
 
+    // ✅ Dark-mode aware input/select style
     const inputStyle = {
         width: '100%', background: t.input, border: `1.5px solid ${t.border}`,
         borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13,
         outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
         transition: 'border-color .18s',
+        colorScheme: isDark ? 'dark' : 'light',
     };
     const labelStyle = {
         display: 'block', fontSize: 11, fontWeight: 700,
@@ -266,6 +268,15 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
 
     return (
         <div>
+            {/* ✅ Force select options to match dark/light theme */}
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                select option {
+                    background: ${isDark ? '#1F2A44' : '#ffffff'};
+                    color: ${isDark ? '#F5F7FA' : '#0A1A3F'};
+                }
+            `}</style>
+
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
             {credentials && (
@@ -356,7 +367,6 @@ export default function Staff({ isDark, t, hospital, isMobile }) {
                                 onMouseEnter={e => { e.currentTarget.style.borderColor=`${T.orange}44`; e.currentTarget.style.boxShadow=`0 8px 28px rgba(255,90,31,0.1)`; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor=t.border; e.currentTarget.style.boxShadow=t.shadow; }}
                             >
-                                {/* top accent on hover via border — done via JS above */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                         <div style={{ width: 44, height: 44, borderRadius: 12, background: color + '22', color, fontWeight: 800, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>

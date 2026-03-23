@@ -67,6 +67,7 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
     const hospitalId = hospital?.id;
     const showToast  = (message, type = 'success') => setToast({ message, type });
 
+    // ✅ Dark-mode aware input/select style
     const inputStyle = (name) => ({
         width: '100%', background: t.input,
         border: `1.5px solid ${focused === name ? T.orange : t.border}`,
@@ -74,6 +75,7 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
         outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
         boxShadow: focused === name ? `0 0 0 3px ${T.orange}18` : 'none',
         transition: 'border-color .18s, box-shadow .18s',
+        colorScheme: isDark ? 'dark' : 'light',
     });
     const labelStyle = {
         display: 'block', fontSize: 11, fontWeight: 700,
@@ -188,6 +190,15 @@ export default function Pharmacy({ isDark, t, hospital, isMobile }) {
 
     return (
         <div>
+            {/* ✅ Force select options to match dark/light theme */}
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                select option {
+                    background: ${isDark ? '#1F2A44' : '#ffffff'};
+                    color: ${isDark ? '#F5F7FA' : '#0A1A3F'};
+                }
+            `}</style>
+
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
             {/* ── Header ── */}
