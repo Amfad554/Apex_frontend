@@ -52,8 +52,17 @@ function CredentialsModal({ credentials, t, isMobile, onClose }) {
         </div>
     );
     return (
-        <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 99999, overflowY: 'auto', padding: isMobile ? 16 : '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-            <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 440, border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)', flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40 }}>
+        <div onClick={e => e.target === e.currentTarget && onClose()} style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
+            zIndex: 99999, overflowY: 'auto',
+            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            padding: isMobile ? '16px' : '40px 20px',
+        }}>
+            <div style={{
+                background: t.card, borderRadius: 20, width: '100%', maxWidth: 440,
+                border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+                margin: '0 auto', marginBottom: 40,
+            }}>
                 <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px', borderRadius: '20px 20px 0 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KeyRound size={18} color={T.orange} /></div>
@@ -105,12 +114,10 @@ function CloseBtn({ onClick }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-// externalSearch: passed from parent dashboard's global search bar
 export default function Patients({ isDark, t, hospital, isMobile, externalSearch = '' }) {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    // Local search state — initialized from externalSearch
     const [search, setSearch] = useState(externalSearch);
     const [showRegister, setShowReg] = useState(false);
     const [viewPatient, setViewPatient] = useState(null);
@@ -128,10 +135,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
     const hospitalId = hospital?.id;
     const showToast = (message, type = 'success') => setToast({ message, type });
 
-    // Sync external search prop into local state
-    useEffect(() => {
-        setSearch(externalSearch);
-    }, [externalSearch]);
+    useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
     const inputStyle = (name) => ({
         width: '100%', background: t.input,
@@ -143,16 +147,18 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
     });
     const labelStyle = { display: 'block', fontSize: 11, fontWeight: 700, color: t.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' };
 
+    // ✅ Fixed: removed display:flex from overlay, use margin:auto on card
     const overlayStyle = (isMob) => ({
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
-        zIndex: 9999, overflowY: 'auto', padding: isMob ? 16 : '40px 20px',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        zIndex: 9999, overflowY: 'auto',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        padding: isMob ? '16px' : '40px 20px',
     });
-    const cardStyle = (maxW, isMob) => ({
+
+    const cardStyle = (maxW) => ({
         background: t.card, borderRadius: 20, width: '100%', maxWidth: maxW,
         border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(10,26,63,0.2)',
-        flexShrink: 0, marginTop: isMob ? 16 : 40, marginBottom: 40,
+        margin: '0 auto', marginBottom: 40,
     });
 
     const loadPatients = async (q = '') => {
@@ -166,10 +172,8 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
         finally { setLoading(false); }
     };
 
-    // Initial load
     useEffect(() => { loadPatients(externalSearch); }, [hospitalId]);
 
-    // Debounced search: fires when local `search` changes (from both local input and external sync)
     useEffect(() => {
         const id = setTimeout(() => loadPatients(search), 350);
         return () => clearTimeout(id);
@@ -204,6 +208,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
         ><Eye size={size === 32 ? 15 : 14} /></button>
     );
+
     const DelBtn = ({ onClick, size = 30 }) => (
         <button onClick={onClick} style={{ width: size, height: size, borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.22)'; e.currentTarget.style.transform = 'scale(1.12)'; }}
@@ -368,7 +373,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             {/* Register Modal */}
             {showRegister && (
                 <div onClick={e => e.target === e.currentTarget && setShowReg(false)} style={overlayStyle(isMobile)}>
-                    <div style={cardStyle(560, isMobile)}>
+                    <div style={cardStyle(560)}>
                         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserPlus size={16} color={T.orange} /></div>
@@ -450,7 +455,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             {/* View Patient Modal */}
             {viewPatient && (
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={overlayStyle(isMobile)}>
-                    <div style={cardStyle(480, isMobile)}>
+                    <div style={cardStyle(480)}>
                         <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                 <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
