@@ -30,7 +30,6 @@ const NAV_ITEMS = [
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
 const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
 
-// Sections that support search
 const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'staff', 'pharmacy', 'records'];
 
 function ActivePill() {
@@ -89,34 +88,25 @@ export default function HospitalDashboard() {
   const navigate_to = (id) => {
     if (id === activeSection) return;
     setTrans(true);
-    // Clear search when changing sections manually
     setSearch('');
     setTimeout(() => { setActive(id); setTrans(false); }, 180);
     setMobile(false);
     setMoreDrawer(false);
   };
 
-  // Handle search input: auto-navigate to a searchable section
   const handleSearchChange = (value) => {
     setSearch(value);
     if (value.trim() && !SEARCHABLE_SECTIONS.includes(activeSection)) {
-      // Navigate to patients as the default search target
       setTrans(true);
       setTimeout(() => { setActive('patients'); setTrans(false); }, 180);
     }
   };
 
   const handleSearchKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setSearch('');
-      setSearchOpen(false);
-    }
+    if (e.key === 'Escape') { setSearch(''); setSearchOpen(false); }
   };
 
-  const clearSearch = () => {
-    setSearch('');
-    setSearchOpen(false);
-  };
+  const clearSearch = () => { setSearch(''); setSearchOpen(false); };
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -137,19 +127,19 @@ export default function HospitalDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'dashboard': return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
-      case 'patients': return <Patients        {...sectionProps} externalSearch={searchQuery} />;
-      case 'appointments': return <Appointments    {...sectionProps} externalSearch={searchQuery} />;
-      case 'staff': return <Staff           {...sectionProps} externalSearch={searchQuery} />;
-      case 'pharmacy': return <Pharmacy        {...sectionProps} externalSearch={searchQuery} />;
-      case 'records': return <RecordsSection  {...sectionProps} externalSearch={searchQuery} />;
-      case 'settings': return <DashSettings    {...sectionProps} />;
+      case 'dashboard':   return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+      case 'patients':    return <Patients         {...sectionProps} externalSearch={searchQuery} />;
+      case 'appointments':return <Appointments     {...sectionProps} externalSearch={searchQuery} />;
+      case 'staff':       return <Staff            {...sectionProps} externalSearch={searchQuery} />;
+      case 'pharmacy':    return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
+      case 'records':     return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
+      case 'settings':    return <DashSettings     {...sectionProps} />;
       case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-      default: return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
+      default:            return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
     }
   };
 
-  /* ─── Sidebar Content ── */
+  /* ─── Sidebar Content ─────────────────────────────────────────────────────── */
   const SidebarContent = ({ forceFull = false }) => {
     const showLabels = forceFull || sidebarOpen;
     return (
@@ -265,7 +255,7 @@ export default function HospitalDashboard() {
     );
   };
 
-  /* ─── More bottom-sheet ── */
+  /* ─── More Drawer ─────────────────────────────────────────────────────────── */
   const MoreDrawer = () => (
     <>
       <div onClick={() => setMoreDrawer(false)}
@@ -320,7 +310,7 @@ export default function HospitalDashboard() {
     </>
   );
 
-  /* ─── Mobile search overlay ── */
+  /* ─── Mobile Search Overlay ───────────────────────────────────────────────── */
   const SearchOverlay = () => (
     <>
       <div onClick={clearSearch}
@@ -361,8 +351,14 @@ export default function HospitalDashboard() {
     </>
   );
 
+  /* ─── Render ──────────────────────────────────────────────────────────────── */
   return (
-    <div style={{ display: 'flex', height: '100dvh', maxHeight: '100dvh', overflow: 'hidden', background: t.bg, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", color: t.text, transition: 'background 0.3s' }}>
+    <div style={{
+      display: 'flex', height: '100dvh', maxHeight: '100dvh',
+      overflow: 'hidden', background: t.bg,
+      fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
+      color: t.text, transition: 'background 0.3s',
+    }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -424,7 +420,8 @@ export default function HospitalDashboard() {
       {isMobile && moreDrawer && <MoreDrawer />}
       {isMobile && searchOpen && <SearchOverlay />}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, height: '100%' }}>
+      {/* Right column */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100dvh', overflow: 'hidden' }}>
 
         {/* Top Bar */}
         <header style={{
@@ -513,7 +510,7 @@ export default function HospitalDashboard() {
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
-            <NotificationsPanel isDark={isDark} onNavigate={navigate_to} onCountChange={() => { }} />
+            <NotificationsPanel isDark={isDark} onNavigate={navigate_to} onCountChange={() => {}} />
 
             <div
               style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 6px', borderRadius: 10, transition: 'background 0.15s' }}
@@ -542,9 +539,15 @@ export default function HospitalDashboard() {
           </div>
         </header>
 
-        {/* Main Content */}
-        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '14px 12px 80px' : '24px', height: 0 }}>
-          <div style={{ animation: transitioning ? 'sectionOut 0.18s ease forwards' : 'sectionIn 0.3s ease both' }}>
+        {/* ✅ Fixed: main has no overflow so position:fixed modals escape freely */}
+        <main style={{ flex: 1, minHeight: 0, overflow: 'visible' }}>
+          <div style={{
+            height: '100%',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: isMobile ? '14px 12px 80px' : '24px',
+            animation: transitioning ? 'sectionOut 0.18s ease forwards' : 'sectionIn 0.3s ease both',
+          }}>
             {renderSection()}
           </div>
         </main>
