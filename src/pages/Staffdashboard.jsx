@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Activity, AlertCircle, Bell, Calendar, ChevronDown,
-    ClipboardList, Clock, Eye, FileText, Heart,
+    ClipboardList, Clock, CreditCard, Eye, FileText, Heart,
     Home, LogOut, Menu, Moon, Pill, Lock,
     Search, Stethoscope, Sun,
     User, Users, X, Plus, CheckCircle,
