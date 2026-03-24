@@ -414,7 +414,7 @@ export function MobileSearchOverlay({ hospital, t, isDark, onNavigate, onClose }
                     }}>Cancel</button>
                 </div>
 
-                {/* Results area */}
+                {/* Results areaa */}
                 <div style={{ flex: 1, overflowY: 'auto' }}>
                     {!query.trim() && (
                         <div style={{ padding: '32px 16px', textAlign: 'center' }}>
