@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import ChangePasswordModal from '../Components/ChangePasswordModal';
 import NotificationsPanel from '../Components/NotificationsPanel';
+import { BillingSection, AdmissionsSection, QueueSection, LabRequestsSection } from './ReceptionistSections';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const getToken = () => localStorage.getItem('token');
@@ -818,10 +819,14 @@ const NAV_BY_ROLE = {
     nurse: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'records', label: 'Records', icon: FileText }, { id: 'profile', label: 'Profile', icon: User }],
     pharmacist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'prescriptions', label: 'Prescriptions', icon: ClipboardList }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
     lab_staff: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'records', label: 'Records', icon: FileText }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
-    receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }],
+    receptionist: [{ id: 'home', label: 'Dashboard', icon: Home }, { id: 'appointments', label: 'Appointments', icon: Calendar }, { id: 'patients', label: 'Patients', icon: Users }, { id: 'profile', label: 'Profile', icon: User }, { id: 'billing', label: 'Billing', icon: CreditCard },
+    { id: 'admissions', label: 'Admissions', icon: BedDouble },
+    { id: 'queue', label: 'Queue', icon: Users },
+    { id: 'lab', label: 'Lab', icon: Microscope },],
+
 };
 
-const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'prescriptions', 'records'];
+const SEARCHABLE_SECTIONS = ['patients', 'appointments', 'prescriptions', 'records', 'billing', 'admissions', 'queue', 'lab'];
 
 export default function StaffDashboard() {
     const navigate = useNavigate();
@@ -872,13 +877,17 @@ export default function StaffDashboard() {
     const renderSection = () => {
         const externalSearch = SEARCHABLE_SECTIONS.includes(section) ? searchQuery : '';
         switch (section) {
-            case 'home':          return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
-            case 'patients':      return <PatientsSection      {...sharedProps} externalSearch={externalSearch} />;
-            case 'appointments':  return <AppointmentsSection  {...sharedProps} externalSearch={externalSearch} />;
+            case 'home': return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'patients': return <PatientsSection      {...sharedProps} externalSearch={externalSearch} />;
+            case 'appointments': return <AppointmentsSection  {...sharedProps} externalSearch={externalSearch} />;
             case 'prescriptions': return <PrescriptionsSection {...sharedProps} externalSearch={externalSearch} />;
-            case 'records':       return <RecordsSection       {...sharedProps} externalSearch={externalSearch} />;
-            case 'profile':       return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
-            default:              return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'records': return <RecordsSection       {...sharedProps} externalSearch={externalSearch} />;
+            case 'profile': return <MyProfile t={t} staff={staff} isDark={isDark} roleMeta={roleMeta} onChangePw={() => setShowChangePw(true)} />;
+            default: return <HomeDashboard        {...sharedProps} staff={staff} onNavigate={goTo} />;
+            case 'billing': return <BillingSection    {...sharedProps} externalSearch={externalSearch} />;
+            case 'admissions': return <AdmissionsSection {...sharedProps} externalSearch={externalSearch} />;
+            case 'queue': return <QueueSection      {...sharedProps} />;
+            case 'lab': return <LabRequestsSection {...sharedProps} externalSearch={externalSearch} />;
         }
     };
 
@@ -1001,7 +1010,7 @@ export default function StaffDashboard() {
                         <button onClick={toggleTheme} style={{ width: 36, height: 36, borderRadius: 10, background: `${ORANGE}12`, border: `1px solid ${ORANGE}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: ORANGE }}>
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
                         </button>
-                        <NotificationsPanel isDark={isDark} onNavigate={goTo} onCountChange={() => {}} />
+                        <NotificationsPanel isDark={isDark} onNavigate={goTo} onCountChange={() => { }} />
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px', borderRadius: 10, transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = t.hover}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
