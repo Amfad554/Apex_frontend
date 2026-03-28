@@ -1,3 +1,25 @@
+/**
+ * Home.jsx
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Public landing page for Apex-HMS.
+ *
+ * Sections (top → bottom):
+ *   1. Hero              – headline, CTA buttons, live stats card
+ *   2. Login Portals     – three role cards (Hospital Admin / Staff / Patient)
+ *   3. How It Works      – 4-step onboarding process + flow diagram
+ *   4. Features          – 9 feature cards
+ *   5. User Roles        – 4 role permission cards
+ *   6. Security          – 8 security feature cards
+ *   7. Testimonials      – 3 testimonial cards
+ *   8. CTA               – orange background, register + login buttons
+ *   9. Contact Form      – inline contact form with validation
+ *
+ * API calls:
+ *   GET  /api/platform/stats – live stat numbers for the hero stats card
+ *   POST /api/contact        – contact form submission
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,33 +34,45 @@ import { motion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    BRAND TOKENS
+   (Kept as comments here for quick reference — consumed directly as hex strings
+   throughout the file to keep inline styles concise.)
+
+   Navy:       #0A1A3F
+   Soft Navy:  #1F2A44
+   Orange:     #FF5A1F
+   Light Gray: #F5F7FA
 ───────────────────────────────────────────────────────────────────────────── */
-// Navy:      #0A1A3F
-// Soft Navy: #1F2A44
-// Orange:    #FF5A1F
-// Light Gray:#F5F7FA
 
 /* ─────────────────────────────────────────────────────────────────────────────
    API CONFIG
 ───────────────────────────────────────────────────────────────────────────── */
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const API = {
-    stats:   `${API_BASE}/api/platform/stats`,
-    contact: `${API_BASE}/api/contact`,
-    me:      `${API_BASE}/api/hospitals/me`,
+    stats:   `${API_BASE}/api/platform/stats`,   // GET – live platform stats
+    contact: `${API_BASE}/api/contact`,           // POST – contact form
+    me:      `${API_BASE}/api/hospitals/me`,      // GET – check auth status
 };
 
+/** Fallback numbers shown while the live stats are loading or if the fetch fails */
 const FALLBACK_STATS = {
-    patients: 50000,
+    patients:  50000,
     hospitals: 250,
-    doctors: 1500,
-    uptime: 99.9,
-    rating: 4.9,
+    doctors:   1500,
+    uptime:    99.9,
+    rating:    4.9,
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
    HOOKS
 ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Animates all stat numbers from 0 up to their `target` values over `duration` ms
+ * using a cubic ease-out curve. Returns the current animated state object.
+ *
+ * Only re-triggers when `target.patients` changes (a proxy for "new data arrived").
+ */
 function useAnimatedStats(target, duration = 2000) {
     const [current, setCurrent] = useState({
         patients: 0, hospitals: 0, doctors: 0, uptime: 0, rating: 0,
@@ -46,9 +80,11 @@ function useAnimatedStats(target, duration = 2000) {
 
     useEffect(() => {
         const start = performance.now();
+
         const animate = (time) => {
-            const p = Math.min((time - start) / duration, 1);
-            const ease = 1 - Math.pow(1 - p, 3);
+            const p    = Math.min((time - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - p, 3);  // cubic ease-out
+
             setCurrent({
                 patients:  Math.floor(ease * target.patients),
                 hospitals: Math.floor(ease * target.hospitals),
@@ -56,26 +92,39 @@ function useAnimatedStats(target, duration = 2000) {
                 uptime:    (ease * target.uptime).toFixed(1),
                 rating:    (ease * target.rating).toFixed(1),
             });
+
             if (p < 1) requestAnimationFrame(animate);
         };
+
         requestAnimationFrame(animate);
-    }, [target.patients]);
+    }, [target.patients]);  // Re-run when live data comes in
 
     return current;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   VALIDATION
+   FORM VALIDATION
 ───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Per-field validators for the contact form.
+ * Each function receives the field's current string value and returns
+ * an error message, or an empty string if the value is valid.
+ */
 const VALIDATORS = {
-    hospitalName:      v => v.trim().length < 2  ? "Hospital name must be at least 2 characters." : "",
-    administratorName: v => v.trim().length < 2  ? "Administrator name is required." : "",
-    email:             v => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Enter a valid email address." : "",
-    phone:             v => !/^\+?[\d\s\-().]{7,}$/.test(v) ? "Enter a valid phone number." : "",
+    hospitalName:      v => v.trim().length < 2  ? "Please enter your hospital name (at least 2 characters)." : "",
+    administratorName: v => v.trim().length < 2  ? "Please enter the administrator's full name." : "",
+    email:             v => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Please enter a valid email address." : "",
+    phone:             v => !/^\+?[\d\s\-().]{7,}$/.test(v) ? "Please enter a valid phone number." : "",
     hospitalType:      v => !v ? "Please select a hospital type." : "",
-    message:           v => v.trim().length < 10 ? "Message must be at least 10 characters." : "",
+    message:           v => v.trim().length < 10 ? "Please write a message of at least 10 characters." : "",
 };
 
+/**
+ * Runs all validators against the form and returns an object of
+ * `{ fieldName: errorMessage }` for every field that fails.
+ * An empty object means the form is valid.
+ */
 function validate(form) {
     const errors = {};
     Object.keys(VALIDATORS).forEach(key => {
@@ -85,10 +134,12 @@ function validate(form) {
     return errors;
 }
 
+/** Default empty state for the contact form */
 const INITIAL_FORM = {
     hospitalName: "", administratorName: "", email: "",
     phone: "", hospitalType: "", message: "",
 };
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
@@ -96,11 +147,12 @@ const INITIAL_FORM = {
 export default function Home() {
     const navigate = useNavigate();
 
-    /* ── Stats ── */
-    const [statTarget, setStatTarget] = useState(FALLBACK_STATS);
-    const [statsLive, setStatsLive]   = useState(false);
-    const stats = useAnimatedStats(statTarget);
+    // ── Stats ─────────────────────────────────────────────────────────────
+    const [statTarget, setStatTarget] = useState(FALLBACK_STATS);  // numbers to animate toward
+    const [statsLive, setStatsLive]   = useState(false);            // true once real data loads
+    const stats = useAnimatedStats(statTarget);                     // animated current values
 
+    // Fetch live platform stats on mount; silently fall back to demo numbers on failure
     useEffect(() => {
         fetch(API.stats)
             .then(r => r.ok ? r.json() : Promise.reject())
@@ -114,17 +166,24 @@ export default function Home() {
                 });
                 setStatsLive(true);
             })
-            .catch(() => {});
+            .catch(() => {
+                // Stats fetch failed – the FALLBACK_STATS already loaded, so nothing to do
+            });
     }, []);
 
-    /* ── Contact form ── */
-    const [form, setForm]             = useState(INITIAL_FORM);
-    const [errors, setErrors]         = useState({});
-    const [touched, setTouched]       = useState({});
-    const [submitting, setSubmitting] = useState(false);
-    const [submitState, setSubmitState] = useState("idle");
-    const [submitMsg, setSubmitMsg]   = useState("");
 
+    // ── Contact form state ────────────────────────────────────────────────
+    const [form, setForm]               = useState(INITIAL_FORM);
+    const [errors, setErrors]           = useState({});       // active validation errors
+    const [touched, setTouched]         = useState({});       // which fields the user has blurred
+    const [submitting, setSubmitting]   = useState(false);
+    const [submitState, setSubmitState] = useState("idle");   // "idle" | "success" | "error"
+    const [submitMsg, setSubmitMsg]     = useState("");        // message shown after submit
+
+
+    // ── Field helpers ─────────────────────────────────────────────────────
+
+    /** Update a single form field and re-validate it if the user has already touched it */
     const setField = (key, value) => {
         setForm(f => ({ ...f, [key]: value }));
         if (touched[key]) {
@@ -133,16 +192,23 @@ export default function Home() {
         }
     };
 
+    /** Mark a field as touched on blur and immediately validate it */
     const touchField = (key) => {
         setTouched(t => ({ ...t, [key]: true }));
         const msg = VALIDATORS[key]?.(form[key] || "") ?? "";
         setErrors(e => ({ ...e, [key]: msg }));
     };
 
+
+    // ── Contact form submission ───────────────────────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Mark all fields as touched so errors show up for untouched ones too
         const allTouched = Object.keys(INITIAL_FORM).reduce((acc, k) => ({ ...acc, [k]: true }), {});
         setTouched(allTouched);
+
+        // Run full validation before hitting the API
         const errs = validate(form);
         setErrors(errs);
         if (Object.keys(errs).length > 0) return;
@@ -163,24 +229,40 @@ export default function Home() {
                     message:           form.message,
                 }),
             });
+
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data.message || "Submission failed. Please try again.");
             }
+
+            // Success
             setSubmitState("success");
-            setSubmitMsg("Message sent! We'll get back to you within 24 hours.");
+            setSubmitMsg("Your message has been received! Our team will get back to you within 24 hours.");
             setForm(INITIAL_FORM);
             setTouched({});
             setErrors({});
+
         } catch (err) {
             setSubmitState("error");
-            setSubmitMsg(err.message || "Something went wrong. Please try again.");
+            setSubmitMsg(
+                err.message ||
+                "Something went wrong while sending your message. Please check your connection and try again."
+            );
         } finally {
             setSubmitting(false);
         }
     };
 
-    /* ── Field helper ── */
+
+    /**
+     * Renders a single form input (text, email, tel, select, or textarea)
+     * wrapped in its error state and validation message.
+     *
+     * `key`   – matches a key in INITIAL_FORM / VALIDATORS
+     * `label` – placeholder text (also used as aria label)
+     * `type`  – "text" | "email" | "tel" | "select" | "textarea"
+     * `extra` – any extra props to spread on the element
+     */
     const field = (key, label, type = "text", extra = {}) => (
         <FieldWrapper key={key} error={touched[key] && errors[key]}>
             {type === "select" ? (
@@ -216,6 +298,7 @@ export default function Home() {
                     {...extra}
                 />
             )}
+            {/* Per-field error message shown after the user has blurred the field */}
             {touched[key] && errors[key] && (
                 <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 flex-shrink-0" />{errors[key]}
@@ -224,26 +307,29 @@ export default function Home() {
         </FieldWrapper>
     );
 
+
+    // ── Render ────────────────────────────────────────────────────────────
     return (
         <div style={{ backgroundColor: "#F5F7FA", color: "#0A1A3F" }}>
 
-            {/* ═══════════════════════ HERO ═══════════════════════ */}
+            {/* ════════════════ 1. HERO ════════════════ */}
             <section
                 className="relative min-h-[92vh] flex items-center justify-center overflow-hidden"
                 style={{ backgroundColor: "#0A1A3F" }}
             >
-                {/* Subtle cross-hatch pattern */}
+                {/* Subtle cross-hatch SVG pattern overlay */}
                 <div className="absolute inset-0 opacity-[0.06]"
                     style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF5A1F' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                     }}
                 />
-                {/* Soft orange glow bottom-right */}
+                {/* Soft orange radial glow – bottom-right */}
                 <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full opacity-10 pointer-events-none"
                     style={{ background: "radial-gradient(circle, #FF5A1F 0%, transparent 70%)", transform: "translate(30%, 30%)" }}
                 />
 
                 <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20 text-center">
+                    {/* Eyebrow badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-8"
@@ -253,6 +339,7 @@ export default function Home() {
                         <span>Multi-Tenant Healthcare Platform</span>
                     </motion.div>
 
+                    {/* Main headline */}
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="text-5xl lg:text-7xl font-black mb-6 leading-tight text-white"
@@ -270,6 +357,7 @@ export default function Home() {
                         and store medical records. Each hospital operates independently with complete data isolation.
                     </motion.p>
 
+                    {/* Primary CTA buttons */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                         className="flex flex-wrap justify-center gap-4 mb-12"
@@ -294,6 +382,7 @@ export default function Home() {
                         </button>
                     </motion.div>
 
+                    {/* Trust badges */}
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
                         className="flex flex-wrap justify-center gap-8 text-sm"
@@ -306,7 +395,7 @@ export default function Home() {
                         ))}
                     </motion.div>
 
-                    {/* Stats card */}
+                    {/* Live platform stats card */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
                         className="mt-16 max-w-5xl mx-auto rounded-3xl p-8"
@@ -317,6 +406,7 @@ export default function Home() {
                                 <TrendingUp className="w-5 h-5" style={{ color: "#FF5A1F" }} />
                                 <span className="text-sm font-semibold" style={{ color: "#F5F7FA" }}>Platform Statistics</span>
                             </div>
+                            {/* "Live" pill once real data arrives, otherwise "Demo" */}
                             <div
                                 className="px-3 py-1 rounded-full text-xs font-bold"
                                 style={statsLive
@@ -338,7 +428,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ═══════════════════════ LOGIN PORTALS ═══════════════════════ */}
+
+            {/* ════════════════ 2. LOGIN PORTALS ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-14">
@@ -351,6 +442,7 @@ export default function Home() {
                         </p>
                     </div>
 
+                    {/* Role selection cards */}
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {/* Hospital Admin */}
                         <motion.div
@@ -361,16 +453,12 @@ export default function Home() {
                             onMouseEnter={e => e.currentTarget.style.boxShadow = "0 16px 48px rgba(10,26,63,0.4)"}
                             onMouseLeave={e => e.currentTarget.style.boxShadow = "0 8px 40px rgba(10,26,63,0.25)"}
                         >
-                            <div
-                                className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full"
-                                style={{ backgroundColor: "rgba(255,90,31,0.2)", color: "#FF5A1F" }}
-                            >
+                            <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full"
+                                style={{ backgroundColor: "rgba(255,90,31,0.2)", color: "#FF5A1F" }}>
                                 Self Register
                             </div>
-                            <div
-                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
-                                style={{ backgroundColor: "rgba(255,90,31,0.2)" }}
-                            >
+                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+                                style={{ backgroundColor: "rgba(255,90,31,0.2)" }}>
                                 <Building2 className="w-8 h-8" style={{ color: "#FF5A1F" }} />
                             </div>
                             <h3 className="text-2xl font-black mb-3">Hospital Admin</h3>
@@ -389,7 +477,7 @@ export default function Home() {
                             </div>
                         </motion.div>
 
-                        {/* Staff */}
+                        {/* Staff Login */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
                             className="relative group bg-white rounded-3xl p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -422,7 +510,7 @@ export default function Home() {
                             </div>
                         </motion.div>
 
-                        {/* Patient */}
+                        {/* Patient Login */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
                             className="relative group bg-white rounded-3xl p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -456,6 +544,7 @@ export default function Home() {
                         </motion.div>
                     </div>
 
+                    {/* Info banner: staff & patients cannot self-register */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                         className="mt-10 max-w-5xl mx-auto rounded-2xl p-5 flex flex-col md:flex-row items-center gap-4 text-center md:text-left"
@@ -474,19 +563,19 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ═══════════════════════ HOW IT WORKS ═══════════════════════ */}
+
+            {/* ════════════════ 3. HOW IT WORKS ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#1F2A44" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>
-                            How It Works
-                        </p>
+                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>How It Works</p>
                         <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Simple 4-step onboarding process</h2>
                         <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(245,247,250,0.65)" }}>
                             Register your hospital and start managing patient records in minutes.
                         </p>
                     </div>
 
+                    {/* Step cards */}
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
                         <StepCard step="01" icon={<Building2 />} title="Register Your Hospital"
                             desc="Fill out the hospital registration form with your facility details and administrator information." />
@@ -498,19 +587,22 @@ export default function Home() {
                             desc="Register patients, schedule appointments, and maintain complete medical records." />
                     </div>
 
+                    {/* Platform flow diagram */}
                     <div className="relative max-w-4xl mx-auto">
+                        {/* Horizontal connector line (desktop only) */}
                         <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2 hidden lg:block"
                             style={{ background: "linear-gradient(to right, transparent, rgba(255,90,31,0.4), transparent)" }} />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                            <FlowCard title="Public Platform"    items={["Hospital Registration", "Hospital Login", "Super Admin Login"]}      />
-                            <FlowCard title="Super Admin Panel"  items={["Approve Hospitals", "Monitor Activities", "Manage Platform"]}        />
-                            <FlowCard title="Hospital Dashboard" items={["Patient Management", "Staff & Appointments", "Medical Records"]}     />
+                            <FlowCard title="Public Platform"    items={["Hospital Registration", "Hospital Login", "Super Admin Login"]} />
+                            <FlowCard title="Super Admin Panel"  items={["Approve Hospitals", "Monitor Activities", "Manage Platform"]} />
+                            <FlowCard title="Hospital Dashboard" items={["Patient Management", "Staff & Appointments", "Medical Records"]} />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* ═══════════════════════ FEATURES ═══════════════════════ */}
+
+            {/* ════════════════ 4. FEATURES ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -545,7 +637,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ═══════════════════════ USER ROLES ═══════════════════════ */}
+
+            {/* ════════════════ 5. USER ROLES ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#0A1A3F" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -556,23 +649,22 @@ export default function Home() {
                         </p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <RoleCard icon={<Shield />}      title="Super Admin"      permissions={["Approve hospital registrations", "Monitor all platform activity", "Suspend/delete hospitals", "Manage system settings"]} />
-                        <RoleCard icon={<Building2 />}   title="Hospital Admin"   permissions={["Manage hospital profile", "Add/remove staff members", "Register patients", "Full hospital access"]} />
-                        <RoleCard icon={<Stethoscope />} title="Doctors & Staff"  permissions={["View assigned patients", "Add medical records", "Manage appointments", "Update prescriptions"]} />
-                        <RoleCard icon={<Heart />}       title="Patients"         permissions={["Registered by hospital", "Access medical records", "View appointment history", "Secure patient portal"]} />
+                        <RoleCard icon={<Shield />}      title="Super Admin"     permissions={["Approve hospital registrations", "Monitor all platform activity", "Suspend/delete hospitals", "Manage system settings"]} />
+                        <RoleCard icon={<Building2 />}   title="Hospital Admin"  permissions={["Manage hospital profile", "Add/remove staff members", "Register patients", "Full hospital access"]} />
+                        <RoleCard icon={<Stethoscope />} title="Doctors & Staff" permissions={["View assigned patients", "Add medical records", "Manage appointments", "Update prescriptions"]} />
+                        <RoleCard icon={<Heart />}       title="Patients"        permissions={["Registered by hospital", "Access medical records", "View appointment history", "Secure patient portal"]} />
                     </div>
                 </div>
             </section>
 
-            {/* ═══════════════════════ SECURITY ═══════════════════════ */}
+
+            {/* ════════════════ 6. SECURITY ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#1F2A44" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                            <div
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6"
-                                style={{ backgroundColor: "rgba(255,90,31,0.15)", color: "#FF5A1F" }}
-                            >
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+                                style={{ backgroundColor: "rgba(255,90,31,0.15)", color: "#FF5A1F" }}>
                                 <Lock className="w-4 h-4" /><span>Enterprise Security</span>
                             </div>
                             <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Your data is our priority</h2>
@@ -594,7 +686,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ═══════════════════════ TESTIMONIALS ═══════════════════════ */}
+
+            {/* ════════════════ 7. TESTIMONIALS ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -605,14 +698,24 @@ export default function Home() {
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        <TestimonialCard quote="This platform transformed how we manage our multi-location hospital network. Patient data is centralized yet completely secure." initials="DR" name="Dr. Rachel Martinez" title="Chief Medical Officer" company="MediCare General Hospital Network" />
-                        <TestimonialCard quote="The role-based access system is perfect. Our doctors, nurses, and admin staff each have exactly the permissions they need." initials="JS" name="James Sullivan" title="Hospital Administrator" company="St. Mary's Medical Center" />
-                        <TestimonialCard quote="We registered 3 of our hospitals on this platform. The centralized management while maintaining complete data separation is exactly what we needed." initials="AK" name="Dr. Aisha Kamara" title="Director of Operations" company="HealthFirst Clinic Network" />
+                        <TestimonialCard
+                            quote="This platform transformed how we manage our multi-location hospital network. Patient data is centralized yet completely secure."
+                            initials="DR" name="Dr. Rachel Martinez" title="Chief Medical Officer" company="MediCare General Hospital Network"
+                        />
+                        <TestimonialCard
+                            quote="The role-based access system is perfect. Our doctors, nurses, and admin staff each have exactly the permissions they need."
+                            initials="JS" name="James Sullivan" title="Hospital Administrator" company="St. Mary's Medical Center"
+                        />
+                        <TestimonialCard
+                            quote="We registered 3 of our hospitals on this platform. The centralized management while maintaining complete data separation is exactly what we needed."
+                            initials="AK" name="Dr. Aisha Kamara" title="Director of Operations" company="HealthFirst Clinic Network"
+                        />
                     </div>
                 </div>
             </section>
 
-            {/* ═══════════════════════ CTA ═══════════════════════ */}
+
+            {/* ════════════════ 8. CTA ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#FF5A1F" }}>
                 <div className="max-w-5xl mx-auto px-6 lg:px-8 text-center">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -665,7 +768,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ═══════════════════════ CONTACT FORM ═══════════════════════ */}
+
+            {/* ════════════════ 9. CONTACT FORM ════════════════ */}
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-3xl mx-auto px-6 lg:px-8">
                     <div
@@ -677,6 +781,7 @@ export default function Home() {
                             <p style={{ color: "#718096" }}>Contact our team to learn more about the platform and registration process.</p>
                         </div>
 
+                        {/* ── Success state – shown after the form is submitted successfully ── */}
                         {submitState === "success" ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -699,7 +804,9 @@ export default function Home() {
                                 </button>
                             </motion.div>
                         ) : (
+                            /* ── Form ── */
                             <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                                {/* Error banner – only visible when the submit call fails */}
                                 {submitState === "error" && (
                                     <motion.div
                                         initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
@@ -715,10 +822,10 @@ export default function Home() {
                                     {field("hospitalName",      "Hospital Name")}
                                     {field("administratorName", "Administrator Name")}
                                 </div>
-                                {field("email",        "Email Address", "email")}
-                                {field("phone",        "Phone Number",  "tel")}
-                                {field("hospitalType", "",              "select")}
-                                {field("message",      "Message or Questions", "textarea")}
+                                {field("email",        "Email Address",         "email")}
+                                {field("phone",        "Phone Number",          "tel")}
+                                {field("hospitalType", "",                       "select")}
+                                {field("message",      "Message or Questions",  "textarea")}
 
                                 <button
                                     type="submit"
@@ -747,7 +854,15 @@ export default function Home() {
     );
 }
 
-/* ═══════════════════════ FORM HELPERS ═══════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORM HELPERS
+───────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Returns a Tailwind class string for an input/textarea/select element.
+ * Applies red error styling when `hasError` is truthy, otherwise normal focus styles.
+ */
 function inputCls(hasError) {
     return [
         "w-full px-4 py-3 rounded-lg placeholder-gray-400 transition-all",
@@ -758,11 +873,18 @@ function inputCls(hasError) {
     ].join(" ");
 }
 
+/** Simple flex wrapper used by the `field()` helper to stack input + error message */
 function FieldWrapper({ children }) {
     return <div className="flex flex-col">{children}</div>;
 }
 
-/* ═══════════════════════ SHARED COMPONENTS ═══════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SHARED COMPONENTS
+   (Defined at the bottom so the main component isn't cluttered)
+───────────────────────────────────────────────────────────────────────────── */
+
+/** Single stat box used inside the hero stats card */
 function StatBox({ label, value }) {
     return (
         <div className="text-center">
@@ -772,6 +894,7 @@ function StatBox({ label, value }) {
     );
 }
 
+/** Feature card used in the "Everything your hospital needs" grid */
 function FeatureCard({ icon, title, desc }) {
     return (
         <motion.div
@@ -793,6 +916,7 @@ function FeatureCard({ icon, title, desc }) {
     );
 }
 
+/** Numbered step card used in "How It Works" */
 function StepCard({ step, icon, title, desc }) {
     return (
         <motion.div
@@ -805,6 +929,7 @@ function StepCard({ step, icon, title, desc }) {
             >
                 {React.cloneElement(icon, { size: 28, style: { color: "#FF5A1F" } })}
             </div>
+            {/* Step number badge */}
             <div
                 className="absolute top-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
                 style={{ backgroundColor: "#FF5A1F" }}
@@ -817,6 +942,7 @@ function StepCard({ step, icon, title, desc }) {
     );
 }
 
+/** Platform flow diagram card used in "How It Works" */
 function FlowCard({ title, items }) {
     return (
         <motion.div
@@ -824,10 +950,8 @@ function FlowCard({ title, items }) {
             className="rounded-2xl p-6"
             style={{ backgroundColor: "#0A1A3F", border: "1px solid rgba(255,90,31,0.2)" }}
         >
-            <div
-                className="px-4 py-2 rounded-lg font-bold text-center mb-4 text-white text-sm"
-                style={{ backgroundColor: "#FF5A1F" }}
-            >
+            <div className="px-4 py-2 rounded-lg font-bold text-center mb-4 text-white text-sm"
+                style={{ backgroundColor: "#FF5A1F" }}>
                 {title}
             </div>
             <ul className="space-y-2">
@@ -842,6 +966,7 @@ function FlowCard({ title, items }) {
     );
 }
 
+/** Role permission card used in "User Roles" section */
 function RoleCard({ icon, title, permissions }) {
     return (
         <motion.div
@@ -851,10 +976,8 @@ function RoleCard({ icon, title, permissions }) {
             onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,90,31,0.4)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
         >
-            <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ backgroundColor: "rgba(255,90,31,0.15)" }}
-            >
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                style={{ backgroundColor: "rgba(255,90,31,0.15)" }}>
                 {React.cloneElement(icon, { size: 24, style: { color: "#FF5A1F" } })}
             </div>
             <h3 className="text-xl font-bold mb-4 text-white">{title}</h3>
@@ -870,6 +993,7 @@ function RoleCard({ icon, title, permissions }) {
     );
 }
 
+/** Security feature card used in the "Enterprise Security" section */
 function SecurityFeature({ icon, title, desc }) {
     return (
         <motion.div
@@ -879,10 +1003,8 @@ function SecurityFeature({ icon, title, desc }) {
             onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,90,31,0.45)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
         >
-            <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
-                style={{ backgroundColor: "#FF5A1F" }}
-            >
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+                style={{ backgroundColor: "#FF5A1F" }}>
                 {React.cloneElement(icon, { size: 20, color: "#fff" })}
             </div>
             <h4 className="font-bold mb-2 text-white">{title}</h4>
@@ -891,6 +1013,7 @@ function SecurityFeature({ icon, title, desc }) {
     );
 }
 
+/** Testimonial card used in the "Trusted by hospitals" section */
 function TestimonialCard({ quote, initials, name, title, company }) {
     return (
         <motion.div
@@ -898,6 +1021,7 @@ function TestimonialCard({ quote, initials, name, title, company }) {
             className="bg-white rounded-2xl p-8"
             style={{ border: "1px solid rgba(10,26,63,0.08)", boxShadow: "0 2px 12px rgba(10,26,63,0.04)" }}
         >
+            {/* 5-star rating row */}
             <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-5 h-5" style={{ fill: "#FF5A1F", color: "#FF5A1F" }} />
@@ -905,10 +1029,9 @@ function TestimonialCard({ quote, initials, name, title, company }) {
             </div>
             <p className="mb-6 leading-relaxed italic" style={{ color: "#4A5568" }}>"{quote}"</p>
             <div className="flex items-center gap-3">
-                <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-sm"
-                    style={{ backgroundColor: "#0A1A3F" }}
-                >
+                {/* Initials avatar */}
+                <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-sm"
+                    style={{ backgroundColor: "#0A1A3F" }}>
                     {initials}
                 </div>
                 <div>

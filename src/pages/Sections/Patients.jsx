@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Search, X, Eye, Trash2, Droplets, Loader, AlertCircle, Copy, CopyCheck, KeyRound } from 'lucide-react';
+import { UserPlus, Search, X, Eye, Trash2, Droplets, Loader, AlertCircle } from 'lucide-react';
 import { patientsAPI } from '../../Services/api.js';
-import { saveCredential } from './CredentialsHistory.jsx';
 
+/* ─── Brand colour tokens ────────────────────────────────────────────────────── */
 const T = {
-    navy: '#0A1A3F',
-    softNavy: '#1F2A44',
-    orange: '#FF5A1F',
+    navy:      '#0A1A3F',
+    softNavy:  '#1F2A44',
+    orange:    '#FF5A1F',
     lightGray: '#F5F7FA',
 };
 
+/* ─── Avatar colours — cycles through the patient list ──────────────────────── */
 const AVATAR_COLORS = [T.orange, '#10b981', '#8b5cf6', '#06b6d4', '#f59e0b', '#ec4899', '#7c3aed', '#059669'];
 
+/* ─── Toast notification — auto-dismisses after 4 seconds ───────────────────── */
 function Toast({ message, type = 'success', onClose }) {
-    useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
+    useEffect(() => {
+        const id = setTimeout(onClose, 4000);
+        return () => clearTimeout(id);
+    }, []);
+
     const isSuccess = type === 'success';
     return (
         <div style={{
@@ -32,100 +38,40 @@ function Toast({ message, type = 'success', onClose }) {
                 @keyframes spin    { to{transform:rotate(360deg)} }
             `}</style>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, padding: 0, display: 'flex' }}><X size={15} /></button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, padding: 0, display: 'flex' }}>
+                <X size={15} />
+            </button>
         </div>
     );
 }
 
-function CredentialsModal({ credentials, t, isMobile, onClose }) {
-    const [copiedField, setCopiedField] = useState(null);
-    const copy = (text, field) => { navigator.clipboard.writeText(text); setCopiedField(field); setTimeout(() => setCopiedField(null), 2000); };
-    const CopyBtn = ({ text, field, accent }) => (
-        <button onClick={() => copy(text, field)} style={{ background: copiedField === field ? 'rgba(16,185,129,0.15)' : `${accent}18`, border: `1px solid ${copiedField === field ? 'rgba(16,185,129,0.3)' : `${accent}44`}`, borderRadius: 8, cursor: 'pointer', color: copiedField === field ? '#10b981' : accent, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 12, fontWeight: 600, transition: 'all .18s' }}>
-            {copiedField === field ? <><CopyCheck size={13} />Copied</> : <><Copy size={13} />Copy</>}
-        </button>
-    );
-    const Row = ({ label, children, accent }) => (
-        <div style={{ marginBottom: 10, background: accent ? `${accent}0d` : (t.cardAlt || 'rgba(0,0,0,0.04)'), borderRadius: 12, padding: '12px 16px', border: `1px solid ${accent ? `${accent}33` : t.border}` }}>
-            <p style={{ fontSize: 11, color: accent || t.textMuted, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>
-            {children}
-        </div>
-    );
-    return (
-        <div onClick={e => e.target === e.currentTarget && onClose()} style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
-            zIndex: 99999, overflowY: 'auto',
-            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            padding: isMobile ? '16px' : '40px 20px',
-        }}>
-            <div style={{
-                background: t.card, borderRadius: 20, width: '100%', maxWidth: 440,
-                border: `1.5px solid ${t.border}`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-                margin: '0 auto', marginBottom: 40,
-            }}>
-                <div style={{ background: T.navy, borderBottom: `3px solid ${T.orange}`, padding: '20px 24px', borderRadius: '20px 20px 0 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 10, background: `${T.orange}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KeyRound size={18} color={T.orange} /></div>
-                        <div>
-                            <p style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Patient Registered!</p>
-                            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>Share these credentials with the patient</p>
-                        </div>
-                    </div>
-                </div>
-                <div style={{ padding: '20px 24px' }}>
-                    <p style={{ fontSize: 12, color: t.textSub, marginBottom: 14, lineHeight: 1.7, background: `${T.orange}0d`, border: `1px solid ${T.orange}33`, borderRadius: 8, padding: '9px 12px' }}>
-                        ⚠️ Copy and share these credentials manually — they <strong>won't be shown again</strong>.
-                    </p>
-                    <Row label="Patient Name"><p style={{ fontSize: 14, fontWeight: 800, color: t.text }}>{credentials.fullName}</p></Row>
-                    <Row label="Patient Number (Login ID)" accent={T.orange}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: T.orange, letterSpacing: '0.06em', fontFamily: 'monospace' }}>{credentials.patientNumber}</p>
-                            <CopyBtn text={credentials.patientNumber} field="patientNumber" accent={T.orange} />
-                        </div>
-                    </Row>
-                    <Row label="Temporary Password" accent="#f59e0b">
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <p style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b', letterSpacing: '0.1em', fontFamily: 'monospace' }}>{credentials.tempPassword}</p>
-                            <CopyBtn text={credentials.tempPassword} field="tempPassword" accent="#f59e0b" />
-                        </div>
-                    </Row>
-                    {credentials.email && <Row label="Email"><p style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{credentials.email}</p></Row>}
-                    <div style={{ background: `${T.navy}14`, border: `1px solid ${T.navy}28`, borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: t.textSub, lineHeight: 1.8 }}>
-                        <strong style={{ color: t.text }}>How to log in:</strong><br />
-                        Go to <strong>/patientlogin</strong> → use <strong>email</strong> + password, or <strong>patient number</strong> as identifier.
-                    </div>
-                    <button onClick={onClose} style={{ width: '100%', padding: '12px', background: T.orange, border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44` }}
-                        onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = ''; }}
-                    >Done</button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
+/* ─── Reusable close button (red X) used in modals ──────────────────────────── */
 function CloseBtn({ onClick }) {
     return (
-        <button onClick={onClick} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}
+        <button onClick={onClick}
+            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, cursor: 'pointer', color: '#ef4444', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.transform = 'rotate(90deg)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.transform = ''; }}
         ><X size={16} /></button>
     );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+/* ─── Patients — main section component ─────────────────────────────────────── */
 export default function Patients({ isDark, t, hospital, isMobile, externalSearch = '' }) {
-    const [patients, setPatients] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [search, setSearch] = useState(externalSearch);
-    const [showRegister, setShowReg] = useState(false);
-    const [viewPatient, setViewPatient] = useState(null);
-    const [submitting, setSubmitting] = useState(false);
-    const [formError, setFormError] = useState('');
-    const [toast, setToast] = useState(null);
-    const [credentials, setCredentials] = useState(null);
-    const [focused, setFocused] = useState(null);
+
+    /* ── State ── */
+    const [patients,     setPatients]  = useState([]);
+    const [loading,      setLoading]   = useState(true);
+    const [error,        setError]     = useState('');
+    const [search,       setSearch]    = useState(externalSearch);
+    const [showRegister, setShowReg]   = useState(false);   // controls register modal
+    const [viewPatient,  setViewPatient] = useState(null);  // patient being viewed
+    const [submitting,   setSubmitting] = useState(false);
+    const [formError,    setFormError] = useState('');
+    const [toast,        setToast]     = useState(null);
+    const [focused,      setFocused]   = useState(null);    // tracks which input is focused
+
+    /* ── Registration form fields ── */
     const [form, setForm] = useState({
         fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '',
         address: '', bloodGroup: 'O+', medicalConditions: '',
@@ -133,12 +79,12 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
     });
 
     const hospitalId = hospital?.id;
-    const showToast = (message, type = 'success') => setToast({ message, type });
+    const showToast  = (message, type = 'success') => setToast({ message, type });
 
-    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    /* ── Keep local search in sync when SmartSearchBar sends a query ── */
     useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
-    // ── Dark-mode aware input/select style ────────────────────────────────────
+    /* ── Input style — highlights orange when focused ── */
     const inputStyle = (name) => ({
         width: '100%',
         background: t.input,
@@ -155,8 +101,13 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
         colorScheme: isDark ? 'dark' : 'light',
     });
 
-    const labelStyle = { display: 'block', fontSize: 11, fontWeight: 700, color: t.textMuted, marginBottom: 6, letterSpacing: '0.07em', textTransform: 'uppercase' };
+    const labelStyle = {
+        display: 'block', fontSize: 11, fontWeight: 700,
+        color: t.textMuted, marginBottom: 6,
+        letterSpacing: '0.07em', textTransform: 'uppercase',
+    };
 
+    /* ── Shared overlay and card styles for modals ── */
     const overlayStyle = (isMob) => ({
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
         zIndex: 9999, overflowY: 'auto',
@@ -170,6 +121,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
         margin: '0 auto', marginBottom: 40,
     });
 
+    /* ── Fetch patients — optionally filtered by a search query ── */
     const loadPatients = async (q = '') => {
         if (!hospitalId) return;
         try {
@@ -177,58 +129,81 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             const params = q ? { search: q } : {};
             const res = await patientsAPI.list(hospitalId, params);
             setPatients(res.patients || []);
-        } catch (err) { setError(err.message); }
-        finally { setLoading(false); }
+        } catch (err) {
+            setError('Could not load patients. Please refresh the page.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    /* ── Load on mount and whenever the hospital changes ── */
     useEffect(() => { loadPatients(externalSearch); }, [hospitalId]);
 
+    /* ── Debounce search — waits 350ms after the user stops typing ── */
     useEffect(() => {
         const id = setTimeout(() => loadPatients(search), 350);
         return () => clearTimeout(id);
     }, [search]);
 
+    /* ── Submit the registration form ── */
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) { setFormError('Please fill all required fields.'); return; }
+        if (!form.fullName || !form.phone || !form.address || !form.dateOfBirth) {
+            setFormError('Please fill in all required fields.');
+            return;
+        }
         try {
             setSubmitting(true); setFormError('');
             const res = await patientsAPI.create({ ...form });
             setShowReg(false);
             setForm({ fullName: '', dateOfBirth: '', gender: 'male', phone: '', email: '', address: '', bloodGroup: 'O+', medicalConditions: '', nextOfKinName: '', nextOfKinPhone: '' });
             loadPatients();
-            const credEntry = { type: 'patient', fullName: res.patient.fullName, patientNumber: res.patient.patientNumber, tempPassword: res.tempPassword, email: res.patient.email || null };
-            saveCredential(credEntry);
-            setCredentials(credEntry);
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmitting(false); }
+            showToast(res.patient?.email
+                ? 'Patient registered! Login details have been sent to their email.'
+                : 'Patient registered! No email was provided, so no login details were sent.');
+        } catch (err) {
+            setFormError('Registration failed. Please check your details and try again.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
+    /* ── Delete a patient after confirmation ── */
     const handleDelete = async (id) => {
-        if (!confirm('Delete this patient? This cannot be undone.')) return;
-        try { await patientsAPI.delete(id); setPatients(prev => prev.filter(p => p.id !== id)); showToast('Patient deleted.'); }
-        catch (err) { showToast(err.message, 'error'); }
+        if (!confirm('Are you sure you want to delete this patient? This cannot be undone.')) return;
+        try {
+            await patientsAPI.delete(id);
+            setPatients(prev => prev.filter(p => p.id !== id));
+            showToast('Patient record has been deleted.');
+        } catch (err) {
+            showToast('Could not delete this patient. Please try again.', 'error');
+        }
     };
 
+    /* ── View button (eye icon) ── */
     const ViewBtn = ({ onClick, size = 30 }) => (
-        <button onClick={onClick} style={{ width: size, height: size, borderRadius: 8, background: `${T.orange}12`, border: 'none', cursor: 'pointer', color: T.orange, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+        <button onClick={onClick}
+            style={{ width: size, height: size, borderRadius: 8, background: `${T.orange}12`, border: 'none', cursor: 'pointer', color: T.orange, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = `${T.orange}25`; e.currentTarget.style.transform = 'scale(1.12)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = `${T.orange}12`; e.currentTarget.style.transform = ''; }}
             onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
         ><Eye size={size === 32 ? 15 : 14} /></button>
     );
 
+    /* ── Delete button (trash icon) ── */
     const DelBtn = ({ onClick, size = 30 }) => (
-        <button onClick={onClick} style={{ width: size, height: size, borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+        <button onClick={onClick}
+            style={{ width: size, height: size, borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.22)'; e.currentTarget.style.transform = 'scale(1.12)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.transform = ''; }}
             onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
         ><Trash2 size={size === 32 ? 15 : 14} /></button>
     );
 
+    /* ── Render ── */
     return (
         <div>
-            {/* ✅ Global style: force select options to match dark/light theme */}
+            {/* Make select dropdowns match the current theme */}
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
                 select option {
@@ -238,16 +213,14 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             `}</style>
 
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
-            {credentials && (
-                <CredentialsModal credentials={credentials} t={t} isMobile={isMobile}
-                    onClose={() => { setCredentials(null); showToast(credentials?.email ? '✅ Patient registered & credentials emailed!' : '✅ Patient registered! No email provided — share credentials manually.'); }} />
-            )}
 
-            {/* Header */}
+            {/* ── Page header with title and register button ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12 }}>
                 <div>
                     <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 900, letterSpacing: '-0.03em', color: t.text, marginBottom: 3 }}>Patients</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{patients.length} patients registered{search ? ` · filtered by "${search}"` : ''}</p>
+                    <p style={{ color: t.textSub, fontSize: 13 }}>
+                        {patients.length} patients registered{search ? ` · filtered by "${search}"` : ''}
+                    </p>
                 </div>
                 <button onClick={() => setShowReg(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '9px 14px' : '10px 20px', background: T.orange, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: isMobile ? 13 : 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 4px 16px ${T.orange}44`, flexShrink: 0, transition: 'transform .15s, box-shadow .15s' }}
@@ -260,7 +233,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                 </button>
             </div>
 
-            {/* Search bar */}
+            {/* ── Search bar ── */}
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 background: t.card, borderRadius: 10, padding: '8px 14px',
@@ -284,7 +257,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                 )}
             </div>
 
-            {/* Mobile cards */}
+            {/* ── Mobile card layout ── */}
             {isMobile ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {loading ? (
@@ -300,10 +273,11 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                             {search ? `No patients matching "${search}"` : 'No patients found'}
                         </div>
                     ) : patients.map((p, i) => {
-                        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                        const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                         return (
-                            <div key={p.id} style={{ background: t.card, borderRadius: 14, padding: '14px 16px', border: `1.5px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color .18s, box-shadow .18s' }}
+                            <div key={p.id}
+                                style={{ background: t.card, borderRadius: 14, padding: '14px 16px', border: `1.5px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color .18s, box-shadow .18s' }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = `${T.orange}44`; e.currentTarget.style.boxShadow = `0 6px 20px rgba(255,90,31,0.1)`; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = 'none'; }}
                             >
@@ -322,7 +296,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                     })}
                 </div>
             ) : (
-                /* Desktop table */
+                /* ── Desktop table layout ── */
                 <div style={{ background: t.card, borderRadius: 18, border: `1.5px solid ${t.border}`, boxShadow: t.shadow, overflow: 'hidden' }}>
                     {loading ? (
                         <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
@@ -343,16 +317,15 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                             </thead>
                             <tbody>
                                 {patients.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted, fontSize: 14 }}>
-                                            {search ? `No patients matching "${search}"` : 'No patients found'}
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: t.textMuted, fontSize: 14 }}>
+                                        {search ? `No patients matching "${search}"` : 'No patients found'}
+                                    </td></tr>
                                 ) : patients.map((p, i) => {
-                                    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                                    const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
                                     const avatar = p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                                     return (
-                                        <tr key={p.id} style={{ borderBottom: `1px solid ${t.border}`, transition: 'background .15s' }}
+                                        <tr key={p.id}
+                                            style={{ borderBottom: `1px solid ${t.border}`, transition: 'background .15s' }}
                                             onMouseEnter={e => e.currentTarget.style.background = t.hover}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
@@ -388,20 +361,25 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                 </div>
             )}
 
-            {/* Register Modal */}
+            {/* ── Register Patient modal ── */}
             {showRegister && (
                 <div onClick={e => e.target === e.currentTarget && setShowReg(false)} style={overlayStyle(isMobile)}>
                     <div style={cardStyle(560)}>
+                        {/* Modal header */}
                         <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserPlus size={16} color={T.orange} /></div>
+                                <div style={{ width: 34, height: 34, borderRadius: 9, background: `${T.orange}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <UserPlus size={16} color={T.orange} />
+                                </div>
                                 <div>
                                     <h2 style={{ fontWeight: 800, fontSize: 15, color: t.text }}>Register New Patient</h2>
-                                    <p style={{ fontSize: 11, color: t.textMuted, marginTop: 1 }}>Credentials shown after registration</p>
+                                    <p style={{ fontSize: 11, color: t.textMuted, marginTop: 1 }}>Login credentials will be emailed automatically</p>
                                 </div>
                             </div>
                             <CloseBtn onClick={() => setShowReg(false)} />
                         </div>
+
+                        {/* Registration form */}
                         <form onSubmit={handleRegister} style={{ padding: '20px' }}>
                             {formError && (
                                 <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -457,11 +435,13 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                                <button type="button" onClick={() => setShowReg(false)} style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'background .15s' }}
+                                <button type="button" onClick={() => setShowReg(false)}
+                                    style={{ flex: 1, padding: '11px', background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'background .15s' }}
                                     onMouseEnter={e => e.currentTarget.style.background = t.hover}
                                     onMouseLeave={e => e.currentTarget.style.background = t.input}
                                 >Cancel</button>
-                                <button type="submit" disabled={submitting} style={{ flex: 2, padding: '11px', background: submitting ? `${T.orange}88` : T.orange, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, boxShadow: submitting ? 'none' : `0 4px 16px ${T.orange}44`, transition: 'all .15s' }}
+                                <button type="submit" disabled={submitting}
+                                    style={{ flex: 2, padding: '11px', background: submitting ? `${T.orange}88` : T.orange, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', fontSize: 14, boxShadow: submitting ? 'none' : `0 4px 16px ${T.orange}44`, transition: 'all .15s' }}
                                     onMouseEnter={e => { if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 6px 20px ${T.orange}55`; } }}
                                     onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 16px ${T.orange}44`; }}
                                     onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'}
@@ -472,10 +452,11 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                 </div>
             )}
 
-            {/* View Patient Modal */}
+            {/* ── View Patient details modal ── */}
             {viewPatient && (
                 <div onClick={e => e.target === e.currentTarget && setViewPatient(null)} style={overlayStyle(isMobile)}>
                     <div style={cardStyle(480)}>
+                        {/* Dark header with patient name and avatar */}
                         <div style={{ padding: 20, background: T.navy, borderBottom: `3px solid ${T.orange}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderRadius: '20px 20px 0 0' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                 <div style={{ width: 50, height: 50, borderRadius: 14, background: `${T.orange}28`, color: T.orange, fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -488,18 +469,20 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
                             </div>
                             <CloseBtn onClick={() => setViewPatient(null)} />
                         </div>
+
+                        {/* Patient detail grid */}
                         <div style={{ padding: 20 }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                                 {[
-                                    { label: 'Phone', value: viewPatient.phone },
-                                    { label: 'Email', value: viewPatient.email || '—' },
-                                    { label: 'Gender', value: viewPatient.gender, cap: true },
+                                    { label: 'Phone',       value: viewPatient.phone },
+                                    { label: 'Email',       value: viewPatient.email || '—' },
+                                    { label: 'Gender',      value: viewPatient.gender, cap: true },
                                     { label: 'Blood Group', value: viewPatient.bloodGroup || '—' },
                                     { label: 'Date of Birth', value: new Date(viewPatient.dateOfBirth).toLocaleDateString() },
                                     { label: 'Next of Kin', value: viewPatient.nextOfKinName || '—' },
-                                    { label: 'Kin Phone', value: viewPatient.nextOfKinPhone || '—' },
-                                    { label: 'Conditions', value: viewPatient.medicalConditions || '—' },
-                                    { label: 'Address', value: viewPatient.address, full: true },
+                                    { label: 'Kin Phone',   value: viewPatient.nextOfKinPhone || '—' },
+                                    { label: 'Conditions',  value: viewPatient.medicalConditions || '—' },
+                                    { label: 'Address',     value: viewPatient.address, full: true },
                                 ].map(({ label, value, full, cap }) => (
                                     <div key={label} style={{ gridColumn: full ? '1/-1' : 'auto', background: t.cardAlt, borderRadius: 10, padding: '11px 13px', border: `1px solid ${t.border}` }}>
                                         <p style={{ fontSize: 10.5, color: t.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{label}</p>

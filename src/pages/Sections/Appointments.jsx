@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, X, CheckCircle2, XCircle, AlertCircle, Loader } from 'lucide-react';
 import { appointmentsAPI, staffAPI, patientsAPI } from '../../Services/api.js';
 
-/* ─── Brand Tokens ───────────────────────────────────────────────────────────── */
+/* ─── Brand colour tokens ────────────────────────────────────────────────────── */
 const ORANGE  = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 
 const ACCENT = { green: '#059669', red: '#DC2626', amber: '#D97706' };
 
+/* ─── Status badge styles — one entry per appointment status ─────────────────── */
 const STATUS_COLORS = {
     scheduled: { bg: 'rgba(255,90,31,0.08)',   text: ORANGE,    border: 'rgba(255,90,31,0.2)'   },
     completed: { bg: 'rgba(5,150,105,0.08)',   text: '#059669', border: 'rgba(5,150,105,0.2)'   },
@@ -15,39 +16,59 @@ const STATUS_COLORS = {
     no_show:   { bg: 'rgba(107,114,128,0.08)', text: '#6B7280', border: 'rgba(107,114,128,0.2)' },
 };
 
+/* ─── Avatar background colours — cycles through appointments list ───────────── */
 const AVATAR_COLORS = [ORANGE, '#0E6E77', '#6847C2', '#D97706', '#be185d', '#059669'];
 
-/* ─── Toast ──────────────────────────────────────────────────────────────────── */
+/* ─── Toast notification — auto-dismisses after 4 seconds ───────────────────── */
 function Toast({ message, type = 'success', onClose, t }) {
-    useEffect(() => { const id = setTimeout(onClose, 4000); return () => clearTimeout(id); }, []);
+    useEffect(() => {
+        const id = setTimeout(onClose, 4000);
+        return () => clearTimeout(id);
+    }, []);
+
     const colors = {
         success: { bg: 'rgba(5,150,105,0.08)',  border: 'rgba(5,150,105,0.25)',  text: '#059669' },
         error:   { bg: 'rgba(220,38,38,0.08)',  border: 'rgba(220,38,38,0.25)',  text: '#DC2626' },
         info:    { bg: 'rgba(255,90,31,0.08)',  border: 'rgba(255,90,31,0.25)',  text: ORANGE    },
     };
     const cl = colors[type] || colors.info;
+
     return (
-        <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: t.card, border: `1px solid ${cl.border}`, color: cl.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, maxWidth: 'calc(100vw - 40px)', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'flex-start', gap: 10, animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards' }}>
+        <div style={{
+            position: 'fixed', top: 20, right: 20, zIndex: 99999,
+            background: t.card, border: `1px solid ${cl.border}`, color: cl.text,
+            borderRadius: 12, padding: '14px 18px',
+            minWidth: 280, maxWidth: 'calc(100vw - 40px)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+            animation: 'toastIn 0.3s cubic-bezier(0.21,1.02,0.73,1) forwards',
+        }}>
             <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.5 }}>{message}</span>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: cl.text, opacity: 0.5, padding: 0, display: 'flex' }}><X size={15} /></button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: cl.text, opacity: 0.5, padding: 0, display: 'flex' }}>
+                <X size={15} />
+            </button>
         </div>
     );
 }
 
-/* ─── Main Component ─────────────────────────────────────────────────────────── */
+/* ─── Appointments — main section component ──────────────────────────────────── */
 export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '' }) {
+
+    /* ── State ── */
     const [appointments, setAppts]    = useState([]);
     const [doctors,      setDoctors]  = useState([]);
     const [patients,     setPatients] = useState([]);
     const [loading,      setLoading]  = useState(true);
     const [error,        setError]    = useState('');
-    const [filter,       setFilter]   = useState('All');
+    const [filter,       setFilter]   = useState('All');       // status filter tab
     const [search,       setSearch]   = useState(externalSearch);
-    const [showBook,     setShowBook] = useState(false);
+    const [showBook,     setShowBook] = useState(false);       // controls booking modal
     const [submitting,   setSubmit]   = useState(false);
     const [formError,    setFormError]= useState('');
     const [toast,        setToast]    = useState(null);
+
+    /* ── Booking form fields ── */
     const [form, setForm] = useState({
         patientId: '', doctorId: '', appointmentDate: '',
         appointmentTime: '', reason: '', notes: '',
@@ -56,33 +77,42 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
     const hospitalId = hospital?.id;
     const showToast  = (message, type = 'success') => setToast({ message, type });
 
-    // ✅ ADDED: sync local search when SmartSearchBar navigates here with a query
+    /* ── Keep local search in sync when SmartSearchBar sends a query ── */
     useEffect(() => { setSearch(externalSearch); }, [externalSearch]);
 
+    /* ── Fetch appointments, doctors and patients in one go ── */
     const load = async () => {
         if (!hospitalId) return;
         try {
             setLoading(true); setError('');
             const params = {};
             if (filter !== 'All') params.status = filter.toLowerCase();
+
             const [apptsRes, staffRes, patientsRes] = await Promise.all([
                 appointmentsAPI.list(hospitalId, params),
                 staffAPI.list(hospitalId, { role: 'doctor' }),
                 patientsAPI.list(hospitalId),
             ]);
+
             setAppts(apptsRes.appointments || []);
             setDoctors(staffRes.staff || []);
             setPatients(patientsRes.patients || []);
-        } catch (err) { setError(err.message); }
-        finally { setLoading(false); }
+        } catch (err) {
+            setError('Could not load appointments. Please refresh the page.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    /* ── Reload whenever the hospital or active filter changes ── */
     useEffect(() => { load(); }, [hospitalId, filter]);
 
+    /* ── Submit new appointment booking ── */
     const handleBook = async (e) => {
         e.preventDefault();
         if (!form.patientId || !form.doctorId || !form.appointmentDate || !form.appointmentTime || !form.reason) {
-            setFormError('All fields except notes are required.'); return;
+            setFormError('Please fill in all required fields before booking.');
+            return;
         }
         try {
             setSubmit(true); setFormError('');
@@ -91,19 +121,30 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
             setForm({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', reason: '', notes: '' });
             showToast('Appointment booked successfully!');
             load();
-        } catch (err) { setFormError(err.message); }
-        finally { setSubmit(false); }
+        } catch (err) {
+            setFormError('Something went wrong. Please try again.');
+        } finally {
+            setSubmit(false);
+        }
     };
 
+    /* ── Mark an appointment as completed or cancelled ── */
     const updateStatus = async (id, status) => {
         try {
             await appointmentsAPI.updateStatus(id, status);
+            // Update only the affected appointment in local state (no full reload needed)
             setAppts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-            showToast(`Appointment marked as ${status}`);
-        } catch (err) { showToast(err.message, 'error'); }
+            const messages = {
+                completed: 'Appointment marked as completed.',
+                cancelled: 'Appointment has been cancelled.',
+            };
+            showToast(messages[status] || 'Appointment updated.');
+        } catch (err) {
+            showToast('Could not update the appointment. Please try again.', 'error');
+        }
     };
 
-    // ✅ CHANGED: also searches reason field, and handles empty search correctly
+    /* ── Filter appointments by search query (name, doctor, or reason) ── */
     const filtered = appointments.filter(a => {
         if (!search.trim()) return true;
         const q = search.toLowerCase();
@@ -114,9 +155,11 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
         );
     });
 
+    /* ── Count appointments by status for the summary cards ── */
     const counts = { scheduled: 0, completed: 0, cancelled: 0 };
     appointments.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
+    /* ── Shared input and label styles for the booking form ── */
     const inputStyle = {
         width: '100%', background: t.input, border: `1px solid ${t.border}`,
         borderRadius: 10, padding: '10px 14px', color: t.text, fontSize: 13,
@@ -125,6 +168,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
     };
     const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: t.textSub, marginBottom: 6 };
 
+    /* ── Render ── */
     return (
         <div style={{ color: t.text, fontFamily: "'DM Sans','Segoe UI',sans-serif" }}>
             <style>{`
@@ -136,7 +180,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
 
             {toast && <Toast {...toast} t={t} onClose={() => setToast(null)} />}
 
-            {/* ── Header ── */}
+            {/* ── Page header with title and "Book Appointment" button ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, gap: 12 }}>
                 <div>
                     <div style={{ width: 36, height: 4, borderRadius: 2, background: ORANGE, marginBottom: 10 }} />
@@ -154,7 +198,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                 </button>
             </div>
 
-            {/* ── Stat Cards ── */}
+            {/* ── Summary cards — scheduled / completed / cancelled counts ── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
                 {[
                     { label: 'Scheduled', count: counts.scheduled, icon: AlertCircle,  color: ORANGE       },
@@ -173,14 +217,20 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                 ))}
             </div>
 
-            {/* ── Search + Filter ── */}
+            {/* ── Search bar and status filter tabs ── */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexDirection: isMobile ? 'column' : 'row' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1px solid ${t.border}`, flex: 1 }}>
                     <Search size={15} color={t.textMuted} />
-                    <input placeholder="Search by patient or doctor…" value={search} onChange={e => setSearch(e.target.value)}
-                        style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }} />
+                    <input
+                        placeholder="Search by patient, doctor or reason…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{ background: 'none', border: 'none', outline: 'none', color: t.text, fontSize: 13, width: '100%', fontFamily: 'inherit' }}
+                    />
                     {search && (
-                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}><X size={14} /></button>
+                        <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: t.textMuted, display: 'flex', padding: 0 }}>
+                            <X size={14} />
+                        </button>
                     )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: isMobile ? 2 : 0 }}>
@@ -199,7 +249,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                 </div>
             </div>
 
-            {/* ── Content ── */}
+            {/* ── Appointments grid — cards or loading/error/empty states ── */}
             {loading ? (
                 <div style={{ padding: 40, textAlign: 'center', color: t.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                     <Loader size={18} style={{ animation: 'spin 1s linear infinite', color: ORANGE }} /> Loading…
@@ -216,12 +266,14 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                         const sc     = STATUS_COLORS[a.status] || STATUS_COLORS.scheduled;
                         const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
                         const avatar = a.patient?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
                         return (
                             <div key={a.id}
                                 style={{ background: t.card, borderRadius: 16, padding: 18, border: `1px solid ${t.border}`, boxShadow: '0 2px 12px rgba(10,26,63,0.06)', transition: 'border-color 0.2s, box-shadow 0.2s' }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,90,31,0.25)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(10,26,63,0.1)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.boxShadow = '0 2px 12px rgba(10,26,63,0.06)'; }}
                             >
+                                {/* Patient avatar + name + status badge */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                         <div style={{ width: 38, height: 38, borderRadius: 10, background: color + '18', color, fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{avatar}</div>
@@ -233,6 +285,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                                     <span style={{ background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, textTransform: 'capitalize', flexShrink: 0 }}>{a.status}</span>
                                 </div>
 
+                                {/* Appointment detail grid */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                                     {[
                                         { label: 'Doctor',     value: a.doctor?.fullName },
@@ -247,6 +300,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                                     ))}
                                 </div>
 
+                                {/* Action buttons — only shown for scheduled appointments */}
                                 {a.status === 'scheduled' && (
                                     <div style={{ display: 'flex', gap: 6 }}>
                                         <button onClick={() => updateStatus(a.id, 'completed')}
@@ -271,12 +325,15 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                 </div>
             )}
 
-            {/* ── Book Modal ── */}
+            {/* ── Book Appointment modal ── */}
             {showBook && (
-                <div onClick={e => e.target === e.currentTarget && setShowBook(false)}
+                <div
+                    onClick={e => e.target === e.currentTarget && setShowBook(false)}
                     style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, overflowY: 'auto', padding: isMobile ? 16 : '40px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', minHeight: '100vh', backdropFilter: 'blur(3px)' }}
                 >
                     <div style={{ background: t.card, borderRadius: 20, width: '100%', maxWidth: 520, border: `1px solid ${t.border}`, boxShadow: '0 24px 80px rgba(10,26,63,0.2)', flexShrink: 0, marginTop: isMobile ? 16 : 40, marginBottom: 40 }}>
+
+                        {/* Modal header */}
                         <div style={{ padding: '18px 20px', borderBottom: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <div style={{ width: 24, height: 3, borderRadius: 2, background: ORANGE, marginBottom: 6 }} />
@@ -289,6 +346,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                             ><X size={16} /></button>
                         </div>
 
+                        {/* Booking form */}
                         <form onSubmit={handleBook} style={{ padding: 20 }}>
                             {formError && (
                                 <div style={{ background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 10, padding: '10px 14px', color: '#DC2626', fontSize: 13, marginBottom: 16 }}>
@@ -331,7 +389,7 @@ export function Appointments({ isDark, t, hospital, isMobile, externalSearch = '
                             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                                 <button type="button" onClick={() => setShowBook(false)}
                                     style={{ flex: 1, padding: 11, background: t.input, border: `1px solid ${t.border}`, borderRadius: 10, color: t.textSub, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, transition: 'all 0.15s' }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = t.hover; e.currentTarget.style.borderColor = t.border; }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = t.hover; }}
                                     onMouseLeave={e => { e.currentTarget.style.background = t.input; }}
                                 >Cancel</button>
                                 <button type="submit" disabled={submitting}
