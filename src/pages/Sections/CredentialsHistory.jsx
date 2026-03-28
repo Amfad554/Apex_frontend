@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { CopyCheck, KeyRound, Search, X, Trash2, ChevronDown, Clock, Share2, RefreshCw } from 'lucide-react';
+import { KeyRound, Search, X, Trash2, ChevronDown, Clock, Mail, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 /* ─── Brand Tokens ───────────────────────────────────────────────────────────── */
-const ORANGE  = '#FF5A1F';
-const ORANGE2 = '#e64d15';
+const ORANGE = '#FF5A1F';
 
 const ROLE_COLOR = {
     doctor:       '#0E6E77',
@@ -18,10 +17,6 @@ const TYPE_STYLE = {
     patient: { bg: 'rgba(255,90,31,0.1)',  text: ORANGE,    label: 'Patient' },
     staff:   { bg: 'rgba(14,110,119,0.1)', text: '#0E6E77', label: 'Staff'   },
 };
-
-/* ─── Portal URLs ────────────────────────────────────────────────────────────── */
-const PATIENT_PORTAL = `${window.location.origin}/patientlogin`;
-const STAFF_PORTAL   = `${window.location.origin}/stafflogin`;
 
 /* ─── Storage helpers ────────────────────────────────────────────────────────── */
 const STORAGE_KEY = 'hmscare_credentials_log';
@@ -45,63 +40,6 @@ function deleteCredential(id) {
 
 function clearAll() { localStorage.removeItem(STORAGE_KEY); }
 
-/* ─── WhatsApp message builder ───────────────────────────────────────────────── */
-function formatWhatsApp(c) {
-    const portal = c.type === 'patient' ? PATIENT_PORTAL : STAFF_PORTAL;
-    const role   = c.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-    if (c.type === 'patient') {
-        return [
-            `🏥 *HMSCare – Patient Login Credentials*`,
-            `━━━━━━━━━━━━━━━━━━━━`,
-            `👤 *Name:* ${c.fullName}`,
-            `🔢 *Patient Number:* ${c.patientNumber}`,
-            ``,
-            `📧 *Email (tap to copy):*`,
-            c.email ? c.email : `_(no email provided)_`,
-            ``,
-            `🔑 *Password (tap to copy):*`,
-            c.tempPassword,
-            ``,
-            `━━━━━━━━━━━━━━━━━━━━`,
-            `📱 *Login portal:*`,
-            portal,
-            ``,
-            `⚠️ Please change your password after your first login.`,
-        ].filter(line => line !== null && line !== undefined).join('\n');
-    }
-
-    return [
-        `🏥 *HMSCare – Staff Login Credentials*`,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `👤 *Name:* ${c.fullName}`,
-        role ? `🏷️ *Role:* ${role}` : null,
-        c.employeeId ? `🔢 *Employee ID:* ${c.employeeId}` : null,
-        c.hospitalName ? `🏨 *Hospital:* ${c.hospitalName}` : null,
-        ``,
-        `📧 *Email (tap to copy):*`,
-        c.email || `_(no email provided)_`,
-        ``,
-        `🔑 *Password (tap to copy):*`,
-        c.tempPassword,
-        ``,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `📱 *Login portal:*`,
-        portal,
-        ``,
-        `⚠️ Please change your password after your first login.`,
-    ].filter(Boolean).join('\n');
-}
-
-function sendWhatsApp(c) {
-    const text     = encodeURIComponent(formatWhatsApp(c));
-    const rawPhone = (c.phone || '').replace(/\D/g, '');
-    const url      = rawPhone
-        ? `https://wa.me/${rawPhone}?text=${text}`
-        : `https://wa.me/?text=${text}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-}
-
 /* ─── Main Component ─────────────────────────────────────────────────────────── */
 export default function CredentialsHistory({ isDark, t, isMobile }) {
     const [records,      setRecords]  = useState([]);
@@ -109,7 +47,6 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
     const [filterType,   setFilter]   = useState('all');
     const [expandedId,   setExpanded] = useState(null);
     const [confirmClear, setConfirm]  = useState(false);
-    const [sentId,       setSentId]   = useState(null);
 
     const reload = () => setRecords(loadCredentials());
     useEffect(() => { reload(); }, []);
@@ -125,12 +62,6 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
             r.role?.toLowerCase().includes(q)
         );
     });
-
-    const handleSend = (c) => {
-        sendWhatsApp(c);
-        setSentId(c.id);
-        setTimeout(() => setSentId(null), 3000);
-    };
 
     const remove = (id) => { deleteCredential(id); reload(); };
 
@@ -162,7 +93,7 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
                 <div>
                     <div style={{ width: 36, height: 4, borderRadius: 2, background: ORANGE, marginBottom: 10 }} />
                     <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 4, color: t.text }}>Credentials Log</h1>
-                    <p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records saved · Send login details via WhatsApp</p>
+                    <p style={{ color: t.textSub, fontSize: 13 }}>{records.length} records saved · Credentials emailed automatically on registration</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={reload} style={ghostBtn()}
@@ -220,8 +151,7 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
                     const ts         = TYPE_STYLE[c.type] || TYPE_STYLE.staff;
                     const roleColor  = ROLE_COLOR[c.role] || ROLE_COLOR[c.type] || '#0E6E77';
                     const isExpanded = expandedId === c.id;
-                    const isSent     = sentId === c.id;
-                    const portalUrl  = c.type === 'patient' ? PATIENT_PORTAL : STAFF_PORTAL;
+                    const hasEmail   = !!c.email;
 
                     return (
                         <div key={c.id}
@@ -249,27 +179,23 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
                                         <span style={{ fontSize: 11, color: t.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}><Clock size={10} />{timeAgo(c.createdAt)}</span>
                                     </div>
                                 </div>
+
                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                                    {/* WhatsApp Send Button */}
-                                    <button onClick={e => { e.stopPropagation(); handleSend(c); }}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: 5,
-                                            padding: '7px 12px', borderRadius: 9,
-                                            border: `1px solid ${isSent ? 'rgba(37,211,102,0.4)' : 'rgba(37,211,102,0.35)'}`,
-                                            background: isSent ? 'rgba(37,211,102,0.12)' : 'rgba(37,211,102,0.08)',
-                                            color: '#16a34a', fontWeight: 700, fontSize: 12,
-                                            cursor: 'pointer', fontFamily: 'inherit',
-                                            transition: 'all 0.2s', whiteSpace: 'nowrap',
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,211,102,0.16)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = isSent ? 'rgba(37,211,102,0.12)' : 'rgba(37,211,102,0.08)'}
-                                        title={c.phone ? `Send to ${c.phone}` : 'Open WhatsApp to send'}
-                                    >
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                        </svg>
-                                        {isSent ? 'Opening…' : 'Send'}
-                                    </button>
+                                    {/* Email sent badge */}
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: 5,
+                                        padding: '6px 11px', borderRadius: 9,
+                                        border: `1px solid ${hasEmail ? 'rgba(16,185,129,0.3)' : t.border}`,
+                                        background: hasEmail ? 'rgba(16,185,129,0.08)' : t.cardAlt,
+                                        color: hasEmail ? '#10b981' : t.textMuted,
+                                        fontSize: 12, fontWeight: 600,
+                                    }}>
+                                        {hasEmail
+                                            ? <><CheckCircle2 size={13} /> Email sent</>
+                                            : <><Mail size={13} /> No email</>
+                                        }
+                                    </div>
+
                                     <button onClick={e => { e.stopPropagation(); remove(c.id); }}
                                         style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(239,68,68,0.07)', border: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}
                                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
@@ -291,7 +217,6 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
                                             c.phone && { label: 'Phone', value: c.phone },
                                             { label: 'Password', value: c.tempPassword, mono: true, color: ORANGE, sensitive: true },
                                             c.hospitalName && { label: 'Hospital', value: c.hospitalName },
-                                            { label: 'Portal Link', value: portalUrl, mono: false, color: '#2563eb' },
                                             { label: 'Registered', value: new Date(c.createdAt).toLocaleString() },
                                         ].filter(Boolean).map(({ label, value, mono, color, sensitive }) => (
                                             <div key={label} style={{ background: sensitive ? 'rgba(255,90,31,0.06)' : t.card, borderRadius: 10, padding: '10px 13px', border: `1px solid ${sensitive ? 'rgba(255,90,31,0.2)' : t.border}` }}>
@@ -301,21 +226,26 @@ export default function CredentialsHistory({ isDark, t, isMobile }) {
                                         ))}
                                     </div>
 
-                                    {/* WhatsApp preview */}
-                                    <div style={{ background: 'rgba(37,211,102,0.05)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
-                                        <p style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>WhatsApp Message Preview</p>
-                                        <pre style={{ fontSize: 12, color: t.textSub, lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{formatWhatsApp(c)}</pre>
+                                    {/* Email delivery notice */}
+                                    <div style={{ background: hasEmail ? 'rgba(16,185,129,0.06)' : 'rgba(255,90,31,0.06)', border: `1px solid ${hasEmail ? 'rgba(16,185,129,0.2)' : 'rgba(255,90,31,0.2)'}`, borderRadius: 12, padding: '12px 14px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            {hasEmail
+                                                ? <CheckCircle2 size={15} color="#10b981" />
+                                                : <Mail size={15} color={ORANGE} />
+                                            }
+                                            <p style={{ fontSize: 13, color: hasEmail ? '#10b981' : ORANGE, fontWeight: 600 }}>
+                                                {hasEmail
+                                                    ? `Credentials emailed to ${c.email}`
+                                                    : 'No email address provided — credentials were not emailed'
+                                                }
+                                            </p>
+                                        </div>
+                                        {!hasEmail && (
+                                            <p style={{ fontSize: 12, color: t.textMuted, marginTop: 6, marginLeft: 23 }}>
+                                                Share the password shown above manually with this {c.type}.
+                                            </p>
+                                        )}
                                     </div>
-
-                                    <button onClick={() => handleSend(c)}
-                                        style={{ width: '100%', padding: 11, background: `linear-gradient(135deg,#25D366 0%,#128C7E 100%)`, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.2s' }}
-                                        onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                        </svg>
-                                        {c.phone ? `Send via WhatsApp to ${c.phone}` : 'Open WhatsApp to Send'}
-                                    </button>
                                 </div>
                             )}
                         </div>

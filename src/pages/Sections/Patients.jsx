@@ -240,7 +240,7 @@ export default function Patients({ isDark, t, hospital, isMobile, externalSearch
             {toast && <Toast {...toast} onClose={() => setToast(null)} />}
             {credentials && (
                 <CredentialsModal credentials={credentials} t={t} isMobile={isMobile}
-                    onClose={() => { setCredentials(null); showToast('Patient registered successfully!'); }} />
+                    onClose={() => { setCredentials(null); showToast(credentials?.email ? '✅ Patient registered & credentials emailed!' : '✅ Patient registered! No email provided — share credentials manually.'); }} />
             )}
 
             {/* Header */}

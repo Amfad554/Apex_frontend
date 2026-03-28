@@ -285,7 +285,7 @@ export default function Staff({ isDark, t, hospital, isMobile, externalSearch = 
             {credentials && (
                 <CredentialsModal
                     credentials={credentials} t={t} isMobile={isMobile}
-                    onClose={() => { setCredentials(null); showToast('Staff member added successfully!'); }}
+                    onClose={() => { setCredentials(null); showToast('✅ Staff added & credentials emailed!'); }}
                 />
             )}
 
