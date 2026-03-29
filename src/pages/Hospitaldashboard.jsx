@@ -25,34 +25,35 @@ import {
     Menu, ChevronDown, X, MoreHorizontal, KeyRound,
 } from 'lucide-react';
 import { themes, BLUE, BLUE2, ACCENT } from './theme.js';
-import NotificationsPanel     from '../Components/NotificationsPanel';
-import Patients               from './Sections/Patients.jsx';
-import Appointments           from './Sections/Appointments.jsx';
-import Staff                  from './Sections/Staff.jsx';
-import Pharmacy               from './Sections/Pharmacy.jsx';
-import RecordsSection         from './Sections/Recordssection.jsx';
-import DashSettings           from './Sections/Settings.jsx';
-import DashboardHome          from './Sections/Dashboardhome.jsx';
+import NotificationsPanel from '../Components/NotificationsPanel';
+import Patients from './Sections/Patients.jsx';
+import Appointments from './Sections/Appointments.jsx';
+import Staff from './Sections/Staff.jsx';
+import Pharmacy from './Sections/Pharmacy.jsx';
+import RecordsSection from './Sections/Recordssection.jsx';
+import DashSettings from './Sections/Settings.jsx';
+import DashboardHome from './Sections/Dashboardhome.jsx';
 import { SmartSearchBar, MobileSearchOverlay } from './Sections/SmartSearchBar.jsx';
+import useInactivityTimeout from '../hooks/useInactivityTimeout';
 
 // ─── Navigation config ────────────────────────────────────────────────────────
 /** Full list of nav items – order matters for the mobile bottom bar split below */
 const NAV_ITEMS = [
-    { id: 'dashboard',    icon: Home,        label: 'Dashboard'       },
-    { id: 'patients',     icon: Users,       label: 'Patients'        },
-    { id: 'appointments', icon: Calendar,    label: 'Appointments'    },
-    { id: 'staff',        icon: Stethoscope, label: 'Staff'           },
-    { id: 'pharmacy',     icon: Pill,        label: 'Pharmacy'        },
-    { id: 'records',      icon: FileText,    label: 'Records'         },
-    { id: 'settings',     icon: Settings,    label: 'Settings'        },
-    { id: 'credentials',  icon: KeyRound,    label: 'Credentials Log' },
+    { id: 'dashboard', icon: Home, label: 'Dashboard' },
+    { id: 'patients', icon: Users, label: 'Patients' },
+    { id: 'appointments', icon: Calendar, label: 'Appointments' },
+    { id: 'staff', icon: Stethoscope, label: 'Staff' },
+    { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
+    { id: 'records', icon: FileText, label: 'Records' },
+    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'credentials', icon: KeyRound, label: 'Credentials Log' },
 ];
 
 /** First 4 items show in the mobile bottom bar */
 const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
 
 /** Remaining items are hidden behind the "More" drawer on mobile */
-const MORE_NAV_ITEMS   = NAV_ITEMS.slice(4);
+const MORE_NAV_ITEMS = NAV_ITEMS.slice(4);
 
 
 // ─── Active pulse dot ─────────────────────────────────────────────────────────
@@ -71,22 +72,23 @@ function ActivePill() {
 // ─── Main Dashboard Component ─────────────────────────────────────────────────
 export default function HospitalDashboard() {
     const navigate = useNavigate();
+    useInactivityTimeout();
 
     // ── UI state ──────────────────────────────────────────────────────────
-    const [isDark,        setIsDark]     = useState(() => localStorage.getItem('theme') === 'dark');
-    const [activeSection, setActive]     = useState('dashboard');
-    const [transitioning, setTrans]      = useState(false);   // section transition animation flag
-    const [sidebarOpen,   setSidebar]    = useState(true);    // desktop sidebar expanded/collapsed
-    const [mobileSidebar, setMobile]     = useState(false);   // mobile sidebar overlay visibility
-    const [moreDrawer,    setMoreDrawer] = useState(false);   // mobile "More" bottom drawer
-    const [hospital,      setHospital]   = useState(null);    // hospital object from localStorage
-    const [searchQuery,   setSearch]     = useState('');      // search string passed to sections
-    const [searchOpen,    setSearchOpen] = useState(false);   // mobile search overlay visibility
-    const [isMobile,      setIsMobile]   = useState(false);
-    const [isTablet,      setIsTablet]   = useState(false);
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+    const [activeSection, setActive] = useState('dashboard');
+    const [transitioning, setTrans] = useState(false);   // section transition animation flag
+    const [sidebarOpen, setSidebar] = useState(true);    // desktop sidebar expanded/collapsed
+    const [mobileSidebar, setMobile] = useState(false);   // mobile sidebar overlay visibility
+    const [moreDrawer, setMoreDrawer] = useState(false);   // mobile "More" bottom drawer
+    const [hospital, setHospital] = useState(null);    // hospital object from localStorage
+    const [searchQuery, setSearch] = useState('');      // search string passed to sections
+    const [searchOpen, setSearchOpen] = useState(false);   // mobile search overlay visibility
+    const [isMobile, setIsMobile] = useState(false);
+    const [isTablet, setIsTablet] = useState(false);
 
     // Entrance animation flags – set just after mount for staggered slide-in
-    const [headerIn,   setHeaderIn]   = useState(false);
+    const [headerIn, setHeaderIn] = useState(false);
     const [navMounted, setNavMounted] = useState(false);
 
     const t = isDark ? themes.dark : themes.light;  // active theme token set
@@ -95,7 +97,7 @@ export default function HospitalDashboard() {
     // ── Entrance animations ───────────────────────────────────────────────
     useEffect(() => {
         requestAnimationFrame(() => {
-            setTimeout(() => setHeaderIn(true),   50);
+            setTimeout(() => setHeaderIn(true), 50);
             setTimeout(() => setNavMounted(true), 150);
         });
     }, []);
@@ -176,15 +178,15 @@ export default function HospitalDashboard() {
 
     const renderSection = () => {
         switch (activeSection) {
-            case 'dashboard':    return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
-            case 'patients':     return <Patients         {...sectionProps} externalSearch={searchQuery} />;
+            case 'dashboard': return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+            case 'patients': return <Patients         {...sectionProps} externalSearch={searchQuery} />;
             case 'appointments': return <Appointments     {...sectionProps} externalSearch={searchQuery} />;
-            case 'staff':        return <Staff            {...sectionProps} externalSearch={searchQuery} />;
-            case 'pharmacy':     return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
-            case 'records':      return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
-            case 'settings':     return <DashSettings     {...sectionProps} />;
-            case 'credentials':  return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
-            default:             return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+            case 'staff': return <Staff            {...sectionProps} externalSearch={searchQuery} />;
+            case 'pharmacy': return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
+            case 'records': return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
+            case 'settings': return <DashSettings     {...sectionProps} />;
+            case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
+            default: return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
         }
     };
 
@@ -209,8 +211,8 @@ export default function HospitalDashboard() {
                     borderBottom: `1px solid ${t.border}`,
                     gap: 10, flexShrink: 0,
                     // Animate in from top on first render
-                    opacity:    headerIn ? 1 : 0,
-                    transform:  headerIn ? 'translateY(0)' : 'translateY(-8px)',
+                    opacity: headerIn ? 1 : 0,
+                    transform: headerIn ? 'translateY(0)' : 'translateY(-8px)',
                     transition: 'opacity 0.4s ease, transform 0.4s ease',
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -259,13 +261,13 @@ export default function HospitalDashboard() {
                                     justifyContent: showLabels ? 'flex-start' : 'center',
                                     padding: showLabels ? '10px 12px' : '11px 0',
                                     borderRadius: 10, cursor: 'pointer', border: 'none',
-                                    background:  isActive ? t.active      : 'transparent',
-                                    color:       isActive ? t.activeText  : t.textSub,
-                                    fontWeight:  isActive ? 700 : 500,
+                                    background: isActive ? t.active : 'transparent',
+                                    color: isActive ? t.activeText : t.textSub,
+                                    fontWeight: isActive ? 700 : 500,
                                     fontSize: 14, width: '100%', textAlign: 'left',
                                     fontFamily: 'inherit', minHeight: 44,
                                     // Staggered slide-in animation on mount
-                                    opacity:   navMounted ? 1 : 0,
+                                    opacity: navMounted ? 1 : 0,
                                     transform: navMounted ? 'translateX(0)' : 'translateX(-14px)',
                                     transition: `opacity 0.35s ease ${idx * 0.045}s, transform 0.35s cubic-bezier(0.34,1.2,0.64,1) ${idx * 0.045}s, background 0.15s, color 0.15s`,
                                 }}
@@ -562,7 +564,7 @@ export default function HospitalDashboard() {
                             {isDark ? <Sun size={16} /> : <Moon size={16} />}
                         </button>
 
-                        <NotificationsPanel isDark={isDark} onNavigate={navigate_to} onCountChange={() => {}} />
+                        <NotificationsPanel isDark={isDark} onNavigate={navigate_to} onCountChange={() => { }} />
 
                         {/* Hospital avatar + name */}
                         <div
@@ -655,7 +657,7 @@ export default function HospitalDashboard() {
                                 border: 'none', cursor: 'pointer',
                                 // Highlight the More button if the active section is one of the hidden items
                                 background: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? t.active : 'transparent',
-                                color:      MORE_NAV_ITEMS.some(i => i.id === activeSection) ? t.activeText : t.textSub,
+                                color: MORE_NAV_ITEMS.some(i => i.id === activeSection) ? t.activeText : t.textSub,
                                 fontFamily: 'inherit', minWidth: 56, flex: 1,
                                 transition: 'color 0.2s',
                             }}
