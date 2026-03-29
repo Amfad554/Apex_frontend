@@ -22,8 +22,6 @@ import {
     UserPlus, Phone, Mail, MapPin, Calendar, Droplet, User,
     AlertCircle, CheckCircle,
 } from 'lucide-react';
-import { saveCredential } from './Sections/CredentialsHistory';
-
 // ─── Shared Tailwind class string for all form inputs ─────────────────────────
 const INPUT_CLS =
     "w-full py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 transition-all " +
