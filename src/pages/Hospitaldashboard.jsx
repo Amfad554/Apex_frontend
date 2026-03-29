@@ -38,7 +38,7 @@ import useInactivityTimeout from '../hooks/useInactivityTimeout';
 import { useSubscription } from './SubscriptionGuard';
 
 // ─── Navigation config ────────────────────────────────────────────────────────
-/** Full list of nav items – order matters for the mobile bottom bar split below */
+/** Full list of nav items – order matters for the mobile bottom bar split beloww */
 const NAV_ITEMS = [
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'patients', icon: Users, label: 'Patients' },
