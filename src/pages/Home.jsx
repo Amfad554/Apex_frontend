@@ -34,45 +34,28 @@ import { motion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    BRAND TOKENS
-   (Kept as comments here for quick reference — consumed directly as hex strings
-   throughout the file to keep inline styles concise.)
-
    Navy:       #0A1A3F
    Soft Navy:  #1F2A44
-   Orange:     #FF5A1F
+   Orange:     #E8481A
    Light Gray: #F5F7FA
 ───────────────────────────────────────────────────────────────────────────── */
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   API CONFIG
-───────────────────────────────────────────────────────────────────────────── */
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const API = {
-    stats:   `${API_BASE}/api/platform/stats`,   // GET – live platform stats
-    contact: `${API_BASE}/api/contact`,           // POST – contact form
-    me:      `${API_BASE}/api/hospitals/me`,      // GET – check auth status
+    stats: `${API_BASE}/api/platform/stats`,
+    contact: `${API_BASE}/api/contact`,
+    me: `${API_BASE}/api/hospitals/me`,
 };
 
-/** Fallback numbers shown while the live stats are loading or if the fetch fails */
 const FALLBACK_STATS = {
-    patients:  50000,
+    patients: 50000,
     hospitals: 250,
-    doctors:   1500,
-    uptime:    99.9,
-    rating:    4.9,
+    doctors: 1500,
+    uptime: 99.9,
+    rating: 4.9,
 };
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   HOOKS
-───────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Animates all stat numbers from 0 up to their `target` values over `duration` ms
- * using a cubic ease-out curve. Returns the current animated state object.
- *
- * Only re-triggers when `target.patients` changes (a proxy for "new data arrived").
- */
 function useAnimatedStats(target, duration = 2000) {
     const [current, setCurrent] = useState({
         patients: 0, hospitals: 0, doctors: 0, uptime: 0, rating: 0,
@@ -82,49 +65,35 @@ function useAnimatedStats(target, duration = 2000) {
         const start = performance.now();
 
         const animate = (time) => {
-            const p    = Math.min((time - start) / duration, 1);
-            const ease = 1 - Math.pow(1 - p, 3);  // cubic ease-out
+            const p = Math.min((time - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
 
             setCurrent({
-                patients:  Math.floor(ease * target.patients),
+                patients: Math.floor(ease * target.patients),
                 hospitals: Math.floor(ease * target.hospitals),
-                doctors:   Math.floor(ease * target.doctors),
-                uptime:    (ease * target.uptime).toFixed(1),
-                rating:    (ease * target.rating).toFixed(1),
+                doctors: Math.floor(ease * target.doctors),
+                uptime: (ease * target.uptime).toFixed(1),
+                rating: (ease * target.rating).toFixed(1),
             });
 
             if (p < 1) requestAnimationFrame(animate);
         };
 
         requestAnimationFrame(animate);
-    }, [target.patients]);  // Re-run when live data comes in
+    }, [target.patients]);
 
     return current;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   FORM VALIDATION
-───────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Per-field validators for the contact form.
- * Each function receives the field's current string value and returns
- * an error message, or an empty string if the value is valid.
- */
 const VALIDATORS = {
-    hospitalName:      v => v.trim().length < 2  ? "Please enter your hospital name (at least 2 characters)." : "",
-    administratorName: v => v.trim().length < 2  ? "Please enter the administrator's full name." : "",
-    email:             v => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Please enter a valid email address." : "",
-    phone:             v => !/^\+?[\d\s\-().]{7,}$/.test(v) ? "Please enter a valid phone number." : "",
-    hospitalType:      v => !v ? "Please select a hospital type." : "",
-    message:           v => v.trim().length < 10 ? "Please write a message of at least 10 characters." : "",
+    hospitalName: v => v.trim().length < 2 ? "Please enter your hospital name (at least 2 characters)." : "",
+    administratorName: v => v.trim().length < 2 ? "Please enter the administrator's full name." : "",
+    email: v => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Please enter a valid email address." : "",
+    phone: v => !/^\+?[\d\s\-().]{7,}$/.test(v) ? "Please enter a valid phone number." : "",
+    hospitalType: v => !v ? "Please select a hospital type." : "",
+    message: v => v.trim().length < 10 ? "Please write a message of at least 10 characters." : "",
 };
 
-/**
- * Runs all validators against the form and returns an object of
- * `{ fieldName: errorMessage }` for every field that fails.
- * An empty object means the form is valid.
- */
 function validate(form) {
     const errors = {};
     Object.keys(VALIDATORS).forEach(key => {
@@ -134,56 +103,42 @@ function validate(form) {
     return errors;
 }
 
-/** Default empty state for the contact form */
 const INITIAL_FORM = {
     hospitalName: "", administratorName: "", email: "",
     phone: "", hospitalType: "", message: "",
 };
 
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────────────────────────────────────── */
 export default function Home() {
     const navigate = useNavigate();
 
-    // ── Stats ─────────────────────────────────────────────────────────────
-    const [statTarget, setStatTarget] = useState(FALLBACK_STATS);  // numbers to animate toward
-    const [statsLive, setStatsLive]   = useState(false);            // true once real data loads
-    const stats = useAnimatedStats(statTarget);                     // animated current values
+    const [statTarget, setStatTarget] = useState(FALLBACK_STATS);
+    const [statsLive, setStatsLive] = useState(false);
+    const stats = useAnimatedStats(statTarget);
 
-    // Fetch live platform stats on mount; silently fall back to demo numbers on failure
     useEffect(() => {
         fetch(API.stats)
             .then(r => r.ok ? r.json() : Promise.reject())
             .then(data => {
                 setStatTarget({
-                    patients:  data.totalPatients  ?? FALLBACK_STATS.patients,
+                    patients: data.totalPatients ?? FALLBACK_STATS.patients,
                     hospitals: data.totalHospitals ?? FALLBACK_STATS.hospitals,
-                    doctors:   data.totalDoctors   ?? FALLBACK_STATS.doctors,
-                    uptime:    data.uptimePercent  ?? FALLBACK_STATS.uptime,
-                    rating:    data.averageRating  ?? FALLBACK_STATS.rating,
+                    doctors: data.totalDoctors ?? FALLBACK_STATS.doctors,
+                    uptime: data.uptimePercent ?? FALLBACK_STATS.uptime,
+                    rating: data.averageRating ?? FALLBACK_STATS.rating,
                 });
                 setStatsLive(true);
             })
-            .catch(() => {
-                // Stats fetch failed – the FALLBACK_STATS already loaded, so nothing to do
-            });
+            .catch(() => { });
     }, []);
 
+    const [form, setForm] = useState(INITIAL_FORM);
+    const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+    const [submitState, setSubmitState] = useState("idle");
+    const [submitMsg, setSubmitMsg] = useState("");
 
-    // ── Contact form state ────────────────────────────────────────────────
-    const [form, setForm]               = useState(INITIAL_FORM);
-    const [errors, setErrors]           = useState({});       // active validation errors
-    const [touched, setTouched]         = useState({});       // which fields the user has blurred
-    const [submitting, setSubmitting]   = useState(false);
-    const [submitState, setSubmitState] = useState("idle");   // "idle" | "success" | "error"
-    const [submitMsg, setSubmitMsg]     = useState("");        // message shown after submit
-
-
-    // ── Field helpers ─────────────────────────────────────────────────────
-
-    /** Update a single form field and re-validate it if the user has already touched it */
     const setField = (key, value) => {
         setForm(f => ({ ...f, [key]: value }));
         if (touched[key]) {
@@ -192,23 +147,18 @@ export default function Home() {
         }
     };
 
-    /** Mark a field as touched on blur and immediately validate it */
     const touchField = (key) => {
         setTouched(t => ({ ...t, [key]: true }));
         const msg = VALIDATORS[key]?.(form[key] || "") ?? "";
         setErrors(e => ({ ...e, [key]: msg }));
     };
 
-
-    // ── Contact form submission ───────────────────────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Mark all fields as touched so errors show up for untouched ones too
         const allTouched = Object.keys(INITIAL_FORM).reduce((acc, k) => ({ ...acc, [k]: true }), {});
         setTouched(allTouched);
 
-        // Run full validation before hitting the API
         const errs = validate(form);
         setErrors(errs);
         if (Object.keys(errs).length > 0) return;
@@ -221,12 +171,12 @@ export default function Home() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    hospitalName:      form.hospitalName,
+                    hospitalName: form.hospitalName,
                     administratorName: form.administratorName,
-                    email:             form.email,
-                    phone:             form.phone,
-                    hospitalType:      form.hospitalType,
-                    message:           form.message,
+                    email: form.email,
+                    phone: form.phone,
+                    hospitalType: form.hospitalType,
+                    message: form.message,
                 }),
             });
 
@@ -235,7 +185,6 @@ export default function Home() {
                 throw new Error(data.message || "Submission failed. Please try again.");
             }
 
-            // Success
             setSubmitState("success");
             setSubmitMsg("Your message has been received! Our team will get back to you within 24 hours.");
             setForm(INITIAL_FORM);
@@ -253,16 +202,6 @@ export default function Home() {
         }
     };
 
-
-    /**
-     * Renders a single form input (text, email, tel, select, or textarea)
-     * wrapped in its error state and validation message.
-     *
-     * `key`   – matches a key in INITIAL_FORM / VALIDATORS
-     * `label` – placeholder text (also used as aria label)
-     * `type`  – "text" | "email" | "tel" | "select" | "textarea"
-     * `extra` – any extra props to spread on the element
-     */
     const field = (key, label, type = "text", extra = {}) => (
         <FieldWrapper key={key} error={touched[key] && errors[key]}>
             {type === "select" ? (
@@ -298,7 +237,6 @@ export default function Home() {
                     {...extra}
                 />
             )}
-            {/* Per-field error message shown after the user has blurred the field */}
             {touched[key] && errors[key] && (
                 <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 flex-shrink-0" />{errors[key]}
@@ -307,45 +245,43 @@ export default function Home() {
         </FieldWrapper>
     );
 
-
-    // ── Render ────────────────────────────────────────────────────────────
     return (
-        <div style={{ backgroundColor: "#F5F7FA", color: "#0A1A3F" }}>
+        <div style={{ backgroundColor: "#F5F7FA", color: "#0A1A3F", fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif" }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+                * { font-family: inherit; }
+            `}</style>
 
             {/* ════════════════ 1. HERO ════════════════ */}
             <section
                 className="relative min-h-[92vh] flex items-center justify-center overflow-hidden"
                 style={{ backgroundColor: "#0A1A3F" }}
             >
-                {/* Subtle cross-hatch SVG pattern overlay */}
                 <div className="absolute inset-0 opacity-[0.06]"
                     style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF5A1F' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23E8481A' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                     }}
                 />
-                {/* Soft orange radial glow – bottom-right */}
                 <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full opacity-10 pointer-events-none"
-                    style={{ background: "radial-gradient(circle, #FF5A1F 0%, transparent 70%)", transform: "translate(30%, 30%)" }}
+                    style={{ background: "radial-gradient(circle, #E8481A 0%, transparent 70%)", transform: "translate(30%, 30%)" }}
                 />
 
                 <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20 text-center">
-                    {/* Eyebrow badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-8"
-                        style={{ backgroundColor: "rgba(255,90,31,0.15)", color: "#FF5A1F", border: "1px solid rgba(255,90,31,0.3)" }}
+                        style={{ backgroundColor: "rgba(232,72,26,0.15)", color: "#E8481A", border: "1px solid rgba(232,72,26,0.3)" }}
                     >
                         <Activity className="w-4 h-4" />
                         <span>Multi-Tenant Healthcare Platform</span>
                     </motion.div>
 
-                    {/* Main headline */}
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                         className="text-5xl lg:text-7xl font-black mb-6 leading-tight text-white"
                     >
                         Centralized Hospital<br />
-                        <span style={{ color: "#FF5A1F" }}>Management Platform</span>
+                        <span style={{ color: "#E8481A" }}>Management Platform</span>
                     </motion.h1>
 
                     <motion.p
@@ -357,7 +293,6 @@ export default function Home() {
                         and store medical records. Each hospital operates independently with complete data isolation.
                     </motion.p>
 
-                    {/* Primary CTA buttons */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                         className="flex flex-wrap justify-center gap-4 mb-12"
@@ -365,9 +300,9 @@ export default function Home() {
                         <button
                             onClick={() => navigate("/hospital/auth")}
                             className="px-8 py-4 rounded-xl font-bold active:scale-95 transition-all flex items-center gap-2"
-                            style={{ backgroundColor: "#FF5A1F", color: "#fff", boxShadow: "0 8px 32px rgba(255,90,31,0.35)" }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e64d15"}
-                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#FF5A1F"}
+                            style={{ backgroundColor: "#E8481A", color: "#fff", boxShadow: "0 8px 32px rgba(232,72,26,0.35)" }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#d03d12"}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#E8481A"}
                         >
                             Register Your Hospital <ChevronRight className="w-5 h-5" />
                         </button>
@@ -375,14 +310,13 @@ export default function Home() {
                             onClick={() => navigate("/hospital/auth")}
                             className="px-8 py-4 rounded-xl font-bold active:scale-95 transition-all"
                             style={{ border: "2px solid rgba(245,247,250,0.3)", color: "#F5F7FA", backgroundColor: "transparent" }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = "#FF5A1F"; e.currentTarget.style.color = "#FF5A1F"; }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = "#E8481A"; e.currentTarget.style.color = "#E8481A"; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(245,247,250,0.3)"; e.currentTarget.style.color = "#F5F7FA"; }}
                         >
                             Hospital Login
                         </button>
                     </motion.div>
 
-                    {/* Trust badges */}
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
                         className="flex flex-wrap justify-center gap-8 text-sm"
@@ -390,12 +324,11 @@ export default function Home() {
                     >
                         {["Instant Setup", "Super Admin Approval", "HIPAA Compliant", "Data Isolation"].map(t => (
                             <div key={t} className="flex items-center gap-2">
-                                <CheckCircle2 className="w-5 h-5" style={{ color: "#FF5A1F" }} /><span>{t}</span>
+                                <CheckCircle2 className="w-5 h-5" style={{ color: "#E8481A" }} /><span>{t}</span>
                             </div>
                         ))}
                     </motion.div>
 
-                    {/* Live platform stats card */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
                         className="mt-16 max-w-5xl mx-auto rounded-3xl p-8"
@@ -403,14 +336,13 @@ export default function Home() {
                     >
                         <div className="flex items-center justify-center gap-4 mb-6">
                             <div className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5" style={{ color: "#FF5A1F" }} />
+                                <TrendingUp className="w-5 h-5" style={{ color: "#E8481A" }} />
                                 <span className="text-sm font-semibold" style={{ color: "#F5F7FA" }}>Platform Statistics</span>
                             </div>
-                            {/* "Live" pill once real data arrives, otherwise "Demo" */}
                             <div
                                 className="px-3 py-1 rounded-full text-xs font-bold"
                                 style={statsLive
-                                    ? { backgroundColor: "rgba(255,90,31,0.15)", color: "#FF5A1F" }
+                                    ? { backgroundColor: "rgba(232,72,26,0.15)", color: "#E8481A" }
                                     : { backgroundColor: "rgba(245,247,250,0.1)", color: "rgba(245,247,250,0.4)" }
                                 }
                             >
@@ -418,11 +350,11 @@ export default function Home() {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                            <StatBox label="Registered Hospitals"  value={`${stats.hospitals}+`} />
-                            <StatBox label="Total Patients"         value={`${Number(stats.patients).toLocaleString()}+`} />
-                            <StatBox label="Healthcare Providers"   value={`${Number(stats.doctors).toLocaleString()}+`} />
-                            <StatBox label="System Uptime"          value={`${stats.uptime}%`} />
-                            <StatBox label="Average Rating"         value={`${stats.rating}/5`} />
+                            <StatBox label="Registered Hospitals" value={`${stats.hospitals}+`} />
+                            <StatBox label="Total Patients" value={`${Number(stats.patients).toLocaleString()}+`} />
+                            <StatBox label="Healthcare Providers" value={`${Number(stats.doctors).toLocaleString()}+`} />
+                            <StatBox label="System Uptime" value={`${stats.uptime}%`} />
+                            <StatBox label="Average Rating" value={`${stats.rating}/5`} />
                         </div>
                     </motion.div>
                 </div>
@@ -433,7 +365,7 @@ export default function Home() {
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-14">
-                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>
+                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}>
                             Access Your Portal
                         </p>
                         <h2 className="text-4xl lg:text-5xl font-black mb-4" style={{ color: "#0A1A3F" }}>Who are you?</h2>
@@ -442,9 +374,7 @@ export default function Home() {
                         </p>
                     </div>
 
-                    {/* Role selection cards */}
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {/* Hospital Admin */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                             className="relative group rounded-3xl p-8 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -454,12 +384,12 @@ export default function Home() {
                             onMouseLeave={e => e.currentTarget.style.boxShadow = "0 8px 40px rgba(10,26,63,0.25)"}
                         >
                             <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full"
-                                style={{ backgroundColor: "rgba(255,90,31,0.2)", color: "#FF5A1F" }}>
+                                style={{ backgroundColor: "rgba(232,72,26,0.2)", color: "#E8481A" }}>
                                 Self Register
                             </div>
                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
-                                style={{ backgroundColor: "rgba(255,90,31,0.2)" }}>
-                                <Building2 className="w-8 h-8" style={{ color: "#FF5A1F" }} />
+                                style={{ backgroundColor: "rgba(232,72,26,0.2)" }}>
+                                <Building2 className="w-8 h-8" style={{ color: "#E8481A" }} />
                             </div>
                             <h3 className="text-2xl font-black mb-3">Hospital Admin</h3>
                             <p className="text-sm mb-6 leading-relaxed" style={{ color: "rgba(245,247,250,0.65)" }}>
@@ -468,26 +398,25 @@ export default function Home() {
                             <ul className="space-y-2 mb-8">
                                 {["Register & login your hospital", "Manage staff & patients", "Full dashboard access"].map(i => (
                                     <li key={i} className="flex items-center gap-2 text-sm" style={{ color: "rgba(245,247,250,0.65)" }}>
-                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#FF5A1F" }} />{i}
+                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#E8481A" }} />{i}
                                     </li>
                                 ))}
                             </ul>
-                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#FF5A1F" }}>
+                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#E8481A" }}>
                                 <LogIn className="w-5 h-5" /> Hospital Portal <ArrowRight className="w-4 h-4 ml-auto" />
                             </div>
                         </motion.div>
 
-                        {/* Staff Login */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
                             className="relative group bg-white rounded-3xl p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                             style={{ border: "2px solid #e8eaf0" }}
                             onClick={() => navigate("/stafflogin")}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = "#FF5A1F"}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = "#E8481A"}
                             onMouseLeave={e => e.currentTarget.style.borderColor = "#e8eaf0"}
                         >
                             <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full"
-                                style={{ backgroundColor: "rgba(255,90,31,0.08)", color: "#FF5A1F" }}>
+                                style={{ backgroundColor: "rgba(232,72,26,0.08)", color: "#E8481A" }}>
                                 By Invite
                             </div>
                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
@@ -501,26 +430,25 @@ export default function Home() {
                             <ul className="space-y-2 mb-8">
                                 {["Login with admin-issued credentials", "View & manage your patients", "Update records & prescriptions"].map(i => (
                                     <li key={i} className="flex items-center gap-2 text-sm" style={{ color: "#718096" }}>
-                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#FF5A1F" }} />{i}
+                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#E8481A" }} />{i}
                                     </li>
                                 ))}
                             </ul>
-                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#FF5A1F" }}>
+                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#E8481A" }}>
                                 <LogIn className="w-5 h-5" /> Staff Portal <ArrowRight className="w-4 h-4 ml-auto" />
                             </div>
                         </motion.div>
 
-                        {/* Patient Login */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
                             className="relative group bg-white rounded-3xl p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                             style={{ border: "2px solid #e8eaf0" }}
                             onClick={() => navigate("/patientlogin")}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = "#FF5A1F"}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = "#E8481A"}
                             onMouseLeave={e => e.currentTarget.style.borderColor = "#e8eaf0"}
                         >
                             <div className="absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full"
-                                style={{ backgroundColor: "rgba(255,90,31,0.08)", color: "#FF5A1F" }}>
+                                style={{ backgroundColor: "rgba(232,72,26,0.08)", color: "#E8481A" }}>
                                 By Invite
                             </div>
                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
@@ -534,25 +462,24 @@ export default function Home() {
                             <ul className="space-y-2 mb-8">
                                 {["Login with hospital-issued credentials", "View your medical records", "Check prescriptions & appointments"].map(i => (
                                     <li key={i} className="flex items-center gap-2 text-sm" style={{ color: "#718096" }}>
-                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#FF5A1F" }} />{i}
+                                        <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "#E8481A" }} />{i}
                                     </li>
                                 ))}
                             </ul>
-                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#FF5A1F" }}>
+                            <div className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all duration-200" style={{ color: "#E8481A" }}>
                                 <LogIn className="w-5 h-5" /> Patient Portal <ArrowRight className="w-4 h-4 ml-auto" />
                             </div>
                         </motion.div>
                     </div>
 
-                    {/* Info banner: staff & patients cannot self-register */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                         className="mt-10 max-w-5xl mx-auto rounded-2xl p-5 flex flex-col md:flex-row items-center gap-4 text-center md:text-left"
                         style={{ backgroundColor: "rgba(10,26,63,0.05)", border: "1px solid rgba(10,26,63,0.1)" }}
                     >
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: "rgba(255,90,31,0.1)" }}>
-                            <BellRing className="w-5 h-5" style={{ color: "#FF5A1F" }} />
+                            style={{ backgroundColor: "rgba(232,72,26,0.1)" }}>
+                            <BellRing className="w-5 h-5" style={{ color: "#E8481A" }} />
                         </div>
                         <p className="text-sm" style={{ color: "#4A5568" }}>
                             <span className="font-bold" style={{ color: "#0A1A3F" }}>Staff & Patients:</span> You cannot self-register.
@@ -568,14 +495,13 @@ export default function Home() {
             <section className="py-24" style={{ backgroundColor: "#1F2A44" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>How It Works</p>
+                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}>How It Works</p>
                         <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Simple 4-step onboarding process</h2>
                         <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(245,247,250,0.65)" }}>
                             Register your hospital and start managing patient records in minutes.
                         </p>
                     </div>
 
-                    {/* Step cards */}
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
                         <StepCard step="01" icon={<Building2 />} title="Register Your Hospital"
                             desc="Fill out the hospital registration form with your facility details and administrator information." />
@@ -587,14 +513,12 @@ export default function Home() {
                             desc="Register patients, schedule appointments, and maintain complete medical records." />
                     </div>
 
-                    {/* Platform flow diagram */}
                     <div className="relative max-w-4xl mx-auto">
-                        {/* Horizontal connector line (desktop only) */}
                         <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2 hidden lg:block"
-                            style={{ background: "linear-gradient(to right, transparent, rgba(255,90,31,0.4), transparent)" }} />
+                            style={{ background: "linear-gradient(to right, transparent, rgba(232,72,26,0.4), transparent)" }} />
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                            <FlowCard title="Public Platform"    items={["Hospital Registration", "Hospital Login", "Super Admin Login"]} />
-                            <FlowCard title="Super Admin Panel"  items={["Approve Hospitals", "Monitor Activities", "Manage Platform"]} />
+                            <FlowCard title="Public Platform" items={["Hospital Registration", "Hospital Login", "Super Admin Login"]} />
+                            <FlowCard title="Super Admin Panel" items={["Approve Hospitals", "Monitor Activities", "Manage Platform"]} />
                             <FlowCard title="Hospital Dashboard" items={["Patient Management", "Staff & Appointments", "Medical Records"]} />
                         </div>
                     </div>
@@ -608,7 +532,7 @@ export default function Home() {
                     <div className="text-center mb-16">
                         <motion.p
                             initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                            className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}
+                            className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}
                         >
                             Platform Features
                         </motion.p>
@@ -624,15 +548,15 @@ export default function Home() {
                         </p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <FeatureCard icon={<Users />}        title="Patient Registration"     desc="Register and manage unlimited patients with complete demographic and medical information." />
-                        <FeatureCard icon={<CalendarDays />} title="Appointment Scheduling"   desc="Book appointments with doctors, manage schedules, and send automated reminders." />
-                        <FeatureCard icon={<FileText />}     title="Medical Records"          desc="Store diagnoses, test results, prescriptions, and complete patient medical history securely." />
-                        <FeatureCard icon={<UserCog />}      title="Staff Management"         desc="Add doctors, nurses, pharmacists, and lab staff with role-based access control." />
-                        <FeatureCard icon={<Database />}     title="Data Isolation"           desc="Complete data separation between hospitals. Your patient data is yours alone." />
-                        <FeatureCard icon={<ShieldCheck />}  title="HIPAA Compliant"          desc="Enterprise-grade security with encryption, audit logs, and compliance monitoring." />
-                        <FeatureCard icon={<BarChart3 />}    title="Analytics & Reports"      desc="Real-time dashboards showing patient statistics, appointment trends, and operational insights." />
-                        <FeatureCard icon={<Pill />}         title="Pharmacy Integration"     desc="Manage prescriptions, track medication dispensing, and monitor pharmacy inventory." />
-                        <FeatureCard icon={<Blocks />}       title="Multi-Department Support" desc="Organize your hospital by departments with specialized workflows for each unit." />
+                        <FeatureCard icon={<Users />} title="Patient Registration" desc="Register and manage unlimited patients with complete demographic and medical information." />
+                        <FeatureCard icon={<CalendarDays />} title="Appointment Scheduling" desc="Book appointments with doctors, manage schedules, and send automated reminders." />
+                        <FeatureCard icon={<FileText />} title="Medical Records" desc="Store diagnoses, test results, prescriptions, and complete patient medical history securely." />
+                        <FeatureCard icon={<UserCog />} title="Staff Management" desc="Add doctors, nurses, pharmacists, and lab staff with role-based access control." />
+                        <FeatureCard icon={<Database />} title="Data Isolation" desc="Complete data separation between hospitals. Your patient data is yours alone." />
+                        <FeatureCard icon={<ShieldCheck />} title="HIPAA Compliant" desc="Enterprise-grade security with encryption, audit logs, and compliance monitoring." />
+                        <FeatureCard icon={<BarChart3 />} title="Analytics & Reports" desc="Real-time dashboards showing patient statistics, appointment trends, and operational insights." />
+                        <FeatureCard icon={<Pill />} title="Pharmacy Integration" desc="Manage prescriptions, track medication dispensing, and monitor pharmacy inventory." />
+                        <FeatureCard icon={<Blocks />} title="Multi-Department Support" desc="Organize your hospital by departments with specialized workflows for each unit." />
                     </div>
                 </div>
             </section>
@@ -642,17 +566,17 @@ export default function Home() {
             <section className="py-24" style={{ backgroundColor: "#0A1A3F" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>User Roles</p>
+                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}>User Roles</p>
                         <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Role-based access for everyone</h2>
                         <p className="text-lg max-w-2xl mx-auto" style={{ color: "rgba(245,247,250,0.65)" }}>
                             Different access levels for different users, ensuring data security and operational efficiency.
                         </p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <RoleCard icon={<Shield />}      title="Super Admin"     permissions={["Approve hospital registrations", "Monitor all platform activity", "Suspend/delete hospitals", "Manage system settings"]} />
-                        <RoleCard icon={<Building2 />}   title="Hospital Admin"  permissions={["Manage hospital profile", "Add/remove staff members", "Register patients", "Full hospital access"]} />
+                        <RoleCard icon={<Shield />} title="Super Admin" permissions={["Approve hospital registrations", "Monitor all platform activity", "Suspend/delete hospitals", "Manage system settings"]} />
+                        <RoleCard icon={<Building2 />} title="Hospital Admin" permissions={["Manage hospital profile", "Add/remove staff members", "Register patients", "Full hospital access"]} />
                         <RoleCard icon={<Stethoscope />} title="Doctors & Staff" permissions={["View assigned patients", "Add medical records", "Manage appointments", "Update prescriptions"]} />
-                        <RoleCard icon={<Heart />}       title="Patients"        permissions={["Registered by hospital", "Access medical records", "View appointment history", "Secure patient portal"]} />
+                        <RoleCard icon={<Heart />} title="Patients" permissions={["Registered by hospital", "Access medical records", "View appointment history", "Secure patient portal"]} />
                     </div>
                 </div>
             </section>
@@ -664,7 +588,7 @@ export default function Home() {
                     <div className="text-center mb-16">
                         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6"
-                                style={{ backgroundColor: "rgba(255,90,31,0.15)", color: "#FF5A1F" }}>
+                                style={{ backgroundColor: "rgba(232,72,26,0.15)", color: "#E8481A" }}>
                                 <Lock className="w-4 h-4" /><span>Enterprise Security</span>
                             </div>
                             <h2 className="text-4xl lg:text-5xl font-black mb-4 text-white">Your data is our priority</h2>
@@ -674,14 +598,14 @@ export default function Home() {
                         </motion.div>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <SecurityFeature icon={<Lock />}        title="End-to-End Encryption" desc="All data encrypted in transit and at rest" />
-                        <SecurityFeature icon={<Database />}    title="Data Isolation"         desc="Complete separation of hospital databases" />
-                        <SecurityFeature icon={<ShieldCheck />} title="HIPAA Compliant"        desc="Meets all healthcare data regulations" />
-                        <SecurityFeature icon={<FileCheck />}   title="Audit Trails"           desc="Complete logging of all system activities" />
-                        <SecurityFeature icon={<Users />}       title="Role-Based Access"      desc="Granular permissions for each user type" />
-                        <SecurityFeature icon={<Activity />}    title="24/7 Monitoring"        desc="Real-time security threat detection" />
-                        <SecurityFeature icon={<Globe />}       title="Automated Backups"      desc="Daily backups with 99.9% uptime SLA" />
-                        <SecurityFeature icon={<BellRing />}    title="Instant Alerts"         desc="Security notifications for suspicious activity" />
+                        <SecurityFeature icon={<Lock />} title="End-to-End Encryption" desc="All data encrypted in transit and at rest" />
+                        <SecurityFeature icon={<Database />} title="Data Isolation" desc="Complete separation of hospital databases" />
+                        <SecurityFeature icon={<ShieldCheck />} title="HIPAA Compliant" desc="Meets all healthcare data regulations" />
+                        <SecurityFeature icon={<FileCheck />} title="Audit Trails" desc="Complete logging of all system activities" />
+                        <SecurityFeature icon={<Users />} title="Role-Based Access" desc="Granular permissions for each user type" />
+                        <SecurityFeature icon={<Activity />} title="24/7 Monitoring" desc="Real-time security threat detection" />
+                        <SecurityFeature icon={<Globe />} title="Automated Backups" desc="Daily backups with 99.9% uptime SLA" />
+                        <SecurityFeature icon={<BellRing />} title="Instant Alerts" desc="Security notifications for suspicious activity" />
                     </div>
                 </div>
             </section>
@@ -691,7 +615,7 @@ export default function Home() {
             <section className="py-24" style={{ backgroundColor: "#F5F7FA" }}>
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#FF5A1F" }}>Testimonials</p>
+                        <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}>Testimonials</p>
                         <h2 className="text-4xl lg:text-5xl font-black mb-4" style={{ color: "#0A1A3F" }}>Trusted by hospitals worldwide</h2>
                         <p className="text-lg max-w-2xl mx-auto" style={{ color: "#4A5568" }}>
                             Join hundreds of healthcare facilities managing their operations on our platform.
@@ -716,7 +640,7 @@ export default function Home() {
 
 
             {/* ════════════════ 8. CTA ════════════════ */}
-            <section className="py-24" style={{ backgroundColor: "#FF5A1F" }}>
+            <section className="py-24" style={{ backgroundColor: "#E8481A" }}>
                 <div className="max-w-5xl mx-auto px-6 lg:px-8 text-center">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                         <h2 className="text-4xl lg:text-5xl font-black mb-6 text-white">
@@ -781,15 +705,14 @@ export default function Home() {
                             <p style={{ color: "#718096" }}>Contact our team to learn more about the platform and registration process.</p>
                         </div>
 
-                        {/* ── Success state – shown after the form is submitted successfully ── */}
                         {submitState === "success" ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                 className="flex flex-col items-center justify-center py-12 text-center gap-4"
                             >
                                 <div className="w-16 h-16 rounded-full flex items-center justify-center"
-                                    style={{ backgroundColor: "rgba(255,90,31,0.1)" }}>
-                                    <CheckCheck className="w-8 h-8" style={{ color: "#FF5A1F" }} />
+                                    style={{ backgroundColor: "rgba(232,72,26,0.1)" }}>
+                                    <CheckCheck className="w-8 h-8" style={{ color: "#E8481A" }} />
                                 </div>
                                 <h4 className="text-xl font-bold" style={{ color: "#0A1A3F" }}>Message Sent!</h4>
                                 <p style={{ color: "#718096" }} className="max-w-sm">{submitMsg}</p>
@@ -797,21 +720,19 @@ export default function Home() {
                                     onClick={() => setSubmitState("idle")}
                                     className="mt-4 px-6 py-2 rounded-lg text-sm transition-colors"
                                     style={{ border: "1px solid rgba(10,26,63,0.15)", color: "#4A5568" }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#FF5A1F"; e.currentTarget.style.color = "#FF5A1F"; }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#E8481A"; e.currentTarget.style.color = "#E8481A"; }}
                                     onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(10,26,63,0.15)"; e.currentTarget.style.color = "#4A5568"; }}
                                 >
                                     Send another message
                                 </button>
                             </motion.div>
                         ) : (
-                            /* ── Form ── */
                             <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                                {/* Error banner – only visible when the submit call fails */}
                                 {submitState === "error" && (
                                     <motion.div
                                         initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
                                         className="flex items-start gap-3 rounded-xl px-4 py-3 text-sm"
-                                        style={{ backgroundColor: "rgba(255,90,31,0.08)", border: "1px solid rgba(255,90,31,0.3)", color: "#c0392b" }}
+                                        style={{ backgroundColor: "rgba(232,72,26,0.08)", border: "1px solid rgba(232,72,26,0.3)", color: "#c0392b" }}
                                     >
                                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                         <span>{submitMsg}</span>
@@ -819,21 +740,21 @@ export default function Home() {
                                 )}
 
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    {field("hospitalName",      "Hospital Name")}
+                                    {field("hospitalName", "Hospital Name")}
                                     {field("administratorName", "Administrator Name")}
                                 </div>
-                                {field("email",        "Email Address",         "email")}
-                                {field("phone",        "Phone Number",          "tel")}
-                                {field("hospitalType", "",                       "select")}
-                                {field("message",      "Message or Questions",  "textarea")}
+                                {field("email", "Email Address", "email")}
+                                {field("phone", "Phone Number", "tel")}
+                                {field("hospitalType", "", "select")}
+                                {field("message", "Message or Questions", "textarea")}
 
                                 <button
                                     type="submit"
                                     disabled={submitting}
                                     className="w-full px-8 py-4 rounded-xl font-bold active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-white"
-                                    style={{ backgroundColor: "#FF5A1F" }}
-                                    onMouseEnter={e => !submitting && (e.currentTarget.style.backgroundColor = "#e64d15")}
-                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#FF5A1F"}
+                                    style={{ backgroundColor: "#E8481A" }}
+                                    onMouseEnter={e => !submitting && (e.currentTarget.style.backgroundColor = "#d03d12")}
+                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#E8481A"}
                                 >
                                     {submitting ? (
                                         <><Loader2 className="w-5 h-5 animate-spin" /> Sending…</>
@@ -855,14 +776,6 @@ export default function Home() {
 }
 
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   FORM HELPERS
-───────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Returns a Tailwind class string for an input/textarea/select element.
- * Applies red error styling when `hasError` is truthy, otherwise normal focus styles.
- */
 function inputCls(hasError) {
     return [
         "w-full px-4 py-3 rounded-lg placeholder-gray-400 transition-all",
@@ -873,28 +786,19 @@ function inputCls(hasError) {
     ].join(" ");
 }
 
-/** Simple flex wrapper used by the `field()` helper to stack input + error message */
 function FieldWrapper({ children }) {
     return <div className="flex flex-col">{children}</div>;
 }
 
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   SHARED COMPONENTS
-   (Defined at the bottom so the main component isn't cluttered)
-───────────────────────────────────────────────────────────────────────────── */
-
-/** Single stat box used inside the hero stats card */
 function StatBox({ label, value }) {
     return (
         <div className="text-center">
-            <p className="text-3xl font-black mb-1" style={{ color: "#FF5A1F" }}>{value}</p>
+            <p className="text-3xl font-black mb-1" style={{ color: "#E8481A" }}>{value}</p>
             <p className="text-sm" style={{ color: "rgba(245,247,250,0.55)" }}>{label}</p>
         </div>
     );
 }
 
-/** Feature card used in the "Everything your hospital needs" grid */
 function FeatureCard({ icon, title, desc }) {
     return (
         <motion.div
@@ -906,9 +810,9 @@ function FeatureCard({ icon, title, desc }) {
         >
             <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110"
-                style={{ backgroundColor: "rgba(255,90,31,0.1)" }}
+                style={{ backgroundColor: "rgba(232,72,26,0.1)" }}
             >
-                {React.cloneElement(icon, { size: 22, style: { color: "#FF5A1F" } })}
+                {React.cloneElement(icon, { size: 22, style: { color: "#E8481A" } })}
             </div>
             <h3 className="text-xl font-bold mb-3" style={{ color: "#0A1A3F" }}>{title}</h3>
             <p className="leading-relaxed" style={{ color: "#718096" }}>{desc}</p>
@@ -916,7 +820,6 @@ function FeatureCard({ icon, title, desc }) {
     );
 }
 
-/** Numbered step card used in "How It Works" */
 function StepCard({ step, icon, title, desc }) {
     return (
         <motion.div
@@ -925,14 +828,13 @@ function StepCard({ step, icon, title, desc }) {
         >
             <div
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                style={{ backgroundColor: "rgba(255,90,31,0.15)" }}
+                style={{ backgroundColor: "rgba(232,72,26,0.15)" }}
             >
-                {React.cloneElement(icon, { size: 28, style: { color: "#FF5A1F" } })}
+                {React.cloneElement(icon, { size: 28, style: { color: "#E8481A" } })}
             </div>
-            {/* Step number badge */}
             <div
                 className="absolute top-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                style={{ backgroundColor: "#FF5A1F" }}
+                style={{ backgroundColor: "#E8481A" }}
             >
                 {step}
             </div>
@@ -942,22 +844,21 @@ function StepCard({ step, icon, title, desc }) {
     );
 }
 
-/** Platform flow diagram card used in "How It Works" */
 function FlowCard({ title, items }) {
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
             className="rounded-2xl p-6"
-            style={{ backgroundColor: "#0A1A3F", border: "1px solid rgba(255,90,31,0.2)" }}
+            style={{ backgroundColor: "#0A1A3F", border: "1px solid rgba(232,72,26,0.2)" }}
         >
             <div className="px-4 py-2 rounded-lg font-bold text-center mb-4 text-white text-sm"
-                style={{ backgroundColor: "#FF5A1F" }}>
+                style={{ backgroundColor: "#E8481A" }}>
                 {title}
             </div>
             <ul className="space-y-2">
                 {items.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm" style={{ color: "rgba(245,247,250,0.65)" }}>
-                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#FF5A1F" }} />
+                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#E8481A" }} />
                         <span>{item}</span>
                     </li>
                 ))}
@@ -966,25 +867,24 @@ function FlowCard({ title, items }) {
     );
 }
 
-/** Role permission card used in "User Roles" section */
 function RoleCard({ icon, title, permissions }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="rounded-2xl p-6 transition-all duration-300"
             style={{ backgroundColor: "#1F2A44", border: "1px solid rgba(255,255,255,0.06)" }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,90,31,0.4)"}
+            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(232,72,26,0.4)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
         >
             <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                style={{ backgroundColor: "rgba(255,90,31,0.15)" }}>
-                {React.cloneElement(icon, { size: 24, style: { color: "#FF5A1F" } })}
+                style={{ backgroundColor: "rgba(232,72,26,0.15)" }}>
+                {React.cloneElement(icon, { size: 24, style: { color: "#E8481A" } })}
             </div>
             <h3 className="text-xl font-bold mb-4 text-white">{title}</h3>
             <ul className="space-y-2">
                 {permissions.map((perm, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-sm" style={{ color: "rgba(245,247,250,0.6)" }}>
-                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#FF5A1F" }} />
+                        <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#E8481A" }} />
                         <span>{perm}</span>
                     </li>
                 ))}
@@ -993,18 +893,17 @@ function RoleCard({ icon, title, permissions }) {
     );
 }
 
-/** Security feature card used in the "Enterprise Security" section */
 function SecurityFeature({ icon, title, desc }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="rounded-xl p-6 transition-all duration-300"
             style={{ backgroundColor: "#0A1A3F", border: "1px solid rgba(255,255,255,0.06)" }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,90,31,0.45)"}
+            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(232,72,26,0.45)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"}
         >
             <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
-                style={{ backgroundColor: "#FF5A1F" }}>
+                style={{ backgroundColor: "#E8481A" }}>
                 {React.cloneElement(icon, { size: 20, color: "#fff" })}
             </div>
             <h4 className="font-bold mb-2 text-white">{title}</h4>
@@ -1013,7 +912,6 @@ function SecurityFeature({ icon, title, desc }) {
     );
 }
 
-/** Testimonial card used in the "Trusted by hospitals" section */
 function TestimonialCard({ quote, initials, name, title, company }) {
     return (
         <motion.div
@@ -1021,15 +919,13 @@ function TestimonialCard({ quote, initials, name, title, company }) {
             className="bg-white rounded-2xl p-8"
             style={{ border: "1px solid rgba(10,26,63,0.08)", boxShadow: "0 2px 12px rgba(10,26,63,0.04)" }}
         >
-            {/* 5-star rating row */}
             <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5" style={{ fill: "#FF5A1F", color: "#FF5A1F" }} />
+                    <Star key={i} className="w-5 h-5" style={{ fill: "#E8481A", color: "#E8481A" }} />
                 ))}
             </div>
             <p className="mb-6 leading-relaxed italic" style={{ color: "#4A5568" }}>"{quote}"</p>
             <div className="flex items-center gap-3">
-                {/* Initials avatar */}
                 <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-sm"
                     style={{ backgroundColor: "#0A1A3F" }}>
                     {initials}

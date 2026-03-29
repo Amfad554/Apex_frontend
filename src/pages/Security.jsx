@@ -21,25 +21,13 @@ import {
 
 // ─── Brand colour tokens ──────────────────────────────────────────────────────
 const C = {
-    navy:      '#0A1A3F',
-    softNavy:  '#1F2A44',
-    orange:    '#FF5A1F',
+    navy: '#0A1A3F',
+    softNavy: '#1F2A44',
+    orange: '#E8481A',
     lightGray: '#F5F7FA',
 };
 
 
-// ─── Security Feature Card ────────────────────────────────────────────────────
-/**
- * Single card in the security feature grid.
- * Alternates between orange and navy icon backgrounds based on `index` parity
- * to add visual rhythm across the grid.
- *
- * Props:
- *   icon        – Lucide icon component
- *   title       – feature heading
- *   description – two-sentence description
- *   index       – position in the list; used for alternating colour
- */
 const SecurityFeature = ({ icon: Icon, title, description, index }) => (
     <div
         style={{
@@ -54,7 +42,6 @@ const SecurityFeature = ({ icon: Icon, title, description, index }) => (
         onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 28px rgba(10,26,63,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
         onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(10,26,63,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
     >
-        {/* Icon badge – alternates orange vs navy tint based on card position */}
         <div style={{
             flexShrink: 0, width: 48, height: 48,
             background: index % 2 === 0 ? `${C.orange}15` : `${C.navy}08`,
@@ -72,13 +59,8 @@ const SecurityFeature = ({ icon: Icon, title, description, index }) => (
 );
 
 
-// ─── Main Security Component ──────────────────────────────────────────────────
 export default function Security() {
 
-    /**
-     * Security feature card data.
-     * Defined here so it's easy to add/remove features without touching the JSX.
-     */
     const securityMeasures = [
         {
             icon: Lock,
@@ -112,7 +94,6 @@ export default function Security() {
         },
     ];
 
-    /** Compliance certifications shown in the bottom compliance block */
     const compliance = [
         "HIPAA Compliant Architecture",
         "GDPR Data Protection Ready",
@@ -122,10 +103,15 @@ export default function Security() {
         "Encrypted Cloud Backups",
     ];
 
-
-    // ── Render ────────────────────────────────────────────────────────────
     return (
-        <div style={{ minHeight: '100vh', background: C.lightGray, fontFamily: "'Georgia', serif" }}>
+        <div style={{
+            minHeight: '100vh', background: C.lightGray,
+            fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+        }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+            `}</style>
 
             {/* ── Hero section ── */}
             <section style={{
@@ -134,15 +120,12 @@ export default function Security() {
                 textAlign: 'center',
                 position: 'relative', overflow: 'hidden',
             }}>
-                {/* Orange top accent line */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${C.orange}, transparent)` }} />
 
-                {/* Decorative blurred blobs — purely visual */}
                 <div style={{ position: 'absolute', top: -80, right: '10%', width: 280, height: 280, background: `radial-gradient(circle, ${C.orange}10 0%, transparent 70%)`, borderRadius: '50%' }} />
                 <div style={{ position: 'absolute', bottom: -40, left: '5%', width: 200, height: 200, background: `radial-gradient(circle, ${C.navy}06 0%, transparent 70%)`, borderRadius: '50%' }} />
 
                 <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative' }}>
-                    {/* Eyebrow pill */}
                     <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: 8,
                         padding: '7px 18px', background: `${C.orange}15`, borderRadius: 24,
@@ -164,7 +147,6 @@ export default function Security() {
                 </div>
             </section>
 
-
             {/* ── Security features grid ── */}
             <section style={{ padding: '60px 24px', maxWidth: 1100, margin: '0 auto' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
@@ -174,7 +156,6 @@ export default function Security() {
                 </div>
             </section>
 
-
             {/* ── Compliance & standards block ── */}
             <section style={{ padding: '0 24px 72px', maxWidth: 860, margin: '0 auto' }}>
                 <div style={{
@@ -182,7 +163,7 @@ export default function Security() {
                     border: `1px solid rgba(10,26,63,0.08)`,
                     borderRadius: 28, padding: '48px 40px',
                     boxShadow: '0 4px 24px rgba(10,26,63,0.07)',
-                    borderTop: `4px solid ${C.orange}`,  // orange accent stripe
+                    borderTop: `4px solid ${C.orange}`,
                 }}>
                     <div style={{ textAlign: 'center', marginBottom: 36 }}>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.navy, margin: '0 0 10px' }}>
@@ -211,7 +192,6 @@ export default function Security() {
                 </div>
             </section>
 
-
             {/* ── Bottom CTA ── */}
             <section style={{
                 padding: '72px 24px',
@@ -219,7 +199,6 @@ export default function Security() {
                 textAlign: 'center',
                 position: 'relative', overflow: 'hidden',
             }}>
-                {/* Decorative orange glow */}
                 <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 400, height: 200, background: `${C.orange}12`, borderRadius: '50%', filter: 'blur(50px)' }} />
 
                 <div style={{ position: 'relative' }}>
@@ -233,8 +212,8 @@ export default function Security() {
                         Want to learn more about our technical security whitepapers? Contact our security team.
                     </p>
                     <button
-                        style={{ padding: '14px 36px', background: C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: `0 8px 28px ${C.orange}50`, transition: 'background 0.2s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#e04e18'}
+                        style={{ padding: '14px 36px', background: C.orange, color: '#fff', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", boxShadow: `0 8px 28px ${C.orange}50`, transition: 'background 0.2s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#d03d12'}
                         onMouseLeave={e => e.currentTarget.style.background = C.orange}
                     >
                         Contact Security Team
@@ -243,4 +222,4 @@ export default function Security() {
             </section>
         </div>
     );
-} 
+}

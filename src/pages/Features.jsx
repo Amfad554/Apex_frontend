@@ -20,9 +20,9 @@ import { ShieldCheck, Activity, Users, ClipboardList, Lock, Bell } from 'lucide-
 
 // ─── Brand design tokens ──────────────────────────────────────────────────────
 const T = {
-    navy:      '#0A1A3F',
-    softNavy:  '#1F2A44',
-    orange:    '#FF5A1F',
+    navy: '#0A1A3F',
+    softNavy: '#1F2A44',
+    orange: '#E8481A',
     lightGray: '#F5F7FA',
 };
 
@@ -78,7 +78,7 @@ function FeatureCard({ icon: Icon, title, description }) {
                 borderRadius: 18, padding: '2rem',
                 transition: 'all .22s ease',
                 boxShadow: hovered
-                    ? `0 12px 40px rgba(255,90,31,0.12)`
+                    ? `0 12px 40px rgba(232,72,26,0.12)`
                     : '0 2px 12px rgba(10,26,63,0.06)',
                 position: 'relative', overflow: 'hidden',
                 cursor: 'default',
@@ -118,7 +118,7 @@ function FeatureCard({ icon: Icon, title, description }) {
 
 // ─── Main Features Component ──────────────────────────────────────────────────
 export default function Features() {
-    const navigate       = useNavigate();
+    const navigate = useNavigate();
     const [isRegistered, setIsRegistered] = useState(null);  // null while loading
 
     // Check registration status on mount to control the CTA button

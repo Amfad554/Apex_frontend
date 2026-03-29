@@ -18,26 +18,15 @@ import Toast from '../Components/Toast';
 
 // ─── Brand design tokens ──────────────────────────────────────────────────────
 const T = {
-    navy:      '#0A1A3F',
-    softNavy:  '#1F2A44',
-    orange:    '#FF5A1F',
+    navy: '#0A1A3F',
+    softNavy: '#1F2A44',
+    orange: '#E8481A',
     lightGray: '#F5F7FA',
 };
 
-// API base URL – falls back to localhost for local development
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 
-// ─── Info Card ────────────────────────────────────────────────────────────────
-/**
- * A single contact-info card (email / phone / address).
- * On hover the icon background fills with orange and a top-left accent bar slides in.
- *
- * Props:
- *   icon  – Lucide icon component
- *   title – card heading (e.g. "Email Us")
- *   lines – array of strings shown as body text
- */
 function InfoCard({ icon: Icon, title, lines }) {
     const [hovered, setHovered] = useState(false);
 
@@ -52,13 +41,12 @@ function InfoCard({ icon: Icon, title, lines }) {
                 padding: '1.25rem 1.5rem',
                 display: 'flex', alignItems: 'flex-start', gap: 14,
                 boxShadow: hovered
-                    ? `0 8px 28px rgba(255,90,31,0.1)`
+                    ? `0 8px 28px rgba(232,72,26,0.1)`
                     : '0 2px 10px rgba(10,26,63,0.05)',
                 transition: 'all .22s',
                 position: 'relative', overflow: 'hidden',
             }}
         >
-            {/* Sliding orange accent bar that appears on hover */}
             <div style={{
                 position: 'absolute', top: 0, left: 0,
                 width: hovered ? 50 : 0, height: 3,
@@ -67,7 +55,6 @@ function InfoCard({ icon: Icon, title, lines }) {
                 borderRadius: '0 0 4px 0',
             }} />
 
-            {/* Icon badge – fills with orange on hover */}
             <div style={{
                 width: 44, height: 44, borderRadius: 12, flexShrink: 0,
                 background: hovered ? T.orange : `${T.orange}18`,
@@ -78,7 +65,6 @@ function InfoCard({ icon: Icon, title, lines }) {
                 <Icon size={20} color={hovered ? '#fff' : T.orange} />
             </div>
 
-            {/* Card text */}
             <div>
                 <div style={{ fontWeight: 800, fontSize: 14, color: T.navy, marginBottom: 4 }}>{title}</div>
                 {lines.map((l, i) => (
@@ -90,16 +76,6 @@ function InfoCard({ icon: Icon, title, lines }) {
 }
 
 
-// ─── Field wrapper ────────────────────────────────────────────────────────────
-/**
- * Wraps a form input with a styled label above it.
- * The asterisk (*) is only shown when `required` is true.
- *
- * Props:
- *   label    – label text
- *   required – whether to show the orange asterisk
- *   children – the actual <input>, <select>, or <textarea>
- */
 function Field({ label, required, children }) {
     return (
         <div>
@@ -116,38 +92,31 @@ function Field({ label, required, children }) {
     );
 }
 
-/** Shared base style applied to every input/select/textarea in the form */
 const inputStyle = {
     width: '100%', padding: '11px 14px',
     background: T.lightGray, border: `1.5px solid #e0e7f0`,
     borderRadius: 10, fontSize: 13.5, color: T.navy,
     outline: 'none', transition: 'border-color .18s, box-shadow .18s',
-    fontFamily: 'inherit', boxSizing: 'border-box',
+    fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", boxSizing: 'border-box',
 };
 
 
-// ─── Main Contact Component ───────────────────────────────────────────────────
 export default function Contact() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [toast, setToast]               = useState(null);   // null = no toast visible
-    const [focused, setFocused]           = useState(null);   // which field is currently focused
+    const [toast, setToast] = useState(null);
+    const [focused, setFocused] = useState(null);
 
-    // Controlled form state
     const [formData, setFormData] = useState({
         name: '', email: '', phone: '',
         hospitalName: '', subject: '', message: '',
     });
 
-    /** Generic change handler – works for all field types */
     const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    /** Returns border + shadow overrides when a field is focused */
     const focusStyle = (name) => focused === name
         ? { borderColor: T.orange, boxShadow: `0 0 0 3px ${T.orange}22` }
         : {};
 
-
-    // ── Form submission ───────────────────────────────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -158,18 +127,17 @@ export default function Contact() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     administratorName: formData.name,
-                    email:             formData.email,
-                    phone:             formData.phone       || 'Not provided',
-                    hospitalName:      formData.hospitalName || 'Not specified',
-                    hospitalType:      formData.subject      || 'General',
-                    message:           formData.message,
+                    email: formData.email,
+                    phone: formData.phone || 'Not provided',
+                    hospitalName: formData.hospitalName || 'Not specified',
+                    hospitalType: formData.subject || 'General',
+                    message: formData.message,
                 }),
             });
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Submission failed.');
 
-            // Success – clear the form and notify the user
             setToast({
                 message: "✅ Your message has been sent! Our team will get back to you within 24 hours.",
                 type: 'success',
@@ -186,8 +154,6 @@ export default function Contact() {
         }
     };
 
-
-    // ── Render ────────────────────────────────────────────────────────────
     return (
         <div style={{
             minHeight: '100vh', background: T.lightGray,
@@ -199,11 +165,9 @@ export default function Contact() {
                 select option { background: #fff; color: #0A1A3F; }
             `}</style>
 
-            {/* Toast notification */}
             {toast && (
                 <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
             )}
-
 
             {/* ── Hero section ── */}
             <section style={{
@@ -213,7 +177,6 @@ export default function Contact() {
                 textAlign: 'center',
                 position: 'relative', overflow: 'hidden',
             }}>
-                {/* Decorative blurred circles – purely visual */}
                 <div style={{
                     position: 'absolute', top: -80, right: -80, width: 320, height: 320,
                     borderRadius: '50%',
@@ -228,7 +191,6 @@ export default function Contact() {
                 }} />
 
                 <div style={{ maxWidth: 640, margin: '0 auto', position: 'relative' }}>
-                    {/* Eyebrow pill */}
                     <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: 8,
                         background: `${T.orange}22`, border: `1px solid ${T.orange}44`,
@@ -255,7 +217,6 @@ export default function Contact() {
                 </div>
             </section>
 
-
             {/* ── Body: info cards + contact form ── */}
             <section style={{
                 maxWidth: 1160, margin: '0 auto',
@@ -265,20 +226,18 @@ export default function Contact() {
                 gap: 24, alignItems: 'start',
             }}>
 
-                {/* ── Left column: contact info + support card ── */}
+                {/* ── Left column ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <InfoCard icon={Mail}   title="Email Us"     lines={['support@apexhms.com', 'sales@apexhms.com']} />
-                    <InfoCard icon={Phone}  title="Call Support" lines={['+1 (555) 000-1234', 'Mon – Fri, 9am – 6pm EST']} />
+                    <InfoCard icon={Mail} title="Email Us" lines={['support@apexhms.com', 'sales@apexhms.com']} />
+                    <InfoCard icon={Phone} title="Call Support" lines={['+1 (555) 000-1234', 'Mon – Fri, 9am – 6pm EST']} />
                     <InfoCard icon={MapPin} title="Headquarters" lines={['123 Medical Plaza, Suite 500', 'New York, NY 10001']} />
 
-                    {/* Support highlight card (dark navy) */}
                     <div style={{
                         background: T.navy, borderRadius: 16,
                         padding: '1.5rem', position: 'relative', overflow: 'hidden',
                         border: `1.5px solid ${T.orange}33`,
                         boxShadow: `0 8px 32px rgba(10,26,63,0.15)`,
                     }}>
-                        {/* Orange top stripe */}
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: T.orange }} />
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -300,7 +259,6 @@ export default function Contact() {
                     </div>
                 </div>
 
-
                 {/* ── Right column: contact form ── */}
                 <div style={{
                     background: '#fff', borderRadius: 20,
@@ -308,7 +266,6 @@ export default function Contact() {
                     padding: 'clamp(1.75rem, 4vw, 2.75rem)',
                     boxShadow: '0 4px 32px rgba(10,26,63,0.08)',
                 }}>
-                    {/* Form header */}
                     <div style={{
                         display: 'flex', alignItems: 'center', gap: 10,
                         marginBottom: '2rem', paddingBottom: '1.25rem',
@@ -326,7 +283,6 @@ export default function Contact() {
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        {/* Row 1: Name + Email */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                             <Field label="Full Name" required>
                                 <input
@@ -346,7 +302,6 @@ export default function Contact() {
                             </Field>
                         </div>
 
-                        {/* Row 2: Phone + Hospital Name (optional fields) */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                             <Field label="Phone Number">
                                 <input
@@ -366,7 +321,6 @@ export default function Contact() {
                             </Field>
                         </div>
 
-                        {/* Subject dropdown */}
                         <div style={{ marginBottom: 16 }}>
                             <Field label="Subject" required>
                                 <select
@@ -385,7 +339,6 @@ export default function Contact() {
                             </Field>
                         </div>
 
-                        {/* Message textarea */}
                         <div style={{ marginBottom: 24 }}>
                             <Field label="Message" required>
                                 <textarea
@@ -397,7 +350,6 @@ export default function Contact() {
                             </Field>
                         </div>
 
-                        {/* Submit button – disabled and dimmed while sending */}
                         <button
                             type="submit"
                             disabled={isSubmitting}
@@ -408,7 +360,7 @@ export default function Contact() {
                                 color: '#fff', border: 'none', borderRadius: 10,
                                 fontWeight: 800, fontSize: 14,
                                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                                fontFamily: 'inherit',
+                                fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
                                 boxShadow: isSubmitting ? 'none' : `0 4px 20px ${T.orange}44`,
                                 transition: 'all .18s', letterSpacing: '0.01em',
                             }}
