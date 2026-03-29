@@ -35,6 +35,7 @@ import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
 import { SmartSearchBar, MobileSearchOverlay } from './Sections/SmartSearchBar.jsx';
 import useInactivityTimeout from '../hooks/useInactivityTimeout';
+import { useSubscription } from '../SubscriptionGuard';
 
 // ─── Navigation config ────────────────────────────────────────────────────────
 /** Full list of nav items – order matters for the mobile bottom bar split below */
@@ -72,6 +73,9 @@ function ActivePill() {
 export default function HospitalDashboard() {
     const navigate = useNavigate();
     useInactivityTimeout();
+
+    const { status: subStatus } = useSubscription(); // ✅ get subscription status
+    const isPaid = subStatus === 'active';
 
     // ── UI state ──────────────────────────────────────────────────────────
     const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -175,16 +179,56 @@ export default function HospitalDashboard() {
     /** Props shared by every section component */
     const sectionProps = { isDark, t, hospital, isMobile };
 
+    // ── Locked screen shown for unpaid sections ───────────────────────────────
+    const LockedSection = () => (
+        <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', height: '60vh', textAlign: 'center', gap: 16,
+        }}>
+            <div style={{
+                width: 72, height: 72, borderRadius: '50%',
+                background: 'rgba(255,90,31,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                <span style={{ fontSize: 32 }}>🔒</span>
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: t.text, margin: 0 }}>
+                Upgrade to Access This Feature
+            </h2>
+            <p style={{ fontSize: 14, color: t.textSub, maxWidth: 360, margin: 0, lineHeight: 1.6 }}>
+                This section is available on paid plans. Upgrade now to unlock full access
+                to all hospital management features.
+            </p>
+            <button
+                onClick={() => navigate('/pricing')}
+                style={{
+                    padding: '12px 28px', borderRadius: 10, border: 'none',
+                    background: '#FF5A1F', color: '#fff',
+                    fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                }}
+            >
+                View Plans & Upgrade →
+            </button>
+        </div>
+    );
     const renderSection = () => {
+        // ✅ These sections are FREE — always accessible
+        const freeSection = activeSection === 'dashboard' || activeSection === 'settings';
+
+        // ✅ Show lock screen for paid sections if not subscribed
+        if (!isPaid && !freeSection) {
+            return <LockedSection />;
+        }
+
         switch (activeSection) {
-            case 'dashboard': return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
-            case 'patients': return <Patients         {...sectionProps} externalSearch={searchQuery} />;
-            case 'appointments': return <Appointments     {...sectionProps} externalSearch={searchQuery} />;
-            case 'staff': return <Staff            {...sectionProps} externalSearch={searchQuery} />;
-            case 'pharmacy': return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
-            case 'records': return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
-            case 'settings': return <DashSettings     {...sectionProps} />;
-            default: return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
+            case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+            case 'patients': return <Patients        {...sectionProps} externalSearch={searchQuery} />;
+            case 'appointments': return <Appointments    {...sectionProps} externalSearch={searchQuery} />;
+            case 'staff': return <Staff           {...sectionProps} externalSearch={searchQuery} />;
+            case 'pharmacy': return <Pharmacy        {...sectionProps} externalSearch={searchQuery} />;
+            case 'records': return <RecordsSection  {...sectionProps} externalSearch={searchQuery} />;
+            case 'settings': return <DashSettings    {...sectionProps} />;
+            default: return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
         }
     };
 
