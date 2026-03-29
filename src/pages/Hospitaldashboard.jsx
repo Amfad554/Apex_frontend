@@ -35,7 +35,7 @@ import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
 import { SmartSearchBar, MobileSearchOverlay } from './Sections/SmartSearchBar.jsx';
 import useInactivityTimeout from '../hooks/useInactivityTimeout';
-import { useSubscription } from '../SubscriptionGuard';
+import { useSubscription } from './SubscriptionGuard';
 
 // ─── Navigation config ────────────────────────────────────────────────────────
 /** Full list of nav items – order matters for the mobile bottom bar split below */
