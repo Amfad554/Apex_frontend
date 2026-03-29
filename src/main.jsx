@@ -26,7 +26,7 @@ import Contact from './pages/Contact.jsx';
 import Security from './pages/Security.jsx';
 import Pricing from './pages/Pricing.jsx';
 import StaffLogin from './pages/StaffLogin.jsx';
-import SubscriptionGuard from './pages/Subscriptionguard.jsx';
+import SubscriptionGuard from './pages/SubscriptionGuard.jsx';
 import StaffDashboard from './pages/Staffdashboard.jsx';
 
 /* ─── Auth helpers ───────────────────────────────────────────────────────────── */
