@@ -179,16 +179,12 @@ export default function HospitalDashboard() {
     /** Props shared by every section component */
     const sectionProps = { isDark, t, hospital, isMobile };
 
-    // ── Locked screen shown for unpaid sections ───────────────────────────────
-    // ─── Locked Section ───────────────────────────────────────────────────────────
     const LockedSection = ({ onUpgrade }) => {
         const [loading, setLoading] = useState(false);
 
         const handleUpgrade = () => {
             setLoading(true);
-            setTimeout(() => {
-                onUpgrade();
-            }, 600); // brief loader before nav
+            onUpgrade(); // navigate immediately
         };
 
         return (
