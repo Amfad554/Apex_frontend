@@ -180,47 +180,72 @@ export default function HospitalDashboard() {
     const sectionProps = { isDark, t, hospital, isMobile };
 
     // ── Locked screen shown for unpaid sections ───────────────────────────────
-    const LockedSection = () => (
-        <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', height: '60vh', textAlign: 'center', gap: 16,
-        }}>
+    // ─── Locked Section ───────────────────────────────────────────────────────────
+    const LockedSection = ({ onUpgrade }) => {
+        const [loading, setLoading] = useState(false);
+
+        const handleUpgrade = () => {
+            setLoading(true);
+            setTimeout(() => {
+                onUpgrade();
+            }, 600); // brief loader before nav
+        };
+
+        return (
             <div style={{
-                width: 72, height: 72, borderRadius: '50%',
-                background: 'rgba(255,90,31,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', height: '60vh', textAlign: 'center', gap: 16,
             }}>
-                <span style={{ fontSize: 32 }}>🔒</span>
+                <div style={{
+                    width: 72, height: 72, borderRadius: '50%',
+                    background: 'rgba(255,90,31,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                    <span style={{ fontSize: 32 }}>🔒</span>
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: t.text, margin: 0 }}>
+                    Upgrade to Access This Feature
+                </h2>
+                <p style={{ fontSize: 14, color: t.textSub, maxWidth: 360, margin: 0, lineHeight: 1.6 }}>
+                    This section is available on paid plans. Upgrade now to unlock full access
+                    to all hospital management features.
+                </p>
+                <button
+                    type="button"
+                    onClick={handleUpgrade}
+                    disabled={loading}
+                    style={{
+                        padding: '12px 28px', borderRadius: 10, border: 'none',
+                        background: loading ? 'rgba(255,90,31,0.5)' : '#FF5A1F',
+                        color: '#fff', fontWeight: 700, fontSize: 14,
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        transition: 'background 0.2s',
+                    }}
+                >
+                    {loading ? (
+                        <>
+                            <span style={{
+                                width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)',
+                                borderTopColor: '#fff', borderRadius: '50%',
+                                display: 'inline-block',
+                                animation: 'spin 0.7s linear infinite',
+                            }} />
+                            Redirecting...
+                        </>
+                    ) : 'View Plans & Upgrade →'}
+                </button>
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: t.text, margin: 0 }}>
-                Upgrade to Access This Feature
-            </h2>
-            <p style={{ fontSize: 14, color: t.textSub, maxWidth: 360, margin: 0, lineHeight: 1.6 }}>
-                This section is available on paid plans. Upgrade now to unlock full access
-                to all hospital management features.
-            </p>
-            <button
-                type="button"
-                onClick={() => navigate('/pricing')}
-                style={{
-                    padding: '12px 28px', borderRadius: 10, border: 'none',
-                    background: '#FF5A1F', color: '#fff',
-                    fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                }}
-            >
-                View Plans & Upgrade →
-            </button>
-        </div>
-    );
+        );
+    };
     const renderSection = () => {
         // ✅ These sections are FREE — always accessible
         const freeSection = activeSection === 'dashboard' || activeSection === 'settings';
 
         // ✅ Show lock screen for paid sections if not subscribed
         if (!isPaid && !freeSection) {
-            return <LockedSection />;
+            return <LockedSection onUpgrade={() => navigate('/pricing')} />;
         }
-
         switch (activeSection) {
             case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
             case 'patients': return <Patients        {...sectionProps} externalSearch={searchQuery} />;
@@ -472,6 +497,7 @@ export default function HospitalDashboard() {
                 @keyframes sectionOut { from{opacity:1;transform:translateY(0)}     to{opacity:0;transform:translateY(-6px)} }
                 @keyframes tapScale   { 0%{transform:scale(1)} 40%{transform:scale(0.88)} 100%{transform:scale(1)} }
                 @keyframes headerSlide{ from{opacity:0;transform:translateY(-100%)} to{opacity:1;transform:translateY(0)} }
+                @keyframes spin { to { transform: rotate(360deg); } }
                 .bottom-nav { padding-bottom: max(12px, env(safe-area-inset-bottom)) !important; }
             `}</style>
 
