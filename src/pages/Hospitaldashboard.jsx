@@ -180,13 +180,6 @@ export default function HospitalDashboard() {
     const sectionProps = { isDark, t, hospital, isMobile };
 
     const LockedSection = ({ onUpgrade }) => {
-        const [loading, setLoading] = useState(false);
-
-        const handleUpgrade = () => {
-            setLoading(true);
-            onUpgrade(); // navigate immediately
-        };
-
         return (
             <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -208,28 +201,14 @@ export default function HospitalDashboard() {
                 </p>
                 <button
                     type="button"
-                    onClick={handleUpgrade}
-                    disabled={loading}
+                    onClick={() => window.location.href = '/pricing'}
                     style={{
                         padding: '12px 28px', borderRadius: 10, border: 'none',
-                        background: loading ? 'rgba(255,90,31,0.5)' : '#FF5A1F',
-                        color: '#fff', fontWeight: 700, fontSize: 14,
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        transition: 'background 0.2s',
+                        background: '#FF5A1F', color: '#fff',
+                        fontWeight: 700, fontSize: 14, cursor: 'pointer',
                     }}
                 >
-                    {loading ? (
-                        <>
-                            <span style={{
-                                width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)',
-                                borderTopColor: '#fff', borderRadius: '50%',
-                                display: 'inline-block',
-                                animation: 'spin 0.7s linear infinite',
-                            }} />
-                            Redirecting...
-                        </>
-                    ) : 'View Plans & Upgrade →'}
+                    View Plans & Upgrade →
                 </button>
             </div>
         );
@@ -240,7 +219,7 @@ export default function HospitalDashboard() {
 
         // ✅ Show lock screen for paid sections if not subscribed
         if (!isPaid && !freeSection) {
-            return <LockedSection onUpgrade={() => navigate('/pricing')} />;
+            return <LockedSection />;
         }
         switch (activeSection) {
             case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
