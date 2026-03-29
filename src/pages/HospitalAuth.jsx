@@ -31,15 +31,15 @@ export default function HospitalAuth() {
     const [mode, setMode] = useState('signin');
 
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading]       = useState(false);
-    const [toast, setToast]               = useState(null);  // null = no toast
+    const [isLoading, setIsLoading] = useState(false);
+    const [toast, setToast] = useState(null);  // null = no toast
 
     // ── Forgot-password flow state ───────────────────────────────────────────
-    const [forgotEmail, setForgotEmail]           = useState('');
-    const [resetCode, setResetCode]               = useState('');
-    const [newPassword, setNewPassword]           = useState('');
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [resetCode, setResetCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [forgotSent, setForgotSent]             = useState(false);  // true after code is emailed
+    const [forgotSent, setForgotSent] = useState(false);  // true after code is emailed
 
     // ── Sign-in / sign-up shared form state ──────────────────────────────────
     const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ export default function HospitalAuth() {
     });
 
     /** Trigger a toast notification */
-    const showToast  = (message, type = 'success') => setToast({ message, type });
+    const showToast = (message, type = 'success') => setToast({ message, type });
     const closeToast = () => setToast(null);
 
     /** Generic change handler for all sign-in / sign-up inputs */
@@ -146,14 +146,14 @@ export default function HospitalAuth() {
 
             try {
                 await authAPI.hospitalRegister({
-                    hospitalName:    formData.hospitalName,
-                    hospitalType:    formData.hospitalType,
-                    address:         formData.address,
-                    phone:           formData.phone,
-                    email:           formData.email,
-                    licenseNumber:   formData.licenseNumber,
-                    adminName:       formData.adminName,
-                    password:        formData.password,
+                    hospitalName: formData.hospitalName,
+                    hospitalType: formData.hospitalType,
+                    address: formData.address,
+                    phone: formData.phone,
+                    email: formData.email,
+                    licenseNumber: formData.licenseNumber,
+                    adminName: formData.adminName,
+                    password: formData.password,
                     confirmPassword: formData.confirmPassword,
                 });
 
@@ -174,31 +174,26 @@ export default function HospitalAuth() {
                 setIsLoading(false);
             }
 
-        // ── Login ─────────────────────────────────────────────────────────
+            // ── Login ─────────────────────────────────────────────────────────
         } else {
             try {
                 const data = await authAPI.hospitalLogin({
-                    email:    formData.email,
+                    email: formData.email,
                     password: formData.password,
                 });
 
                 // Persist session data
-                localStorage.setItem('token',    data.token);
-                localStorage.setItem('user',     JSON.stringify(data.user));
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 localStorage.setItem('userRole', 'hospital_admin');
 
                 // Notify other parts of the app (e.g. navbar) that auth state changed
                 window.dispatchEvent(new Event('authChange'));
 
                 // Redirect to pricing if the hospital hasn't chosen a plan yet
-                if (data.requiresPayment && formData.email !== 'georgechiamaka02@gmail.com') {
-                    showToast('👋 Welcome! Please choose a plan to activate your hospital dashboard.', 'info');
-                    setTimeout(() => navigate('/pricing'), 1000);
-                } else {
-                    showToast('✅ Signed in successfully! Taking you to your dashboard…');
-                    setTimeout(() => navigate('/hospitaldashboard'), 1000);
-                }
-
+                // ✅ Always go to dashboard — subscription limits handled inside
+                showToast('✅ Signed in successfully! Taking you to your dashboard…');
+                setTimeout(() => navigate('/hospitaldashboard'), 1000);
             } catch (error) {
                 showToast(`❌ ${error.message || 'Sign in failed. Please check your email and password and try again.'}`, 'error');
             } finally {
