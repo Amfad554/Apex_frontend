@@ -199,7 +199,9 @@ export default function HospitalDashboard() {
                 This section is available on paid plans. Upgrade now to unlock full access
                 to all hospital management features.
             </p>
+           // ✅ Added type="button"
             <button
+                type="button"
                 onClick={() => navigate('/pricing')}
                 style={{
                     padding: '12px 28px', borderRadius: 10, border: 'none',
