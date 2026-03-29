@@ -46,7 +46,6 @@ const NAV_ITEMS = [
     { id: 'pharmacy', icon: Pill, label: 'Pharmacy' },
     { id: 'records', icon: FileText, label: 'Records' },
     { id: 'settings', icon: Settings, label: 'Settings' },
-    { id: 'credentials', icon: KeyRound, label: 'Credentials Log' },
 ];
 
 /** First 4 items show in the mobile bottom bar */
@@ -185,7 +184,6 @@ export default function HospitalDashboard() {
             case 'pharmacy': return <Pharmacy         {...sectionProps} externalSearch={searchQuery} />;
             case 'records': return <RecordsSection   {...sectionProps} externalSearch={searchQuery} />;
             case 'settings': return <DashSettings     {...sectionProps} />;
-            case 'credentials': return <CredentialsHistory isDark={isDark} t={t} isMobile={isMobile} />;
             default: return <DashboardHome    {...sectionProps} onNavigate={navigate_to} />;
         }
     };
