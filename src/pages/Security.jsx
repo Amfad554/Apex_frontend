@@ -141,7 +141,7 @@ export default function Security() {
                     </h1>
 
                     <p style={{ color: '#6b7a99', maxWidth: 560, margin: '0 auto', fontSize: '1rem', lineHeight: 1.75 }}>
-                        Apex-HMS employs a multi-layered security strategy to protect patient records
+                        ApexCare employs a multi-layered security strategy to protect patient records
                         and hospital operations against evolving digital threats.
                     </p>
                 </div>
