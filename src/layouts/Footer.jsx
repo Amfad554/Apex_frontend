@@ -17,7 +17,7 @@ export default function Footer() {
                                 <Activity size={22} className="text-[#FF5A1F]" />
                             </div>
                             <span className="text-xl font-black text-white tracking-tight">
-                                HMS<span className="text-[#FF5A1F]">Care</span>
+                                Apex<span className="text-[#FF5A1F]">Care</span>
                             </span>
                         </Link>
                         <p className="text-slate-400 leading-relaxed mb-6 max-w-sm">
@@ -148,7 +148,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-slate-500 text-xs">Email Support</p>
-                                <p className="text-white font-semibold">support@hmscare.com</p>
+                                <p className="text-white font-semibold">support@ApexCare.com</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ export default function Footer() {
             <div className="border-t border-[#1F2A44] bg-[#081431]">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-                        <p>© {currentYear} HMSCare. All rights reserved.</p>
+                        <p>© {currentYear} ApexCare. All rights reserved.</p>
                         <div className="flex gap-6">
                             <a href="#" className="hover:text-white transition">Privacy</a>
                             <a href="#" className="hover:text-white transition">Terms</a>
