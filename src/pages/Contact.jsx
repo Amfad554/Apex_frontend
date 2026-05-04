@@ -238,7 +238,7 @@ export default function Contact() {
                         Get in <span style={{ color: T.orange }}>Touch</span>
                     </h1>
                     <p style={{ fontSize: 'clamp(13px, 3vw, 16px)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, maxWidth: 480, margin: '0 auto' }}>
-                        Have questions about integrating Apex-HMS into your hospital? Our team is
+                        Have questions about integrating ApexCare into your hospital? Our team is
                         here to help you scale your healthcare operations.
                     </p>
                 </div>
