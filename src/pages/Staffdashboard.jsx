@@ -1641,7 +1641,7 @@ export default function StaffDashboard() {
                         <Activity size={18} color={ORANGE} />
                     </div>
                     <div>
-                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>Apex<span style={{ color: ORANGE }}>HMS</span></span>
+                        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>Apex<span style={{ color: ORANGE }}>Care</span></span>
                         <span style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{roleMeta.label}</span>
                     </div>
                 </div>
@@ -1765,7 +1765,7 @@ export default function StaffDashboard() {
                         </button>
                         {isMobile && (
                             <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>
-                                Apex<span style={{ color: ORANGE }}>HMS</span>
+                                Apex<span style={{ color: ORANGE }}>Care</span>
                             </span>
                         )}
                         {/* Desktop global search bar */}

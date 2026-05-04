@@ -985,7 +985,7 @@ export default function PatientDashboard() {
                     </div>
                     <div>
                         <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, display: 'block' }}>
-                            HMS<span style={{ color: ORANGE }}>Care</span>
+                            Apex<span style={{ color: ORANGE }}>Care</span>
                         </span>
                         <p style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Patient Portal</p>
                     </div>
@@ -1143,7 +1143,7 @@ export default function PatientDashboard() {
 
                         {/* Mobile: brand name / Desktop: search bar */}
                         {isMobile
-                            ? <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>HMS<span style={{ color: ORANGE }}>Care</span></span>
+                            ? <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text }}>Apex<span style={{ color: ORANGE }}>Care</span></span>
                             : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: t.input, borderRadius: 10, padding: '8px 14px', border: `1.5px solid ${searchQuery ? ORANGE : t.border}`, transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: searchQuery ? `0 0 0 3px ${ORANGE}12` : 'none', flex: 1, maxWidth: 320 }}>
                                     <Search size={14} color={searchQuery ? ORANGE : t.textMuted} />

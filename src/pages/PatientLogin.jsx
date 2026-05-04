@@ -363,7 +363,7 @@ export default function PatientLogin() {
                         <Activity size={28} color="#fff" />
                     </div>
                     <h1 style={{ fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px', marginBottom: 4, color: t.text }}>
-                        HMS<span style={{ color: ORANGE }}>Care</span>
+                        Apex<span style={{ color: ORANGE }}>Care</span>
                     </h1>
                     <p style={{ color: t.textSub, fontSize: 14 }}>Patient Portal</p>
                 </div>

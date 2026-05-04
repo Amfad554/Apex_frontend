@@ -272,7 +272,7 @@ export default function HospitalDashboard() {
                         {/* Brand name – hidden when sidebar is collapsed */}
                         {showLabels && (
                             <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.5px', color: t.text, whiteSpace: 'nowrap' }}>
-                                HMS<span style={{ color: BLUE }}>Care</span>
+                                Apex<span style={{ color: BLUE }}>Care</span>
                             </span>
                         )}
                     </div>
@@ -565,7 +565,7 @@ export default function HospitalDashboard() {
                         {/* Mobile brand name */}
                         {isMobile && (
                             <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.5px', color: t.text, whiteSpace: 'nowrap' }}>
-                                HMS<span style={{ color: BLUE }}>Care</span>
+                                Apex<span style={{ color: BLUE }}>Care</span>
                             </span>
                         )}
 

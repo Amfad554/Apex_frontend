@@ -68,18 +68,18 @@ export default function Navbar() {
   // ── Theme tokens — Updated to Navy & Orange palette ──
   const D = isDark;
 
-  const headerBg       = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-white border-slate-200';
-  const logoText       = D ? 'text-[#F5F7FA]'                 : 'text-[#0A1A3F]';
-  const accentSpan     = 'text-[#FF5A1F]'; // Orange remains consistent for brand pop
-  const linkBase       = D ? 'text-slate-400 hover:text-[#FF5A1F]' : 'text-slate-600 hover:text-[#0A1A3F]';
-  const linkActive     = D ? 'text-[#FF5A1F] font-bold'       : 'text-[#0A1A3F] font-bold';
-  const underline      = D ? 'after:bg-[#FF5A1F]'             : 'after:bg-[#0A1A3F]';
-  
-  const mobileMenuBg   = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-[#F5F7FA] border-slate-200';
-  const mobileNavBase   = D ? 'text-slate-400'                 : 'text-slate-600';
+  const headerBg = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-white border-slate-200';
+  const logoText = D ? 'text-[#F5F7FA]' : 'text-[#0A1A3F]';
+  const accentSpan = 'text-[#FF5A1F]';
+  const linkBase = D ? 'text-slate-400 hover:text-[#FF5A1F]' : 'text-slate-600 hover:text-[#0A1A3F]';
+  const linkActive = D ? 'text-[#FF5A1F] font-bold' : 'text-[#0A1A3F] font-bold';
+  const underline = D ? 'after:bg-[#FF5A1F]' : 'after:bg-[#0A1A3F]';
+
+  const mobileMenuBg = D ? 'bg-[#0A1A3F] border-[#1F2A44]' : 'bg-[#F5F7FA] border-slate-200';
+  const mobileNavBase = D ? 'text-slate-400' : 'text-slate-600';
   const mobileNavActive = D ? 'text-[#FF5A1F] border-[#FF5A1F]' : 'text-[#0A1A3F] border-[#0A1A3F]';
-  
-  const logoutBtnStyle  = D
+
+  const logoutBtnStyle = D
     ? 'border-[#1F2A44] text-slate-400 hover:text-[#FF5A1F] hover:bg-[#1F2A44]'
     : 'border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50';
 
@@ -101,17 +101,17 @@ export default function Navbar() {
             <Activity size={22} className="text-[#FF5A1F]" />
           </div>
           <span className={`text-xl font-black tracking-tight ${logoText}`}>
-            HMS<span className={accentSpan}>Care</span>
+            Apex<span className={accentSpan}>Care</span>
           </span>
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm">
-          <NavLink to="/"         className={navLinkStyle}>Home</NavLink>
+          <NavLink to="/" className={navLinkStyle}>Home</NavLink>
           <NavLink to="/features" className={navLinkStyle}>Features</NavLink>
-          <NavLink to="/pricing"  className={navLinkStyle}>Pricing</NavLink>
+          <NavLink to="/pricing" className={navLinkStyle}>Pricing</NavLink>
           <NavLink to="/security" className={navLinkStyle}>Security</NavLink>
-          <NavLink to="/contact"  className={navLinkStyle}>Contact</NavLink>
+          <NavLink to="/contact" className={navLinkStyle}>Contact</NavLink>
         </nav>
 
         {/* Desktop Actions */}
@@ -158,21 +158,20 @@ export default function Navbar() {
         <div className={`md:hidden border-t px-6 py-8 space-y-6 shadow-2xl transition-colors duration-300 ${mobileMenuBg}`}>
           <div className="flex flex-col gap-4">
             {[
-              { path: "/",         label: "Home" },
+              { path: "/", label: "Home" },
               { path: "/features", label: "Features" },
-              { path: "/pricing",  label: "Pricing" },
+              { path: "/pricing", label: "Pricing" },
               { path: "/security", label: "Security" },
-              { path: "/contact",  label: "Contact" },
+              { path: "/contact", label: "Contact" },
             ].map(({ path, label }) => (
               <NavLink
                 key={path}
                 to={path}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  `text-lg font-semibold transition pl-3 ${
-                    isActive
-                      ? `${mobileNavActive} border-l-4`
-                      : mobileNavBase
+                  `text-lg font-semibold transition pl-3 ${isActive
+                    ? `${mobileNavActive} border-l-4`
+                    : mobileNavBase
                   }`
                 }
               >
@@ -197,9 +196,8 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold w-full border transition ${
-                    D ? 'bg-[#1F2A44] text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200'
-                  }`}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold w-full border transition ${D ? 'bg-[#1F2A44] text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200'
+                    }`}
                 >
                   <LogOut size={20} />
                   Sign Out
