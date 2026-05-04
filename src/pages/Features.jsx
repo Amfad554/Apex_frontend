@@ -219,7 +219,7 @@ export default function Features() {
                     </h1>
 
                     <p style={{ fontSize: 16.5, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, maxWidth: 520, margin: '0 auto' }}>
-                        Apex-HMS provides a unified platform for hospitals to optimize
+                        ApexCare provides a unified platform for hospitals to optimize
                         operations and for patients to take control of their health journey.
                     </p>
                 </div>
