@@ -138,8 +138,8 @@ export default function Footer() {
                                 <Phone size={18} className="text-[#FF5A1F]" />
                             </div>
                             <div>
-                                <p className="text-slate-500 text-xs">Emergency Hotline</p>
-                                <p className="text-white font-semibold">+1 800-999-0000</p>
+                                <p className="text-slate-500 text-xs">Phone Number</p>
+                                <p className="text-white font-semibold">080 2950 1995</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-slate-500 text-xs">Email Support</p>
-                                <p className="text-white font-semibold">support@ApexCare.com</p>
+                                <p className="text-white font-semibold">support@apexcare.com</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -157,7 +157,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-slate-500 text-xs">Location</p>
-                                <p className="text-white font-semibold">123 Medical Plaza, NY</p>
+                                <p className="text-white font-semibold">2B Yinasu Adeniji St</p>
                             </div>
                         </div>
                     </div>
@@ -168,7 +168,12 @@ export default function Footer() {
             <div className="border-t border-[#1F2A44] bg-[#081431]">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-                        <p>© {currentYear} ApexCare. All rights reserved.</p>
+                        <div className="flex flex-col items-center md:items-start gap-1">
+                            <p className="text-[#FF5A1F] font-semibold text-xs tracking-wide">
+                                Powered by: Anchorsoft Innovation Limited
+                            </p>
+                            <p>© {currentYear} ApexCare. All rights reserved.</p>
+                        </div>
                         <div className="flex gap-6">
                             <a href="#" className="hover:text-white transition">Privacy</a>
                             <a href="#" className="hover:text-white transition">Terms</a>

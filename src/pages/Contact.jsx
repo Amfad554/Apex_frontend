@@ -250,8 +250,8 @@ export default function Contact() {
                 {/* Left column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <InfoCard icon={Mail} title="Email Us" lines={['support@apexhms.com', 'sales@apexhms.com']} />
-                    <InfoCard icon={Phone} title="Call Support" lines={['+1 (555) 000-1234', 'Mon – Fri, 9am – 6pm EST']} />
-                    <InfoCard icon={MapPin} title="Headquarters" lines={['123 Medical Plaza, Suite 500', 'New York, NY 10001']} />
+                    <InfoCard icon={Phone} title="Call Support" lines={['080 2950 1995', 'Mon – Fri, 9am – 6pm EST']} />
+                    <InfoCard icon={MapPin} title="Headquarters" lines={['2B Yinasu Adeniji St', 'Lagos, Nigeria']} />
 
                     <div style={{
                         background: T.navy, borderRadius: 16, padding: '1.5rem',

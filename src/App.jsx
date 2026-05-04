@@ -53,7 +53,7 @@ function App() {
           {/* Branding Text */}
           <div className="text-center">
             <div className="text-3xl font-black tracking-tight text-[#0A1A3F]">
-              HMS<span className="text-[#FF5A1F]">Care</span>
+              Apex<span className="text-[#FF5A1F]">Care</span>
             </div>
 
             <div className="flex items-center gap-2 justify-center mt-2">
