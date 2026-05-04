@@ -170,7 +170,7 @@ export default function Footer() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
                         <div className="flex flex-col items-center md:items-start gap-1">
                             <p className="text-[#FF5A1F] font-semibold text-xs tracking-wide">
-                                Powered by: Anchorsoft Innovation Limited
+                                Powered by: Anchorsoft Innovations Limited
                             </p>
                             <p>© {currentYear} ApexCare. All rights reserved.</p>
                         </div>
