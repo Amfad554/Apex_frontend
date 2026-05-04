@@ -1,7 +1,7 @@
 /**
  * Home.jsx
  * ─────────────────────────────────────────────────────────────────────────────
- * Public landing page for Apex-HMS.
+ * Public landing page for Apexcare.
  *
  * Sections (top → bottom):
  *   1. Hero              – headline, CTA buttons
@@ -216,7 +216,7 @@ export default function Home() {
                     >
                         <Activity className="w-4 h-4" />
                         {/* Removed "Multi-Tenant" jargon — replaced with a confidence-building badge */}
-                        <span>Trusted by 312 Hospitals Across 18 Countries</span>
+                        <span>Hospital Management Platform</span>
                     </motion.div>
 
                     <motion.h1
@@ -539,15 +539,15 @@ export default function Home() {
                     <div className="text-center mb-16">
                         <p className="font-semibold mb-2 uppercase tracking-widest text-sm" style={{ color: "#E8481A" }}>Testimonials</p>
                         {/* Replaced "worldwide" with a specific, believable number */}
-                        <h2 className="text-4xl lg:text-5xl font-black mb-4" style={{ color: "#0A1A3F" }}>Used by 312 hospitals in 18 countries</h2>
+                        <h2 className="text-4xl lg:text-5xl font-black mb-4" style={{ color: "#0A1A3F" }}>Trusted by hospitals across the continent</h2>
                         <p className="text-lg max-w-2xl mx-auto" style={{ color: "#4A5568" }}>
-                            From single-site clinics to multi-location networks, teams rely on Apex-HMS every day.
+                            From single-site clinics to multi-location networks, teams rely on Apexcare every day.
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Updated testimonials: more specific, grounded language; removed superlatives */}
                         <TestimonialCard
-                            quote="We migrated three branches onto Apex-HMS over a weekend. Patient data stayed clean, staff were up to speed by Monday, and we haven't looked back."
+                            quote="We migrated three branches onto Apexcare over a weekend. Patient data stayed clean, staff were up to speed by Monday, and we haven't looked back."
                             initials="RO" name="Dr. Ruth Okonkwo" title="Medical Director" company="Zenith Specialist Hospital, Abuja"
                         />
                         <TestimonialCard
@@ -571,7 +571,7 @@ export default function Home() {
                             Ready to register your hospital?
                         </h2>
                         <p className="text-xl mb-10 max-w-3xl mx-auto" style={{ color: "rgba(255,255,255,0.8)" }}>
-                            Join the 312 hospitals already running on Apex-HMS.
+                            Join the hospitals already running on Apexcare.
                             Our onboarding team will guide you from registration through to your first live patient record.
                         </p>
                         <div className="flex flex-wrap justify-center gap-6 mb-12">
