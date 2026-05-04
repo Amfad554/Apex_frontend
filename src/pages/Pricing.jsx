@@ -124,7 +124,7 @@ function PaymentModal({ plan, onClose }) {
             email,
             amount: plan.rawPrice * 100,
             currency: 'NGN',
-            ref: `HMS-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            ref: `Apex-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             metadata: {
                 planKey: plan.planKey,
                 hospital: storedUser?.hospitalName || '',
@@ -235,7 +235,7 @@ function PaymentModal({ plan, onClose }) {
                                 Finalize Subscription
                             </h2>
                             <p style={{ color: '#6b7a99', fontSize: '0.875rem', marginTop: 6 }}>
-                                Instant access to HMSCare Professional.
+                                Instant access to ApexCare Professional.
                             </p>
                         </div>
 
@@ -331,7 +331,7 @@ export default function Pricing() {
                     <span style={{ color: C.orange }}>Instant Access.</span>
                 </h1>
                 <p style={{ color: '#6b7a99', maxWidth: 580, margin: '0 auto', fontSize: '1.05rem', lineHeight: 1.7 }}>
-                    Experience the full power of HMSCare. Pay securely with Paystack and your account is activated immediately.
+                    Experience the full power of ApexCare. Pay securely with Paystack and your account is activated immediately.
                 </p>
             </section>
 
