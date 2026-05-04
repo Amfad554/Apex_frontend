@@ -249,9 +249,9 @@ export default function Contact() {
 
                 {/* Left column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <InfoCard icon={Mail} title="Email Us" lines={['support@apexhms.com', 'sales@apexhms.com']} />
+                    <InfoCard icon={Mail} title="Email Us" lines={['support@apexcare.com', 'sales@apexcare.com']} />
                     <InfoCard icon={Phone} title="Call Support" lines={['080 2950 1995', 'Mon – Fri, 9am – 6pm EST']} />
-                    <InfoCard icon={MapPin} title="Headquarters" lines={['2B Yinasu Adeniji St', 'Lagos, Nigeria']} />
+                    <InfoCard icon={MapPin} title="Headquarters" lines={['First floor, 2B Yinusa Adeniji Street, Off Toyin, Ikeja']} />
 
                     <div style={{
                         background: T.navy, borderRadius: 16, padding: '1.5rem',

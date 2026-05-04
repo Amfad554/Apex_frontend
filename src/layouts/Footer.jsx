@@ -157,7 +157,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-slate-500 text-xs">Location</p>
-                                <p className="text-white font-semibold">2B Yinasu Adeniji St</p>
+                                <p className="text-white font-semibold">First floor, 2B Yinusa Adeniji Street, Off Toyin, Ikeja</p>
                             </div>
                         </div>
                     </div>
