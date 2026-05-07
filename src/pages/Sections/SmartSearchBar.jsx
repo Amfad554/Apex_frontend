@@ -37,11 +37,11 @@ const ORANGE = '#FF5A1F';
  *   color   – accent colour used for badges, highlights, and icons
  */
 const TYPES = {
-    patient:      { label: 'Patients',     icon: Users,       section: 'patients',     color: ORANGE    },
-    staff:        { label: 'Staff',        icon: Stethoscope, section: 'staff',        color: '#8b5cf6' },
-    appointment:  { label: 'Appointments', icon: Calendar,    section: 'appointments', color: '#0E6E77' },
-    prescription: { label: 'Pharmacy',     icon: Pill,        section: 'pharmacy',     color: '#10b981' },
-    record:       { label: 'Records',      icon: FileText,    section: 'records',      color: '#f59e0b' },
+    patient: { label: 'Patients', icon: Users, section: 'patients', color: ORANGE },
+    staff: { label: 'Staff', icon: Stethoscope, section: 'staff', color: '#8b5cf6' },
+    appointment: { label: 'Appointments', icon: Calendar, section: 'appointments', color: '#0E6E77' },
+    prescription: { label: 'Pharmacy', icon: Pill, section: 'pharmacy', color: '#10b981' },
+    record: { label: 'Records', icon: FileText, section: 'records', color: '#f59e0b' },
 };
 
 
@@ -106,61 +106,57 @@ function Highlight({ text = '', query = '', color }) {
 async function fetchAll(hospitalId, q, signal, limits = [4, 3, 3, 3, 3]) {
     const qs = encodeURIComponent(q);
     const [lP, lS, lA, lR, lRc] = limits;
+    const token = localStorage.getItem('token'); // ← auth token
+    const headers = { Authorization: `Bearer ${token}` };
 
     const settled = await Promise.allSettled([
-        fetch(`/api/hospitals/${hospitalId}/patients?search=${qs}&limit=${lP}`,      { signal }).then(r => r.json()),
-        fetch(`/api/hospitals/${hospitalId}/staff?search=${qs}&limit=${lS}`,         { signal }).then(r => r.json()),
-        fetch(`/api/hospitals/${hospitalId}/appointments?search=${qs}&limit=${lA}`,  { signal }).then(r => r.json()),
-        fetch(`/api/hospitals/${hospitalId}/prescriptions?search=${qs}&limit=${lR}`, { signal }).then(r => r.json()),
-        fetch(`/api/hospitals/${hospitalId}/records?search=${qs}&limit=${lRc}`,      { signal }).then(r => r.json()),
+        fetch(`/api/patients/${hospitalId}?search=${qs}&limit=${lP}`, { signal, headers }).then(r => r.json()),
+        fetch(`/api/staff/${hospitalId}?search=${qs}&limit=${lS}`, { signal, headers }).then(r => r.json()),
+        fetch(`/api/appointments/${hospitalId}?search=${qs}&limit=${lA}`, { signal, headers }).then(r => r.json()),
+        fetch(`/api/prescriptions/${hospitalId}?search=${qs}&limit=${lR}`, { signal, headers }).then(r => r.json()),
+        fetch(`/api/medical-records/${hospitalId}?search=${qs}&limit=${lRc}`, { signal, headers }).then(r => r.json()),
     ]);
 
     const [pR, sR, aR, rxR, recR] = settled;
     const flat = [];
 
-    // Map patients
     (pR.value?.patients || []).forEach(p => flat.push({
         type: 'patient', id: p.id,
-        primary:   p.fullName,
+        primary: p.fullName,
         secondary: [p.patientNumber, p.gender, p.bloodGroup].filter(Boolean).join(' · '),
-        avatar:    p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
+        avatar: p.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
     }));
 
-    // Map staff
     (sR.value?.staff || []).forEach(s => flat.push({
         type: 'staff', id: s.id,
-        primary:   s.fullName,
+        primary: s.fullName,
         secondary: [(s.role || '').replace('_', ' '), s.department].filter(Boolean).join(' · '),
-        avatar:    s.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
+        avatar: s.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
     }));
 
-    // Map appointments
     (aR.value?.appointments || []).forEach(a => flat.push({
         type: 'appointment', id: a.id,
-        primary:   a.patient?.fullName || 'Unknown patient',
+        primary: a.patient?.fullName || 'Unknown patient',
         secondary: [a.doctor?.fullName, new Date(a.appointmentDate).toLocaleDateString(), a.status].filter(Boolean).join(' · '),
-        avatar:    (a.patient?.fullName || 'A').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
+        avatar: (a.patient?.fullName || 'A').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase(),
     }));
 
-    // Map prescriptions
     (rxR.value?.prescriptions || []).forEach(r => flat.push({
         type: 'prescription', id: r.id,
-        primary:   r.medication,
+        primary: r.medication,
         secondary: [r.patient?.fullName, r.dosage].filter(Boolean).join(' · '),
-        avatar:    (r.medication || 'R')[0].toUpperCase(),
+        avatar: (r.medication || 'R')[0].toUpperCase(),
     }));
 
-    // Map records
     (recR.value?.records || []).forEach(r => flat.push({
         type: 'record', id: r.id,
-        primary:   r.title,
+        primary: r.title || r.recordType,
         secondary: [r.patient?.fullName, (r.recordType || '').replace('_', ' ')].filter(Boolean).join(' · '),
-        avatar:    (r.title || 'R')[0].toUpperCase(),
+        avatar: (r.title || r.recordType || 'R')[0].toUpperCase(),
     }));
 
     return flat;
 }
-
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 /**
@@ -182,7 +178,7 @@ function Skeleton({ count = 3, mobile = false, t }) {
                     <div style={{ width: mobile ? 36 : 30, height: mobile ? 36 : 30, borderRadius: mobile ? 10 : 8, background: t.cardAlt, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                         <div style={{ height: mobile ? 11 : 10, borderRadius: 4, background: t.cardAlt, width: '60%', marginBottom: mobile ? 6 : 5 }} />
-                        <div style={{ height: mobile ? 9 : 8,  borderRadius: 4, background: t.cardAlt, width: '40%' }} />
+                        <div style={{ height: mobile ? 9 : 8, borderRadius: 4, background: t.cardAlt, width: '40%' }} />
                     </div>
                 </div>
             ))}
@@ -201,11 +197,11 @@ function Skeleton({ count = 3, mobile = false, t }) {
  */
 function SuggestionList({ results, grouped, query, activeIdx, setActiveIdx, onSelect, onViewAll, t, isDark, mobile = false }) {
     // Size constants differ between desktop dropdown and mobile overlay
-    const pad    = mobile ? '11px 16px' : '7px 14px';
+    const pad = mobile ? '11px 16px' : '7px 14px';
     const avSize = mobile ? 36 : 30;
-    const avR    = mobile ? 10 : 8;
-    const pSize  = mobile ? 14 : 13;
-    const sSize  = mobile ? 12 : 11;
+    const avR = mobile ? 10 : 8;
+    const pSize = mobile ? 14 : 13;
+    const sSize = mobile ? 12 : 11;
 
     return (
         <>
@@ -235,7 +231,7 @@ function SuggestionList({ results, grouped, query, activeIdx, setActiveIdx, onSe
                         {/* Individual result rows */}
                         {items.map((item) => {
                             // Global index used to track keyboard-active row
-                            const gi       = results.indexOf(item);
+                            const gi = results.indexOf(item);
                             const isActive = gi === activeIdx;
 
                             return (
@@ -268,7 +264,7 @@ function SuggestionList({ results, grouped, query, activeIdx, setActiveIdx, onSe
                                     {/* Primary and secondary text with query highlight */}
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ fontSize: pSize, fontWeight: 600, color: t.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            <Highlight text={item.primary}   query={query} color={cfg.color} />
+                                            <Highlight text={item.primary} query={query} color={cfg.color} />
                                         </p>
                                         <p style={{ fontSize: sSize, color: t.textMuted, margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                             <Highlight text={item.secondary} query={query} color={cfg.color} />
@@ -324,10 +320,10 @@ function SuggestionList({ results, grouped, query, activeIdx, setActiveIdx, onSe
  *   Escape – close the dropdown and clear the query
  */
 export function SmartSearchBar({ hospital, t, isDark, isTablet, onNavigate }) {
-    const [query, setQuery]         = useState('');
-    const [results, setResults]     = useState([]);
-    const [loading, setLoading]     = useState(false);
-    const [open, setOpen]           = useState(false);
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
     const [activeIdx, setActiveIdx] = useState(-1);  // -1 means no row is highlighted
 
     const inputRef = useRef(null);  // ref to the text input (used for focus management)
@@ -388,8 +384,8 @@ export function SmartSearchBar({ hospital, t, isDark, isTablet, onNavigate }) {
 
 
     // ── Action helpers ────────────────────────────────────────────────────
-    const clear   = () => { setQuery(''); setResults([]); setOpen(false); inputRef.current?.focus(); };
-    const select  = (item) => { setQuery(item.primary); setOpen(false); onNavigate(TYPES[item.type]?.section || 'patients', item.primary); };
+    const clear = () => { setQuery(''); setResults([]); setOpen(false); inputRef.current?.focus(); };
+    const select = (item) => { setQuery(item.primary); setOpen(false); onNavigate(TYPES[item.type]?.section || 'patients', item.primary); };
     const viewAll = () => { if (query.trim()) { setOpen(false); onNavigate('patients', query); } };
 
     // Group flat results array into { patient: [...], staff: [...], ... }
@@ -398,10 +394,10 @@ export function SmartSearchBar({ hospital, t, isDark, isTablet, onNavigate }) {
 
     // ── Keyboard navigation ───────────────────────────────────────────────
     const handleKeyDown = (e) => {
-        if      (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, results.length - 1)); }
-        else if (e.key === 'ArrowUp')   { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
-        else if (e.key === 'Enter')     { e.preventDefault(); activeIdx >= 0 ? select(results[activeIdx]) : viewAll(); }
-        else if (e.key === 'Escape')    { setOpen(false); setQuery(''); inputRef.current?.blur(); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, results.length - 1)); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
+        else if (e.key === 'Enter') { e.preventDefault(); activeIdx >= 0 ? select(results[activeIdx]) : viewAll(); }
+        else if (e.key === 'Escape') { setOpen(false); setQuery(''); inputRef.current?.blur(); }
     };
 
 
@@ -503,9 +499,9 @@ export function SmartSearchBar({ hospital, t, isDark, isTablet, onNavigate }) {
  * Keyboard behaviour matches SmartSearchBar (↑↓ / Enter / Escape).
  */
 export function MobileSearchOverlay({ hospital, t, isDark, onNavigate, onClose }) {
-    const [query, setQuery]         = useState('');
-    const [results, setResults]     = useState([]);
-    const [loading, setLoading]     = useState(false);
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [activeIdx, setActiveIdx] = useState(-1);
 
     const inputRef = useRef(null);
@@ -543,7 +539,7 @@ export function MobileSearchOverlay({ hospital, t, isDark, onNavigate, onClose }
 
 
     // ── Action helpers ────────────────────────────────────────────────────
-    const select  = (item) => { onNavigate(TYPES[item.type]?.section || 'patients', item.primary); onClose(); };
+    const select = (item) => { onNavigate(TYPES[item.type]?.section || 'patients', item.primary); onClose(); };
     const viewAll = () => { if (query.trim()) { onNavigate('patients', query); onClose(); } };
 
     const grouped = results.reduce((a, r) => { (a[r.type] = a[r.type] || []).push(r); return a; }, {});
@@ -551,10 +547,10 @@ export function MobileSearchOverlay({ hospital, t, isDark, onNavigate, onClose }
 
     // ── Keyboard navigation ───────────────────────────────────────────────
     const handleKeyDown = (e) => {
-        if      (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, results.length - 1)); }
-        else if (e.key === 'ArrowUp')   { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
-        else if (e.key === 'Enter')     { e.preventDefault(); activeIdx >= 0 ? select(results[activeIdx]) : viewAll(); }
-        else if (e.key === 'Escape')    onClose();
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, results.length - 1)); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)); }
+        else if (e.key === 'Enter') { e.preventDefault(); activeIdx >= 0 ? select(results[activeIdx]) : viewAll(); }
+        else if (e.key === 'Escape') onClose();
     };
 
 
