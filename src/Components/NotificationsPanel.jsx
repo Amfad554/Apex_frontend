@@ -34,17 +34,17 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
     const panelRef = useRef(null);
 
     const ORANGE = '#FF5A1F';
-    const bg       = isDark ? '#1F2A44' : '#ffffff';
-    const bgAlt    = isDark ? '#0A1A3F' : '#F5F7FA';
-    const border   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,26,63,0.09)';
-    const text     = isDark ? '#F5F7FA' : '#0A1A3F';
-    const textSub  = isDark ? 'rgba(245,247,250,0.6)'  : 'rgba(10,26,63,0.6)';
-    const textMuted= isDark ? 'rgba(245,247,250,0.35)' : 'rgba(10,26,63,0.38)';
+    const bg = isDark ? '#1F2A44' : '#ffffff';
+    const bgAlt = isDark ? '#0A1A3F' : '#F5F7FA';
+    const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,26,63,0.09)';
+    const text = isDark ? '#F5F7FA' : '#0A1A3F';
+    const textSub = isDark ? 'rgba(245,247,250,0.6)' : 'rgba(10,26,63,0.6)';
+    const textMuted = isDark ? 'rgba(245,247,250,0.35)' : 'rgba(10,26,63,0.38)';
 
     const fetchNotifications = useCallback(async () => {
         setLoading(true);
         try {
-            const res  = await fetch(`${BASE_URL}/api/notifications`, { headers: { Authorization: `Bearer ${getToken()}` } });
+            const res = await fetch(`${BASE_URL}/api/notifications`, { headers: { Authorization: `Bearer ${getToken()}` } });
             const data = await res.json();
             if (res.ok) {
                 setNotifs(data.notifications || []);
@@ -111,7 +111,18 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
             }
         } catch (err) { console.error(err); }
     };
-
+    // Add this function alongside the other handlers
+    const clearAll = async () => {
+        try {
+            await fetch(`${BASE_URL}/api/notifications/all`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${getToken()}` },
+            });
+            setNotifs([]);
+            setUnread(0);
+            onCountChange?.(0);
+        } catch (err) { console.error(err); }
+    };
     const handleClick = (notif) => {
         if (!notif.read) markRead(notif.id);
         if (notif.link && onNavigate) { onNavigate(notif.link); setOpen(false); }
@@ -161,6 +172,15 @@ export default function NotificationsPanel({ isDark, onNavigate, onCountChange }
                                     <CheckCheck size={12} /> {markingAll ? '...' : 'Mark all read'}
                                 </button>
                             )}
+
+                            {/* ── NEW: Clear All button ── */}
+                            {notifs.length > 0 && (
+                                <button onClick={clearAll}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 8, border: `1px solid rgba(239,68,68,0.25)`, background: 'transparent', color: '#ef4444', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                                    <Trash2 size={12} /> Clear all
+                                </button>
+                            )}
+
                             <button onClick={() => fetchNotifications()}
                                 style={{ width: 28, height: 28, borderRadius: 8, border: `1px solid ${border}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: textSub }}>
                                 <RefreshCw size={12} />
