@@ -158,6 +158,7 @@ async function fetchAll(hospitalId, q, signal, limits = [4, 3, 3, 3, 3]) {
     return flat;
 }
 
+
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 /**
  * Shows placeholder rows while the API request is in-flight.
