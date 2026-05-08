@@ -1,33 +1,33 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import './index.css';
 
 import App from './App.jsx';
 
-// Layouts
+// Layouts — kept eager (tiny, always needed)
 import Layout from './layouts/Layout.jsx';
 import PatientDashboardLayout from './layouts/PatientDashboardLayout.jsx';
 
-// Pages
-import Home from './pages/Home.jsx';
-import VerifyEmail from './pages/VerifyEmail.jsx';
-import HospitalAuth from './pages/HospitalAuth.jsx';
-import PatientLogin from './pages/PatientLogin.jsx';
-import PatientRegister from './pages/PatientRegistration.jsx';
-import SuperAdminLogin from './pages/SuperAdminLogin.jsx';
-import PatientDashboard from './pages/PatientDashboard.jsx';
-import Prescriptions from './pages/Prescriptions.jsx';
-import SuperAdminDashboard from './pages/SuperAdminDashboard.jsx';
-import HospitalDashboard from './pages/Hospitaldashboard.jsx';
-import PatientManagement from './pages/PatientManagement.jsx';
-import Features from './pages/Features.jsx';
-import Contact from './pages/Contact.jsx';
-import Security from './pages/Security.jsx';
-import Pricing from './pages/Pricing.jsx';
-import StaffLogin from './pages/StaffLogin.jsx';
-import SubscriptionGuard from './pages/SubscriptionGuard.jsx';
-import StaffDashboard from './pages/Staffdashboard.jsx';
+// Pages — lazy loaded so Suspense in App.jsx triggers while chunks download
+const Home               = lazy(() => import('./pages/Home.jsx'));
+const VerifyEmail        = lazy(() => import('./pages/VerifyEmail.jsx'));
+const HospitalAuth       = lazy(() => import('./pages/HospitalAuth.jsx'));
+const PatientLogin       = lazy(() => import('./pages/PatientLogin.jsx'));
+const PatientRegister    = lazy(() => import('./pages/PatientRegistration.jsx'));
+const SuperAdminLogin    = lazy(() => import('./pages/SuperAdminLogin.jsx'));
+const PatientDashboard   = lazy(() => import('./pages/PatientDashboard.jsx'));
+const Prescriptions      = lazy(() => import('./pages/Prescriptions.jsx'));
+const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard.jsx'));
+const HospitalDashboard  = lazy(() => import('./pages/Hospitaldashboard.jsx'));
+const PatientManagement  = lazy(() => import('./pages/PatientManagement.jsx'));
+const Features           = lazy(() => import('./pages/Features.jsx'));
+const Contact            = lazy(() => import('./pages/Contact.jsx'));
+const Security           = lazy(() => import('./pages/Security.jsx'));
+const Pricing            = lazy(() => import('./pages/Pricing.jsx'));
+const StaffLogin         = lazy(() => import('./pages/StaffLogin.jsx'));
+const SubscriptionGuard  = lazy(() => import('./pages/SubscriptionGuard.jsx'));
+const StaffDashboard     = lazy(() => import('./pages/Staffdashboard.jsx'));
 
 /* ─── Auth helpers ───────────────────────────────────────────────────────────── */
 function getToken() { return localStorage.getItem('token'); }
@@ -48,8 +48,9 @@ const PublicOnlyHome = () => {
 const HospitalAuthGuard = () => {
   const token = getToken();
   const user = getUser();
-  const isHospital = token && user && (user.role === 'hospital_admin' || user.hospital_id);
-  if (!isHospital) return <Navigate to="/hospital/auth" replace />;
+  if (!token || !user) return <Navigate to="/hospital/auth" replace />;
+  const isHospital = user.role === 'hospital_admin' || user.hospital_id;
+  if (!isHospital) return <Navigate to="/unauthorized" replace />;
   return <Outlet />;
 };
 
@@ -57,18 +58,28 @@ const HospitalAuthGuard = () => {
 const StaffAuthGuard = () => {
   const token = getToken();
   const user = getUser();
+  if (!token || !user) return <Navigate to="/stafflogin" replace />;
   const EXCLUDED = ['hospital_admin', 'patient', 'super_admin'];
-  const isStaff = token && user && user.role && !EXCLUDED.includes(user.role.toLowerCase());
-  if (!isStaff) return <Navigate to="/stafflogin" replace />;
+  const isStaff = user.role && !EXCLUDED.includes(user.role.toLowerCase());
+  if (!isStaff) return <Navigate to="/unauthorized" replace />;
   return <Outlet />;
 };
 
-/* ─── General protected route ────────────────────────────────────────────────── */
-const ProtectedRoute = ({ allowedRoles }) => {
+/* ─── Super Admin guard ──────────────────────────────────────────────────────── */
+const SuperAdminGuard = () => {
+  const token = getToken();
+  const user = getUser();
+  if (!token || !user) return <Navigate to="/superadminlogin" replace />;
+  if (user.role !== 'super_admin') return <Navigate to="/unauthorized" replace />;
+  return <Outlet />;
+};
+
+/* ─── Patient guard ──────────────────────────────────────────────────────────── */
+const PatientGuard = () => {
   const token = getToken();
   const user = getUser();
   if (!token || !user) return <Navigate to="/patientlogin" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
+  if (user.role !== 'patient') return <Navigate to="/unauthorized" replace />;
   return <Outlet />;
 };
 
@@ -112,7 +123,6 @@ const router = createBrowserRouter([
 
       // ── Routes WITHOUT navbar + footer ────────────────────────────────────
 
-      // Patient & Staff login — standalone pages (no navbar/footer)
       { path: 'patientlogin', element: <PatientLogin /> },
       { path: 'stafflogin',   element: <StaffLogin /> },
 
@@ -130,7 +140,7 @@ const router = createBrowserRouter([
         ],
       },
 
-      // Staff (doctor, nurse, pharmacist, lab_technician, receptionist, etc.)
+      // Staff
       {
         element: <StaffAuthGuard />,
         children: [
@@ -139,15 +149,25 @@ const router = createBrowserRouter([
       },
 
       // Super Admin
-      { path: 'superadmindashboard', element: <SuperAdminDashboard /> },
+      {
+        element: <SuperAdminGuard />,
+        children: [
+          { path: 'superadmindashboard', element: <SuperAdminDashboard /> },
+        ],
+      },
 
       // Patient
       {
-        path: 'patientdashboard',
-        element: <PatientDashboardLayout />,
+        element: <PatientGuard />,
         children: [
-          { index: true, element: <PatientDashboard /> },
-          { path: 'prescriptions', element: <Prescriptions /> },
+          {
+            path: 'patientdashboard',
+            element: <PatientDashboardLayout />,
+            children: [
+              { index: true, element: <PatientDashboard /> },
+              { path: 'prescriptions', element: <Prescriptions /> },
+            ],
+          },
         ],
       },
 
