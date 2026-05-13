@@ -27,38 +27,38 @@ import {
 } from "lucide-react";
 
 // ─── Brand colour tokens ──────────────────────────────────────────────────────
-const ORANGE  = '#FF5A1F';
+const ORANGE = '#FF5A1F';
 const ORANGE2 = '#e64d15';
 
 // ─── Theme token sets ─────────────────────────────────────────────────────────
 const themes = {
     dark: {
-        bg:          '#0A1A3F',
-        card:        '#1F2A44',
-        cardInner:   '#0A1A3F',
-        border:      'rgba(255,255,255,0.07)',
-        text:        '#F5F7FA',
-        textSub:     'rgba(245,247,250,0.65)',
-        textMuted:   'rgba(245,247,250,0.35)',
-        input:       'rgba(10,26,63,0.6)',
+        bg: '#0A1A3F',
+        card: '#1F2A44',
+        cardInner: '#0A1A3F',
+        border: 'rgba(255,255,255,0.07)',
+        text: '#F5F7FA',
+        textSub: 'rgba(245,247,250,0.65)',
+        textMuted: 'rgba(245,247,250,0.35)',
+        input: 'rgba(10,26,63,0.6)',
         inputBorder: 'rgba(255,90,31,0.22)',
-        divider:     'rgba(255,255,255,0.07)',
-        shadow:      '0 24px 60px rgba(0,0,0,0.5)',
-        hover:       'rgba(255,90,31,0.06)',
+        divider: 'rgba(255,255,255,0.07)',
+        shadow: '0 24px 60px rgba(0,0,0,0.5)',
+        hover: 'rgba(255,90,31,0.06)',
     },
     light: {
-        bg:          '#F5F7FA',
-        card:        '#ffffff',
-        cardInner:   '#F5F7FA',
-        border:      'rgba(10,26,63,0.08)',
-        text:        '#0A1A3F',
-        textSub:     'rgba(10,26,63,0.6)',
-        textMuted:   'rgba(10,26,63,0.35)',
-        input:       '#F5F7FA',
+        bg: '#F5F7FA',
+        card: '#ffffff',
+        cardInner: '#F5F7FA',
+        border: 'rgba(10,26,63,0.08)',
+        text: '#0A1A3F',
+        textSub: 'rgba(10,26,63,0.6)',
+        textMuted: 'rgba(10,26,63,0.35)',
+        input: '#F5F7FA',
         inputBorder: 'rgba(10,26,63,0.12)',
-        divider:     'rgba(10,26,63,0.07)',
-        shadow:      '0 24px 60px rgba(10,26,63,0.08)',
-        hover:       'rgba(255,90,31,0.04)',
+        divider: 'rgba(10,26,63,0.07)',
+        shadow: '0 24px 60px rgba(10,26,63,0.08)',
+        hover: 'rgba(255,90,31,0.04)',
     },
 };
 
@@ -66,18 +66,18 @@ export default function PatientLogin() {
     const navigate = useNavigate();
 
     // ── State ──────────────────────────────────────────────────────────────
-    const [isDark,        setIsDark]       = useState(() => localStorage.getItem('theme') === 'dark');
-    const [showPassword,  setShowPassword] = useState(false);
-    const [loading,       setLoading]      = useState(false);
-    const [message,       setMessage]      = useState({ type: "", text: "" });  // inline form feedback
-    const [formData,      setFormData]     = useState({ email: "", password: "" });
+    const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: "", text: "" });  // inline form feedback
+    const [formData, setFormData] = useState({ email: "", password: "" });
 
     // Forgot-password modal state
-    const [showForgot,    setShowForgot]   = useState(false);
-    const [forgotEmail,   setForgotEmail]  = useState('');
-    const [forgotLoading, setForgotLoading]= useState(false);
-    const [forgotError,   setForgotError]  = useState('');
-    const [forgotSuccess, setForgotSuccess]= useState('');
+    const [showForgot, setShowForgot] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotLoading, setForgotLoading] = useState(false);
+    const [forgotError, setForgotError] = useState('');
+    const [forgotSuccess, setForgotSuccess] = useState('');
 
     const t = isDark ? themes.dark : themes.light;
 
@@ -103,7 +103,7 @@ export default function PatientLogin() {
         setMessage({ type: "", text: "" });
 
         try {
-            const res  = await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/login`, formData);
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/login`, formData);
             const data = res.data;
 
             // Persist session — include hospital_id in the user object so
@@ -111,7 +111,7 @@ export default function PatientLogin() {
             localStorage.setItem("token", data.token || "no-token");
             localStorage.setItem("user", JSON.stringify({
                 ...data.user,
-                role:        'patient',
+                role: 'patient',
                 hospital_id: data.user?.hospitalId || data.user?.hospital_id,
             }));
             localStorage.setItem("userRole", "patient");
@@ -122,10 +122,10 @@ export default function PatientLogin() {
             navigate("/patientdashboard");
 
         } catch (err) {
-            const msg = err.response?.data?.message || "Incorrect email or password. Please try again.";
+            console.log('Status:', err.response?.status);
+            console.log('Body:', err.response?.data);   // ← this tells you the real reason
+            const msg = err.response?.data?.message || "Incorrect email or password.";
             setMessage({ type: "error", text: msg });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -133,7 +133,7 @@ export default function PatientLogin() {
     // ── Forgot-password modal helpers ─────────────────────────────────────
 
     /** Open the modal and reset all forgot-password state */
-    const openForgot  = () => { setShowForgot(true);  setForgotError(''); setForgotSuccess(''); setForgotEmail(''); };
+    const openForgot = () => { setShowForgot(true); setForgotError(''); setForgotSuccess(''); setForgotEmail(''); };
 
     /** Close the modal and reset all forgot-password state */
     const closeForgot = () => { setShowForgot(false); setForgotError(''); setForgotSuccess(''); setForgotEmail(''); };
@@ -466,7 +466,7 @@ export default function PatientLogin() {
                                 }}>
                                     {message.type === 'error'
                                         ? <AlertCircle size={15} color="#ef4444" />
-                                        : <BadgeCheck   size={15} color="#10b981" />
+                                        : <BadgeCheck size={15} color="#10b981" />
                                     }
                                     <span style={{ fontSize: 13, color: message.type === 'error' ? '#ef4444' : '#10b981' }}>
                                         {message.text}
@@ -512,8 +512,8 @@ export default function PatientLogin() {
                 {/* Navigation links to other portals */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24, flexWrap: 'wrap' }}>
                     {[
-                        { to: '/',              label: '← Back to Home'  },
-                        { to: '/stafflogin',    label: 'Staff Portal →'  },
+                        { to: '/', label: '← Back to Home' },
+                        { to: '/stafflogin', label: 'Staff Portal →' },
                         { to: '/hospital/auth', label: 'Hospital Login →' },
                     ].map(({ to, label }) => (
                         <Link key={to} to={to} style={{
