@@ -167,14 +167,12 @@ export default function HospitalDashboard() {
 
     // ── Logout ────────────────────────────────────────────────────────────
     const handleLogout = () => {
-        console.log('logout clicked'); // ← add this
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('userRole');
-        window.dispatchEvent(new Event('authChange'));
-        navigate('/hospital/auth');
+        navigate('/hospital/auth');                        // ← navigate FIRST
+        window.dispatchEvent(new Event('authChange'));     // ← then notify navbar
     };
-
     // ── Section renderer ──────────────────────────────────────────────────
     /** Props shared by every section component */
     const sectionProps = { isDark, t, hospital, isMobile };

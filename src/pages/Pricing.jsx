@@ -1,26 +1,13 @@
 /**
  * Pricing.jsx
- * ─────────────────────────────────────────────────────────────────────────────
- * Public pricing page — displays the single "Professional" plan and handles
- * the full Paystack payment flow in a modal.
- *
- * Payment flow (two steps):
- *   1. User clicks "Get Started Now" → PaymentModal opens with email + plan summary
- *   2. User clicks "Pay" → Paystack popup opens (handled by window.PaystackPop)
- *   3. On Paystack success → verifyPayment() POSTs the reference to our backend
- *   4. Backend verifies with Paystack and activates the hospital subscription
- *
- * The Paystack JS SDK is loaded lazily by the usePaystackScript hook so it
- * doesn't block the initial page render.
- * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, Zap, X, CheckCheck, CreditCard, ShieldCheck, Globe } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// ─── Brand colour tokens ──────────────────────────────────────────────────────
 const C = {
     navy: '#0A1A3F',
     softNavy: '#1F2A44',
@@ -53,10 +40,8 @@ function usePaystackScript() {
 
     useEffect(() => {
         if (ready) return;
-
         const existing = document.querySelector('script[src*="paystack"]');
         if (existing) { setReady(true); return; }
-
         const script = document.createElement('script');
         script.src = 'https://js.paystack.co/v1/inline.js';
         script.async = true;
@@ -71,6 +56,7 @@ function usePaystackScript() {
 
 function PaymentModal({ plan, onClose }) {
     const paystackReady = usePaystackScript();
+    const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
     const storedUser = (() => {
@@ -82,9 +68,17 @@ function PaymentModal({ plan, onClose }) {
     const [errMsg, setErrMsg] = useState('');
     const [paying, setPaying] = useState(false);
 
+    // Auto-redirect to dashboard after showing success screen
+    useEffect(() => {
+        if (status !== 'success') return;
+        const timer = setTimeout(() => {
+            navigate('/hospitaldashboard');
+        }, 2500);
+        return () => clearTimeout(timer);
+    }, [status, navigate]);
+
     const verifyPayment = async (reference) => {
         setStatus('verifying');
-
         try {
             const res = await fetch(`${API_BASE}/api/payments/verify`, {
                 method: 'POST',
@@ -142,28 +136,44 @@ function PaymentModal({ plan, onClose }) {
         handler.openIframe();
     };
 
+    // ── Styles ──────────────────────────────────────────────────────────────
     const overlay = {
-        position: 'fixed', inset: 0, zIndex: 50,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',       // true vertical centering
+        justifyContent: 'center',
+        padding: '24px',
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(4px)',
+        overflowY: 'auto',          // allow scroll on very small viewports
     };
     const card = {
-        background: '#fff', borderRadius: 28,
+        background: '#fff',
+        borderRadius: 28,
         boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
-        width: '100%', maxWidth: 440,
-        padding: '40px 32px', position: 'relative',
+        width: '100%',
+        maxWidth: 440,
+        padding: '40px 32px',
+        position: 'relative',
         fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+        // Ensure it doesn't stretch to full viewport height
+        alignSelf: 'center',
+        margin: 'auto',
     };
     const inputBase = {
         width: '100%', padding: '14px', borderRadius: '12px',
         border: '1.5px solid #e2e8f0', outline: 'none',
         fontSize: '0.9rem', boxSizing: 'border-box',
-        fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif", transition: 'border-color .18s',
+        fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif",
+        transition: 'border-color .18s',
     };
     const closeBtn = {
         position: 'absolute', top: 16, right: 16, border: 'none',
         background: C.lightGray, width: 32, height: 32, borderRadius: '50%',
-        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7a99',
+        cursor: 'pointer', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', color: '#6b7a99',
     };
 
     return (
@@ -182,10 +192,22 @@ function PaymentModal({ plan, onClose }) {
                         </h2>
                         <p style={{ color: '#6b7a99', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: 24 }}>
                             Your <strong>{plan.tier} Plan</strong> is now active. All features are unlocked.
-                            You can close this and start using your dashboard.
+                            Redirecting you to your dashboard…
                         </p>
-                        <button onClick={onClose} style={{ width: '100%', padding: '14px', background: C.navy, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif" }}>
-                            Go to Dashboard
+                        {/* Progress bar to show redirect countdown */}
+                        <div style={{ height: 4, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden', marginBottom: 24 }}>
+                            <div style={{
+                                height: '100%',
+                                background: '#10b981',
+                                borderRadius: 4,
+                                animation: 'progressBar 2.5s linear forwards',
+                            }} />
+                        </div>
+                        <button
+                            onClick={() => navigate('/hospitaldashboard')}
+                            style={{ width: '100%', padding: '14px', background: C.navy, color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: "'DM Sans', 'Helvetica Neue', Arial, sans-serif" }}
+                        >
+                            Go to Dashboard Now
                         </button>
                     </div>
                 )}
@@ -304,7 +326,11 @@ function PaymentModal({ plan, onClose }) {
                     </>
                 )}
             </div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes progressBar { from { width: 0%; } to { width: 100%; } }
+            `}</style>
         </div>
     );
 }

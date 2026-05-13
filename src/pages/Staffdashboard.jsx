@@ -23,7 +23,7 @@ import {
 import ChangePasswordModal from '../Components/ChangePasswordModal';
 import NotificationsPanel from '../Components/NotificationsPanel';
 import { BillingSection, AdmissionsSection, QueueSection, LabRequestsSection } from './ReceptionistSections';
-
+import Toast from '../Components/Toast';
 /* ─────────────────────────────────────────────────────────────
    API SETUP
    All API calls are centralized here so they're easy to update.
@@ -164,28 +164,6 @@ function Badge({ status }) {
     );
 }
 
-/**
- * Toast notification — auto-dismisses after 4 seconds.
- * `type` can be 'success' or 'error'.
- */
-function Toast({ message, type = 'success', onClose }) {
-    useEffect(() => {
-        const id = setTimeout(onClose, 4000);
-        return () => clearTimeout(id);
-    }, []);
-
-    const c = type === 'error'
-        ? { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' }
-        : { bg: '#f0fdf4', border: '#86efac', text: '#166534' };
-
-    return (
-        <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 99999, background: c.bg, border: `1px solid ${c.border}`, color: c.text, borderRadius: 12, padding: '14px 18px', minWidth: 280, boxShadow: '0 8px 30px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', gap: 10, animation: 'toastIn 0.3s ease forwards' }}>
-            <style>{`@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{message}</span>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, opacity: 0.6 }}><X size={14} /></button>
-        </div>
-    );
-}
 
 /** Spinner shown while data is being fetched */
 function LoadingState({ t, accent }) {

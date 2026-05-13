@@ -7,8 +7,8 @@
  * hospital admins, not themselves. This page exists as a legacy/alternative
  * entry point. The hospital-issued credentials flow is the primary path.
  *
- * On successful registration the user is redirected to /patient-login after
- * a short delay so they can read the success message.
+ * On successful registration the user is redirected to /patientlogin after
+ * a short delay so they can read the success toast.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -16,23 +16,27 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import Toast from "../Components/Toast";
 
 export default function PatientRegister() {
     const navigate = useNavigate();
 
     // ── State ──────────────────────────────────────────────────────────────
     const [showPassword, setShowPassword] = useState(false);
-    const [loading,      setLoading]      = useState(false);
-    const [message,      setMessage]      = useState({ type: "", text: "" });  // inline feedback
+    const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState(null); // { message, type }
 
     const [formData, setFormData] = useState({
-        name:            "",
-        email:           "",
-        phone:           "",
-        dob:             "",
-        password:        "",
+        name: "",
+        email: "",
+        phone: "",
+        dob: "",
+        password: "",
         confirmPassword: "",
     });
+
+    /** Trigger a toast notification */
+    const showToast = (message, type = "success") => setToast({ message, type });
 
     /** Generic change handler for all fields */
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,27 +48,43 @@ export default function PatientRegister() {
 
         // Client-side password match check before hitting the API
         if (formData.password !== formData.confirmPassword) {
-            setMessage({ type: "error", text: "The passwords you entered don't match. Please retype them." });
+            showToast("The passwords you entered don't match. Please retype them.", "error");
             return;
         }
 
         setLoading(true);
-        setMessage({ type: "", text: "" });
 
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/api/patients/register`, formData);
 
-            setMessage({
-                type: "success",
-                text: "Account created successfully! Taking you to the login page…",
-            });
+            showToast(
+                "🎉 Account created successfully! Check your email for your login credentials.",
+                "success"
+            );
 
-            // Redirect to login after a short delay so the user can read the message
-            setTimeout(() => navigate("/patient-login"), 2000);
+            // Redirect to login after a short delay so the user can read the toast
+            setTimeout(() => navigate("/patientlogin"), 2500);
 
         } catch (err) {
-            const msg = err.response?.data?.message || "Registration failed. Please check your details and try again.";
-            setMessage({ type: "error", text: msg });
+            const status = err.response?.status;
+            const msg = err.response?.data?.message || err.response?.data?.error;
+
+            if (status === 409) {
+                showToast(
+                    "An account with this email already exists. Please log in instead.",
+                    "error"
+                );
+            } else if (status === 400) {
+                showToast(
+                    msg || "Please fill in all required fields correctly.",
+                    "error"
+                );
+            } else {
+                showToast(
+                    msg || "Registration failed. Please check your details and try again.",
+                    "error"
+                );
+            }
         } finally {
             setLoading(false);
         }
@@ -108,6 +128,16 @@ export default function PatientRegister() {
             position: "relative", overflow: "hidden",
             fontFamily: "'Georgia', serif",
         }}>
+            {/* ── Toast notification ── */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                    duration={4000}
+                />
+            )}
+
             {/* ── Decorative background blobs ── */}
             <div style={{
                 position: "absolute", top: "-80px", right: "-80px",
@@ -156,32 +186,15 @@ export default function PatientRegister() {
                     </p>
                 </div>
 
-                {/* Inline feedback message */}
-                {message.text && (
-                    <div style={{
-                        marginBottom: "20px",
-                        padding: "12px 16px",
-                        borderRadius: "12px",
-                        textAlign: "center",
-                        fontSize: "0.85rem",
-                        fontWeight: "700",
-                        background: message.type === "error" ? "rgba(220,53,69,0.15)" : "rgba(40,167,69,0.15)",
-                        color:      message.type === "error" ? "#ff8a95"             : "#6ee7a0",
-                        border: `1px solid ${message.type === "error" ? "rgba(220,53,69,0.3)" : "rgba(40,167,69,0.3)"}`,
-                    }}>
-                        {message.text}
-                    </div>
-                )}
-
                 {/* Registration form */}
                 <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
 
                     {/* Simple text / email / tel / date fields */}
                     {[
-                        { type: "text",  name: "name",  placeholder: "Full Name"      },
-                        { type: "email", name: "email", placeholder: "Email Address"  },
-                        { type: "tel",   name: "phone", placeholder: "Phone Number"   },
-                        { type: "date",  name: "dob",   placeholder: ""               },
+                        { type: "text", name: "name", placeholder: "Full Name" },
+                        { type: "email", name: "email", placeholder: "Email Address" },
+                        { type: "tel", name: "phone", placeholder: "Phone Number" },
+                        { type: "date", name: "dob", placeholder: "" },
                     ].map((field) => (
                         <input
                             key={field.name}
@@ -193,7 +206,7 @@ export default function PatientRegister() {
                             value={formData[field.name]}
                             onChange={handleChange}
                             onFocus={e => Object.assign(e.target.style, focusStyle)}
-                            onBlur={e  => Object.assign(e.target.style, blurStyle)}
+                            onBlur={e => Object.assign(e.target.style, blurStyle)}
                         />
                     ))}
 
@@ -209,7 +222,7 @@ export default function PatientRegister() {
                                 value={formData[fieldName]}
                                 onChange={handleChange}
                                 onFocus={e => Object.assign(e.target.style, focusStyle)}
-                                onBlur={e  => Object.assign(e.target.style, blurStyle)}
+                                onBlur={e => Object.assign(e.target.style, blurStyle)}
                             />
                             {/* Only show the toggle on the second field to avoid redundancy */}
                             {fieldName === "confirmPassword" && (
@@ -251,7 +264,7 @@ export default function PatientRegister() {
                             boxShadow: "0 6px 24px rgba(255,90,31,0.35)",
                         }}
                         onMouseEnter={e => { if (!loading) e.target.style.background = "#e04e18"; }}
-                        onMouseLeave={e => { if (!loading) e.target.style.background = "#FF5A1F";  }}
+                        onMouseLeave={e => { if (!loading) e.target.style.background = loading ? "#c74410" : "#FF5A1F"; }}
                     >
                         {loading ? "Creating account…" : "Create Account"}
                     </button>
