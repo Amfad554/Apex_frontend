@@ -160,7 +160,7 @@ export default function Navbar() {
             {[
               { path: "/", label: "Home" },
               { path: "/features", label: "Features" },
-              { path: "/pricing", label: "Pricing" },
+              // { path: "/pricing", label: "Pricing" },
               { path: "/security", label: "Security" },
               { path: "/contact", label: "Contact" },
             ].map(({ path, label }) => (

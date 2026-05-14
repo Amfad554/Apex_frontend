@@ -24,7 +24,7 @@ const PatientManagement  = lazy(() => import('./pages/PatientManagement.jsx'));
 const Features           = lazy(() => import('./pages/Features.jsx'));
 const Contact            = lazy(() => import('./pages/Contact.jsx'));
 const Security           = lazy(() => import('./pages/Security.jsx'));
-const Pricing            = lazy(() => import('./pages/Pricing.jsx'));
+// const Pricing            = lazy(() => import('./pages/Pricing.jsx'));
 const StaffLogin         = lazy(() => import('./pages/StaffLogin.jsx'));
 const SubscriptionGuard  = lazy(() => import('./pages/SubscriptionGuard.jsx'));
 const StaffDashboard     = lazy(() => import('./pages/Staffdashboard.jsx'));
@@ -104,7 +104,7 @@ const router = createBrowserRouter([
           { path: 'features',            element: <Features /> },
           { path: 'contact',             element: <Contact /> },
           { path: 'security',            element: <Security /> },
-          { path: 'pricing',             element: <Pricing /> },
+          // { path: 'pricing',             element: <Pricing /> },
           {
             path: 'unauthorized',
             element: (

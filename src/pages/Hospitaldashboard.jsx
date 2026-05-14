@@ -35,7 +35,7 @@ import DashSettings from './Sections/Settings.jsx';
 import DashboardHome from './Sections/Dashboardhome.jsx';
 import { SmartSearchBar, MobileSearchOverlay } from './Sections/SmartSearchBar.jsx';
 import useInactivityTimeout from '../hooks/useInactivityTimeout';
-import { useSubscription } from './SubscriptionGuard';
+
 
 // ─── Navigation config ────────────────────────────────────────────────────────
 /** Full list of nav items – order matters for the mobile bottom bar split beloww */
@@ -73,9 +73,6 @@ function ActivePill() {
 export default function HospitalDashboard() {
     const navigate = useNavigate();
     useInactivityTimeout();
-
-    const { status: subStatus } = useSubscription(); // ✅ get subscription status
-    const isPaid = subStatus === 'active';
 
     // ── UI state ──────────────────────────────────────────────────────────
     const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -212,15 +209,8 @@ export default function HospitalDashboard() {
         );
     };
     const renderSection = () => {
-        // ✅ These sections are FREE — always accessible
-        const freeSection = activeSection === 'dashboard' || activeSection === 'settings';
-
-        // ✅ Show lock screen for paid sections if not subscribed
-        if (!isPaid && !freeSection) {
-            return <LockedSection />;
-        }
         switch (activeSection) {
-            case 'dashboard': return <DashboardHome  {...sectionProps} onNavigate={navigate_to} />;
+            case 'dashboard': return <DashboardHome   {...sectionProps} onNavigate={navigate_to} />;
             case 'patients': return <Patients        {...sectionProps} externalSearch={searchQuery} />;
             case 'appointments': return <Appointments    {...sectionProps} externalSearch={searchQuery} />;
             case 'staff': return <Staff           {...sectionProps} externalSearch={searchQuery} />;
