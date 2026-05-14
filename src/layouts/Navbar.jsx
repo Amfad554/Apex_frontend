@@ -109,7 +109,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-8 text-sm">
           <NavLink to="/" className={navLinkStyle}>Home</NavLink>
           <NavLink to="/features" className={navLinkStyle}>Features</NavLink>
-          <NavLink to="/pricing" className={navLinkStyle}>Pricing</NavLink>
+          {/* <NavLink to="/pricing" className={navLinkStyle}>Pricing</NavLink> */}
           <NavLink to="/security" className={navLinkStyle}>Security</NavLink>
           <NavLink to="/contact" className={navLinkStyle}>Contact</NavLink>
         </nav>
